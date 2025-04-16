@@ -3,15 +3,23 @@ use ratatui::DefaultTerminal;
 
 pub mod prelude {
     pub use super::App;
+    pub(crate) use crate::items::prelude::*;
+    pub(crate) use crate::model::prelude::*;
+    pub(crate) use crate::receipt::prelude::*;
     pub use ratatui::{crossterm::event, prelude::*, widgets::*};
     pub use std::io;
 }
 
+mod items;
+mod model;
+mod receipt;
 mod ui;
 
 #[derive(Default)]
 pub struct App {
     should_exit: bool,
+    items: Items,
+    reciept: Receipt,
 }
 
 impl App {
