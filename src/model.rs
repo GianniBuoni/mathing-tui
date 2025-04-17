@@ -3,6 +3,6 @@ pub(crate) mod prelude {
 }
 
 pub trait Model {
-    fn title(self) -> String;
-    fn index(self) -> u8;
+    fn title(&self) -> String;
+    fn index(&self) -> u8;
 }

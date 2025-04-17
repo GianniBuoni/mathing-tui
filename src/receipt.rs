@@ -18,11 +18,11 @@ impl Default for Receipt {
     }
 }
 
-impl Model for &Receipt {
-    fn title(self) -> String {
+impl Model for Receipt {
+    fn title(&self) -> String {
         format!(" [{}] {} ", self.index, self.title)
     }
-    fn index(self) -> u8 {
+    fn index(&self) -> u8 {
         self.index
     }
 }

@@ -18,11 +18,11 @@ impl Default for Items {
     }
 }
 
-impl Model for &Items {
-    fn index(self) -> u8 {
+impl Model for Items {
+    fn index(&self) -> u8 {
         self.index
     }
-    fn title(self) -> String {
+    fn title(&self) -> String {
         format!(" [{}] {} ", self.index, self.title)
     }
 }
