@@ -27,4 +27,7 @@ impl Model for Receipt {
     fn is_active(&self) -> bool {
         self.active
     }
+    fn index(&self) -> u8 {
+        self.index
+    }
 }

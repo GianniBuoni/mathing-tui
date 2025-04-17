@@ -15,7 +15,7 @@ impl Default for Items {
         Self {
             title: "Grocery Items".into(),
             index: 0,
-            active: false,
+            active: true,
         }
     }
 }
@@ -26,5 +26,8 @@ impl Model for Items {
     }
     fn is_active(&self) -> bool {
         self.active
+    }
+    fn index(&self) -> u8 {
+        self.index
     }
 }

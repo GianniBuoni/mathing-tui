@@ -5,4 +5,5 @@ pub(crate) mod prelude {
 pub trait Model {
     fn title(&self) -> String;
     fn is_active(&self) -> bool;
+    fn index(&self) -> u8;
 }

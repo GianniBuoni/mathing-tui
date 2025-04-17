@@ -20,25 +20,25 @@ impl Widget for &App {
             Constraint::Percentage(30),
             Constraint::Percentage(70),
         ])
+        .spacing(1)
         .areas(main_block.inner(area));
 
-        self.models
-            .iter()
-            .zip(chunks)
-            .for_each(|((_, model), inner_area)| {
+        self.list_models().iter().zip(chunks).for_each(
+            |(model, inner_area)| {
                 let color = if model.is_active() {
-                    Color::White
+                    Color::Reset
                 } else {
                     Color::DarkGray
                 };
                 model_block(color, model).render(inner_area, buf);
-            });
+            },
+        );
 
         main_block.render(area, buf);
     }
 }
 
-pub fn model_block<'a>(color: Color, model: &Box<dyn Model>) -> Block<'a> {
+pub fn model_block(color: Color, model: &Box<dyn Model>) -> Block {
     Block::bordered()
         .border_style(Style::default().fg(color))
         .border_type(BorderType::Rounded)

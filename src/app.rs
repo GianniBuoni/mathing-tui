@@ -42,6 +42,12 @@ impl App {
         Ok(())
     }
 
+    pub fn list_models(&self) -> Vec<&Box<dyn Model>> {
+        let mut models: Vec<&Box<dyn Model>> = self.models.values().collect();
+        models.sort_by_key(|f| f.index());
+        models
+    }
+
     fn handle_key_events(&mut self, key_event: event::KeyEvent) {
         if key_event.kind != event::KeyEventKind::Press {
             return;
