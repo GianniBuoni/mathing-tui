@@ -5,15 +5,17 @@ pub(crate) mod prelude {
 }
 
 pub struct Receipt {
-    index: u8,
     title: String,
+    index: u8,
+    active: bool,
 }
 
 impl Default for Receipt {
     fn default() -> Self {
         Self {
-            index: 1,
             title: "Receipt".into(),
+            index: 1,
+            active: false,
         }
     }
 }
@@ -22,7 +24,7 @@ impl Model for Receipt {
     fn title(&self) -> String {
         format!(" [{}] {} ", self.index, self.title)
     }
-    fn index(&self) -> u8 {
-        self.index
+    fn is_active(&self) -> bool {
+        self.active
     }
 }

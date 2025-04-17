@@ -5,24 +5,26 @@ pub(crate) mod prelude {
 }
 
 pub struct Items {
-    index: u8,
     title: String,
+    index: u8,
+    active: bool,
 }
 
 impl Default for Items {
     fn default() -> Self {
         Self {
-            index: 0,
             title: "Grocery Items".into(),
+            index: 0,
+            active: false,
         }
     }
 }
 
 impl Model for Items {
-    fn index(&self) -> u8 {
-        self.index
-    }
     fn title(&self) -> String {
         format!(" [{}] {} ", self.index, self.title)
+    }
+    fn is_active(&self) -> bool {
+        self.active
     }
 }

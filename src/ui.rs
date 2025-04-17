@@ -16,24 +16,31 @@ impl Widget for &App {
 
         let main_block = Block::default().title_bottom(context_menu);
 
-        let [small_chunk, large_chunk] = Layout::horizontal([
+        let chunks: [Rect; 2] = Layout::horizontal([
             Constraint::Percentage(30),
             Constraint::Percentage(70),
         ])
         .areas(main_block.inner(area));
 
-        Block::bordered()
-            .border_type(BorderType::Rounded)
-            .border_style(Style::default().fg(Color::DarkGray))
-            .title(self.reciept.title())
-            .render(large_chunk, buf);
-
-        Block::bordered()
-            .border_type(BorderType::Rounded)
-            .border_style(Style::default().fg(Color::DarkGray))
-            .title(self.items.title())
-            .render(small_chunk, buf);
+        self.models
+            .iter()
+            .zip(chunks)
+            .for_each(|((_, model), inner_area)| {
+                let color = if model.is_active() {
+                    Color::White
+                } else {
+                    Color::DarkGray
+                };
+                model_block(color, model).render(inner_area, buf);
+            });
 
         main_block.render(area, buf);
     }
+}
+
+pub fn model_block<'a>(color: Color, model: &Box<dyn Model>) -> Block<'a> {
+    Block::bordered()
+        .border_style(Style::default().fg(color))
+        .border_type(BorderType::Rounded)
+        .title(model.title())
 }
