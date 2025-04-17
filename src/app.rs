@@ -13,11 +13,14 @@ impl Default for App {
         models.insert(CurrentModel::Items, items as Box<dyn Model>);
         models.insert(CurrentModel::Receipt, reciept as Box<dyn Model>);
 
-        Self {
+        let mut app = Self {
             models,
             current_model: CurrentModel::default(),
             should_exit: bool::default(),
-        }
+        };
+
+        app.init_view();
+        app
     }
 }
 
@@ -56,14 +59,9 @@ impl App {
             event::KeyCode::Char('q') => {
                 self.should_exit = true;
             }
-            event::KeyCode::Tab => match self.current_model {
-                CurrentModel::Items => {
-                    self.current_model = CurrentModel::Receipt;
-                }
-                CurrentModel::Receipt => {
-                    self.current_model = CurrentModel::Items;
-                }
-            },
+            event::KeyCode::Tab => {
+                self.cycle_view();
+            }
             _ => {}
         }
     }

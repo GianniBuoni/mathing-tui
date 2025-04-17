@@ -15,7 +15,7 @@ impl Default for Items {
         Self {
             title: "Grocery Items".into(),
             index: 0,
-            active: true,
+            active: false,
         }
     }
 }
@@ -29,5 +29,8 @@ impl Model for Items {
     }
     fn index(&self) -> u8 {
         self.index
+    }
+    fn toggle(&mut self) {
+        self.active = !self.active
     }
 }

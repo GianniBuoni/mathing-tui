@@ -30,4 +30,7 @@ impl Model for Receipt {
     fn index(&self) -> u8 {
         self.index
     }
+    fn toggle(&mut self) {
+        self.active = !self.active
+    }
 }
