@@ -1,8 +1,4 @@
-use crate::prelude::*;
-
-pub(crate) mod prelude {
-    pub(crate) use super::CurrentModel;
-}
+use super::*;
 
 #[derive(Default, Debug, PartialEq, Eq, Hash)]
 pub enum CurrentModel {

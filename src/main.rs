@@ -1,3 +1,5 @@
+use std::io;
+
 use mathing_tui::prelude::*;
 
 fn main() -> io::Result<()> {
