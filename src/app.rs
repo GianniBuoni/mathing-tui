@@ -84,18 +84,43 @@ mod tests {
             "test if current_view is properly initialized"
         );
 
-        app.handle_key_events(key_event);
-        assert_eq!(
-            app.current_model,
-            CurrentModel::Receipt,
-            "test if current view changes with input"
+        for i in 0..100 {
+            let want = if i % 2 == 0 {
+                CurrentModel::Receipt
+            } else {
+                CurrentModel::Items
+            };
+
+            app.handle_key_events(key_event);
+            assert_eq!(
+                app.current_model, want,
+                "test if current view changes with repeated input"
+            );
+        }
+    }
+
+    #[test]
+    fn test_view_data() {
+        let mut app = App::default();
+        let key_event = event::KeyEvent::from(KeyCode::Tab);
+
+        assert!(
+            app.models.get(&app.current_model).unwrap().is_active(),
+            "test if models are properly initialized, Items should be active"
         );
 
-        app.handle_key_events(key_event);
-        assert_eq!(
-            app.current_model,
-            CurrentModel::Items,
-            "test if current view can changes back"
+        assert!(
+            !app.models.get(&CurrentModel::Receipt).unwrap().is_active(),
+            "expecting Receipt model to be inactive"
         );
+
+        for i in 0..100 {
+            app.handle_key_events(key_event);
+
+            assert!(
+                app.models.get(&app.current_model).unwrap().is_active(),
+                "repeat input: {i}. assert current model is active"
+            );
+        }
     }
 }
