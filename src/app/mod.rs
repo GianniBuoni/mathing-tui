@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, error::Error, sync::mpsc::Receiver};
 
 use crate::prelude::*;
 use ratatui::DefaultTerminal;
@@ -20,18 +20,18 @@ pub struct App {
 }
 
 impl App {
-    pub fn run(&mut self, mut terminal: DefaultTerminal) -> io::Result<()> {
+    pub fn run(
+        &mut self,
+        mut terminal: DefaultTerminal,
+        rx: Receiver<event::KeyEvent>,
+    ) -> Result<(), Box<dyn Error>> {
+        // first draw before event loop
         terminal.draw(|frame| {
             self.render(frame.area(), frame.buffer_mut());
         })?;
 
         while !self.should_exit {
-            match event::read()? {
-                event::Event::Key(key_event) => {
-                    self.handle_key_events(key_event);
-                }
-                _ => {}
-            }
+            self.handle_key_events(rx.recv()?);
 
             terminal.draw(|frame| {
                 self.render(frame.area(), frame.buffer_mut());
