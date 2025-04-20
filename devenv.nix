@@ -2,8 +2,11 @@
   packages = with pkgs; [
     openssl
   ];
+
   languages.rust = {
     enable = true;
     channel = "stable";
   };
+
+  dotenv.enable = true;
 }
