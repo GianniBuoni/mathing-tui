@@ -1,4 +1,4 @@
-use sqlx::query_as;
+use sqlx::{SqliteExecutor, query_as};
 
 use super::*;
 
@@ -20,9 +20,9 @@ impl StoreItem {
     }
 }
 
-pub async fn get_items() -> Result<Vec<StoreItem>, Box<dyn Error>> {
-    let db = get_db().await?;
-
+pub async fn get_items(
+    db: impl SqliteExecutor<'_>,
+) -> Result<Vec<StoreItem>, Box<dyn Error>> {
     let rows = query_as!(StoreItem, "SELECT * FROM items ORDER BY name")
         .fetch_all(db)
         .await?;
@@ -31,11 +31,10 @@ pub async fn get_items() -> Result<Vec<StoreItem>, Box<dyn Error>> {
 }
 
 pub async fn add_items(
+    db: impl SqliteExecutor<'_>,
     name: &str,
     price: f64,
 ) -> Result<StoreItem, Box<dyn Error>> {
-    let db = get_db().await?;
-
     let new_item = query_as!(
         StoreItem,
         "INSERT INTO items (name, price) VALUES (?1, ?2) RETURNING *",
@@ -52,13 +51,10 @@ pub async fn add_items(
 mod tests {
     use super::*;
 
-    // TODO write a better way of connecting to the DB?
-    // TODO right now tests arent running against a test database.
     #[sqlx::test]
-    async fn test_add_and_get_items() -> Result<(), Box<dyn Error>> {
-        let db = get_db().await?;
-        sqlx::query!("DELETE from items").execute(db).await?;
-
+    async fn test_add_and_get_items(
+        pool: SqlitePool,
+    ) -> Result<(), Box<dyn Error>> {
         let test_items = [
             ("PB Pretzel", 4.99),
             ("Slamin' Salmon", 9.49),
@@ -66,7 +62,7 @@ mod tests {
         ];
 
         for item in test_items {
-            let test_item = add_items(item.0, item.1).await?;
+            let test_item = add_items(&pool, item.0, item.1).await?;
             assert_eq!(item.0, test_item.name(), "test new item's name match");
             assert_eq!(
                 item.1,
@@ -75,7 +71,7 @@ mod tests {
             );
         }
 
-        let test_fetch = get_items().await?;
+        let test_fetch = get_items(&pool).await?;
         assert_eq!(
             test_items.len(),
             test_fetch.len(),

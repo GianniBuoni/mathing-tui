@@ -6,6 +6,7 @@ use tokio::sync::OnceCell;
 mod store_items;
 
 pub mod prelude {
+    pub use super::get_db;
     pub use super::store_items::{add_items, get_items};
 }
 
@@ -18,7 +19,7 @@ async fn db() -> Result<SqlitePool, Box<dyn Error>> {
     Ok(pool)
 }
 
-async fn get_db() -> Result<&'static SqlitePool, Box<dyn Error>> {
+pub async fn get_db() -> Result<&'static SqlitePool, Box<dyn Error>> {
     match DB.get_or_try_init(db).await {
         Ok(static_pool) => Ok(static_pool),
         Err(e) => {
