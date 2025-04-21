@@ -1,20 +1,18 @@
-use std::{env, error::Error};
+use std::error::Error;
 
 use sqlx::SqlitePool;
 
 use crate::prelude::*;
 
-#[sqlx::test]
-async fn test_add_and_get_items(
-    conn: SqlitePool,
-) -> Result<(), Box<dyn Error>> {
-    let test_items = [
-        ("PB Pretzel", 4.99),
-        ("Slamin' Salmon", 9.49),
-        ("Chips and Dip", 5.55),
-    ];
+const TEST_ITEMS: [(&str, f64); 3] = [
+    ("PB Pretzel", 4.99),
+    ("Slamin' Salmon", 9.49),
+    ("Chips and Dip", 5.55),
+];
 
-    for item in test_items {
+#[sqlx::test]
+async fn test_add_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+    for item in TEST_ITEMS {
         let test_item = add_items(&conn, item.0, item.1).await?;
         assert_eq!(item.0, test_item.name(), "Test new item's name match.");
         assert_eq!(item.1, test_item.price(), "Test new item's price match.");
@@ -22,7 +20,7 @@ async fn test_add_and_get_items(
 
     let test_fetch = get_items(&conn).await?;
     assert_eq!(
-        test_items.len(),
+        TEST_ITEMS.len(),
         test_fetch.len(),
         "Test row count and amount items added match."
     );
@@ -36,33 +34,16 @@ async fn test_add_and_get_items(
 }
 
 #[sqlx::test]
-async fn test_db_conn() -> Result<(), Box<dyn Error>> {
-    if let Ok(is_production) = env::var("PLATFORM") {
-        if is_production == "production" {
-            let msg =
-                "
-                You're in production mode! Run this test only in development mode
-                ";
-            return Err(msg.into());
-        }
-    }
-    let conn = get_db().await?;
+async fn test_delete_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+    let original_len = get_items(&conn).await?.len();
 
-    let test_items = [
-        ("PB Pretzel", 4.99),
-        ("Slamin' Salmon", 9.49),
-        ("Chips and Dip", 5.55),
-    ];
-
-    let original_len = get_items(conn).await?.len();
-
-    for item in test_items {
-        let new_item = add_items(conn, item.0, item.1).await?;
-        delete_items(conn, new_item.id()).await?;
+    for item in TEST_ITEMS {
+        let new_item = add_items(&conn, item.0, item.1).await?;
+        delete_items(&conn, new_item.id()).await?;
     }
 
-    let new_len = get_items(conn).await?.len();
-    assert_eq!(original_len, new_len, "Test adding removing rows.");
+    let final_len = get_items(&conn).await?.len();
+    assert_eq!(original_len, final_len, "Test adding removing rows.");
 
     Ok(())
 }

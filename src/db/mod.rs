@@ -9,7 +9,9 @@ mod store_items_tests;
 
 pub mod prelude {
     pub use super::get_db;
-    pub use super::store_items::{add_items, delete_items, get_items};
+    pub use super::store_items::{
+        StoreItem, add_items, delete_items, get_items,
+    };
 }
 
 static DB: OnceCell<SqlitePool> = OnceCell::const_new();
@@ -28,5 +30,16 @@ pub async fn get_db() -> Result<&'static SqlitePool, Box<dyn Error>> {
             let msg = format!("DB connection error: {e}");
             Err(msg.into())
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[sqlx::test]
+    async fn test_db_conn() {
+        let conn = get_db().await;
+        assert!(conn.is_ok());
     }
 }
