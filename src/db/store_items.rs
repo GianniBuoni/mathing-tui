@@ -21,10 +21,10 @@ impl StoreItem {
 }
 
 pub async fn get_items(
-    db: impl SqliteExecutor<'_>,
+    conn: impl SqliteExecutor<'_>,
 ) -> Result<Vec<StoreItem>, Box<dyn Error>> {
     let rows = query_as!(StoreItem, "SELECT * FROM items ORDER BY name")
-        .fetch_all(db)
+        .fetch_all(conn)
         .await?;
 
     Ok(rows)

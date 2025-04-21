@@ -46,7 +46,6 @@ async fn test_db_conn() -> Result<(), Box<dyn Error>> {
             return Err(msg.into());
         }
     }
-
     let conn = get_db().await?;
 
     let test_items = [
@@ -63,7 +62,6 @@ async fn test_db_conn() -> Result<(), Box<dyn Error>> {
     }
 
     let new_len = get_items(conn).await?.len();
-
     assert_eq!(original_len, new_len, "Test adding removing rows.");
 
     Ok(())
