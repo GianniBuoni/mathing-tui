@@ -14,12 +14,12 @@ const TEST_ITEMS: [(&str, f64); 3] = [
 #[sqlx::test]
 async fn test_add_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     for item in TEST_ITEMS {
-        let test_item = add_item(&conn, item.0, item.1).await?;
+        let test_item = add_store_item(&conn, item.0, item.1).await?;
         assert_eq!(item.0, test_item.name(), "Test new item's name match.");
         assert_eq!(item.1, test_item.price(), "Test new item's price match.");
     }
 
-    let test_fetch = get_items(&conn).await?;
+    let test_fetch = get_store_items(&conn).await?;
     assert_eq!(
         TEST_ITEMS.len(),
         test_fetch.len(),
@@ -39,12 +39,12 @@ async fn test_get_item_single(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     let mut ids = vec![];
 
     for (name, price) in TEST_ITEMS {
-        let new_items = add_item(&conn, name, price).await?;
+        let new_items = add_store_item(&conn, name, price).await?;
         ids.push(new_items.id());
     }
 
     for ((name, price), id) in TEST_ITEMS.iter().zip(ids) {
-        let item = get_item_single(&conn, id).await?;
+        let item = get_store_item_single(&conn, id).await?;
         let desc = "Test get_item_single match expected id:";
         assert_eq!(item.name(), *name, "{desc} {id}.");
         assert_eq!(item.price(), *price, "{desc} {id}.");
@@ -55,14 +55,14 @@ async fn test_get_item_single(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
 #[sqlx::test]
 async fn test_delete_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
-    let original_len = get_items(&conn).await?.len();
+    let original_len = get_store_items(&conn).await?.len();
 
     for item in TEST_ITEMS {
-        let new_item = add_item(&conn, item.0, item.1).await?;
-        delete_item(&conn, new_item.id()).await?;
+        let new_item = add_store_item(&conn, item.0, item.1).await?;
+        delete_store_item(&conn, new_item.id()).await?;
     }
 
-    let final_len = get_items(&conn).await?.len();
+    let final_len = get_store_items(&conn).await?.len();
     assert_eq!(original_len, final_len, "Test adding removing rows.");
 
     Ok(())
@@ -73,7 +73,7 @@ async fn test_update_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     let mut ids = vec![];
 
     for (name, price) in TEST_ITEMS {
-        let new_item = add_item(&conn, name, price).await?;
+        let new_item = add_store_item(&conn, name, price).await?;
         ids.push(new_item.id());
     }
 
@@ -85,7 +85,7 @@ async fn test_update_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
     for (id, (name, price)) in ids.iter().zip(update_params) {
         sleep_until(Instant::now() + Duration::from_secs(1)).await;
-        update_item(&conn, *id, name, price).await?;
+        update_store_item(&conn, *id, name, price).await?;
     }
 
     let want = [
@@ -95,7 +95,7 @@ async fn test_update_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     ];
 
     for (id, (name, price, desc)) in ids.iter().zip(want) {
-        let test_item = get_item_single(&conn, *id).await?;
+        let test_item = get_store_item_single(&conn, *id).await?;
         assert_eq!(test_item.name(), name, "{desc}, id: {id}");
         assert_eq!(test_item.price(), price, "{desc}, id: {id}");
         assert_ne!(

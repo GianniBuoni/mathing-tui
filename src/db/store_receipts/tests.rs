@@ -12,7 +12,7 @@ const TEST_ITEMS: [(&str, f64, i64); 3] = [
 
 async fn init_test(conn: &SqlitePool) -> Result<(), Box<dyn Error>> {
     for (name, price, qty) in TEST_ITEMS {
-        let new_item = add_item(conn, name, price).await?;
+        let new_item = add_store_item(conn, name, price).await?;
         let new_receipt = add_store_receipt(&conn, new_item.id(), qty).await;
         assert!(new_receipt.is_ok(), "Test successful reciept add");
     }
@@ -43,7 +43,7 @@ async fn test_get_receipts(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 async fn test_cascade_del(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     init_test(&conn).await?;
 
-    delete_item(&conn, 1).await?;
+    delete_store_item(&conn, 1).await?;
     let receipts = get_store_receipts(&conn).await?;
     assert_eq!(
         receipts.len(),
