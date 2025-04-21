@@ -10,7 +10,8 @@ mod store_items_tests;
 pub mod prelude {
     pub use super::get_db;
     pub use super::store_items::{
-        StoreItem, add_items, delete_items, get_items,
+        StoreItem, add_items, delete_items, get_item_single, get_items,
+        update_items,
     };
 }
 
