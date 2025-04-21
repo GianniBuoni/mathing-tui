@@ -4,10 +4,12 @@ use sqlx::SqlitePool;
 use tokio::sync::OnceCell;
 
 mod store_items;
+#[cfg(test)]
+mod store_items_tests;
 
 pub mod prelude {
     pub use super::get_db;
-    pub use super::store_items::{add_items, get_items};
+    pub use super::store_items::{add_items, delete_items, get_items};
 }
 
 static DB: OnceCell<SqlitePool> = OnceCell::const_new();

@@ -1,4 +1,4 @@
-use sqlx::{SqliteExecutor, query_as};
+use sqlx::{SqliteExecutor, query, query_as};
 
 use super::*;
 
@@ -47,42 +47,12 @@ pub async fn add_items(
     Ok(new_item)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[sqlx::test]
-    async fn test_add_and_get_items(
-        pool: SqlitePool,
-    ) -> Result<(), Box<dyn Error>> {
-        let test_items = [
-            ("PB Pretzel", 4.99),
-            ("Slamin' Salmon", 9.49),
-            ("Chips and Dip", 5.55),
-        ];
-
-        for item in test_items {
-            let test_item = add_items(&pool, item.0, item.1).await?;
-            assert_eq!(item.0, test_item.name(), "test new item's name match");
-            assert_eq!(
-                item.1,
-                test_item.price(),
-                "test new item's price match"
-            );
-        }
-
-        let test_fetch = get_items(&pool).await?;
-        assert_eq!(
-            test_items.len(),
-            test_fetch.len(),
-            "test row count and amount items added match"
-        );
-        assert_eq!(
-            "Chips and Dip",
-            test_fetch[0].name(),
-            "test db returning in alphabetical order"
-        );
-
-        Ok(())
-    }
+pub async fn delete_items(
+    db: impl SqliteExecutor<'_>,
+    id: i64,
+) -> Result<(), Box<dyn Error>> {
+    query!("DELETE FROM items WHERE id=?1", id)
+        .execute(db)
+        .await?;
+    Ok(())
 }
