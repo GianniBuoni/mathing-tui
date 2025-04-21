@@ -28,7 +28,7 @@ pub async fn get_item_single(
     Ok(item)
 }
 
-pub async fn add_items(
+pub async fn add_item(
     conn: &SqlitePool,
     name: &str,
     price: f64,
@@ -57,7 +57,7 @@ pub async fn add_items(
     Ok(new_item)
 }
 
-pub async fn delete_items(
+pub async fn delete_item(
     conn: &SqlitePool,
     id: i64,
 ) -> Result<(), Box<dyn Error>> {
@@ -67,7 +67,7 @@ pub async fn delete_items(
     Ok(())
 }
 
-pub async fn update_items(
+pub async fn update_item(
     conn: &SqlitePool,
     id: i64,
     name: Option<&str>,
