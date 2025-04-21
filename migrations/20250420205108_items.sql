@@ -1,6 +1,8 @@
--- Add migration script here
-CREATE TABLE IF NOT EXISTS items(
+-- Up
+CREATE TABLE items(
   id INTEGER PRIMARY KEY,
-  price FLOAT NOT NULL,
-  name TEXT NOT NULL
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  price FLOAT NOT NULL
 )

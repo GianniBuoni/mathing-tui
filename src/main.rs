@@ -3,8 +3,7 @@ use std::{error::Error, sync::mpsc::channel, thread};
 use mathing_tui::prelude::*;
 use ratatui::crossterm::event::KeyEvent;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let terminal = ratatui::init();
     let mut app = App::default();
 

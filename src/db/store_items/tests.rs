@@ -1,8 +1,9 @@
-use std::error::Error;
+use std::{error::Error, time::Duration};
 
 use sqlx::SqlitePool;
+use tokio::time::{Instant, sleep_until};
 
-use crate::prelude::*;
+use super::prelude::*;
 
 const TEST_ITEMS: [(&str, f64); 3] = [
     ("PB Pretzel", 4.99),
@@ -83,6 +84,7 @@ async fn test_update_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     ];
 
     for (id, (name, price)) in ids.iter().zip(update_params) {
+        sleep_until(Instant::now() + Duration::from_secs(1)).await;
         update_items(&conn, *id, name, price).await?;
     }
 
@@ -96,6 +98,11 @@ async fn test_update_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
         let test_item = get_item_single(&conn, *id).await?;
         assert_eq!(test_item.name(), name, "{desc}, id: {id}");
         assert_eq!(test_item.price(), price, "{desc}, id: {id}");
+        assert_ne!(
+            test_item.created_at(),
+            test_item.updated_at(),
+            "Test update field changed, id: {id}"
+        );
     }
 
     Ok(())

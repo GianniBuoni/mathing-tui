@@ -1,24 +1,11 @@
-use sqlx::{query, query_as};
+use std::{
+    error::Error,
+    time::{self, UNIX_EPOCH},
+};
+
+use sqlx::{SqlitePool, query, query_as};
 
 use super::*;
-
-pub struct StoreItem {
-    name: String,
-    id: i64,
-    price: f64,
-}
-
-impl StoreItem {
-    pub fn name(&self) -> &str {
-        self.name.as_ref()
-    }
-    pub fn id(&self) -> i64 {
-        self.id
-    }
-    pub fn price(&self) -> f64 {
-        self.price
-    }
-}
 
 pub async fn get_items(
     conn: &SqlitePool,
@@ -46,11 +33,23 @@ pub async fn add_items(
     name: &str,
     price: f64,
 ) -> Result<StoreItem, Box<dyn Error>> {
+    let now = time::SystemTime::now()
+        .duration_since(UNIX_EPOCH)?
+        .as_secs() as i64;
+
     let new_item = query_as!(
         StoreItem,
-        "INSERT INTO items (name, price) VALUES (?1, ?2) RETURNING *",
+        "
+        INSERT INTO items (
+            name, price, created_at, updated_at
+        ) VALUES (
+            ?1, ?2, ?3, ?4
+        ) RETURNING *
+        ",
         name,
-        price
+        price,
+        now,
+        now,
     )
     .fetch_one(conn)
     .await?;
@@ -76,6 +75,13 @@ pub async fn update_items(
 ) -> Result<(), Box<dyn Error>> {
     // begin transaction
     let mut tx = conn.begin().await?;
+    let now = time::SystemTime::now()
+        .duration_since(UNIX_EPOCH)?
+        .as_secs() as i64;
+
+    query!("UPDATE items SET updated_at=?1 WHERE id=?2", now, id)
+        .execute(&mut *tx)
+        .await?;
 
     if let Some(name) = name {
         query!("UPDATE items SET name=?1 WHERE id=?2", name, id)
