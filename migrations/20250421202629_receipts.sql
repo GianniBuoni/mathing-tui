@@ -1,0 +1,10 @@
+-- Up
+CREATE TABLE receipts(
+  id INTEGER PRIMARY KEY NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  item_id INTEGER NOT NULL,
+  item_qty INTEGER NOT NULL,
+  FOREIGN KEY(item_id) REFERENCES items(id)
+    ON DELETE CASCADE
+);
