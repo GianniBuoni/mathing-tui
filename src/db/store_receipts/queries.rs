@@ -9,9 +9,12 @@ use sqlx::SqlitePool;
 pub async fn get_store_receipts(
     conn: &SqlitePool,
 ) -> Result<Vec<StoreReceipt>, Box<dyn Error>> {
-    let res = sqlx::query_as!(StoreReceipt, "SELECT * FROM receipts")
-        .fetch_all(conn)
-        .await?;
+    let res = sqlx::query_as!(
+        StoreReceipt,
+        "SELECT * FROM receipts ORDER BY updated_at"
+    )
+    .fetch_all(conn)
+    .await?;
     Ok(res)
 }
 

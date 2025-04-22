@@ -137,5 +137,14 @@ async fn test_update_receipt(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
         }
     }
 
+    let reordered_receipts = get_store_receipts(&conn).await?;
+    let first_item =
+        get_store_item_single(&conn, reordered_receipts[0].item_id()).await?;
+    assert_eq!(
+        first_item.name(),
+        "Pastry Pups",
+        "Test if returned receipt list get reordered"
+    );
+
     Ok(())
 }
