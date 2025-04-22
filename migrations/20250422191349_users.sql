@@ -1,0 +1,7 @@
+-- Up
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  name TEXT NOT NULL
+);
