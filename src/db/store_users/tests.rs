@@ -1,6 +1,7 @@
-use std::error::Error;
+use std::{error::Error, time::Duration};
 
 use sqlx::SqlitePool;
+use tokio::time::{Instant, sleep_until};
 
 use crate::prelude::*;
 
@@ -56,6 +57,57 @@ async fn test_get_users(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
         users[0].name(),
         "Jon",
         "Test if returned users are alphabetical"
+    );
+
+    Ok(())
+}
+
+#[sqlx::test]
+async fn test_delete_user(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+    let ids = init_test(&conn).await?;
+    delete_store_user(&conn, ids[0]).await?;
+
+    let users = get_store_users(&conn).await?;
+    assert_ne!(users.len(), TEST_ITEMS.len(), "Test if user was deleted");
+
+    Ok(())
+}
+
+#[sqlx::test]
+async fn test_update_user(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+    let ids = init_test(&conn).await?;
+    let update_params = [Some("Doodle"), None, None];
+
+    for (id, name) in ids.iter().zip(update_params) {
+        sleep_until(Instant::now() + Duration::from_secs(1)).await;
+        update_store_user(&conn, *id, name).await?;
+        let updated_user = get_store_user_single(&conn, *id).await?;
+        let desc = "Test if item was updated.";
+
+        match name {
+            Some(_) => {
+                assert_eq!(updated_user.name(), name.unwrap(), "{desc}");
+                assert_ne!(
+                    updated_user.created_at(),
+                    updated_user.updated_at(),
+                    "{desc}",
+                );
+            }
+            None => {
+                assert_eq!(
+                    updated_user.created_at(),
+                    updated_user.updated_at(),
+                    "{desc}"
+                );
+            }
+        }
+    }
+
+    let updated_users = get_store_users(&conn).await?;
+    assert_eq!(
+        updated_users[0].name(),
+        "Doodle",
+        "Test order of returned users updated"
     );
 
     Ok(())

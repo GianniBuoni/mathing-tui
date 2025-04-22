@@ -50,3 +50,34 @@ pub async fn get_store_users(
         .await?;
     Ok(rows)
 }
+
+pub async fn delete_store_user(
+    conn: &SqlitePool,
+    id: i64,
+) -> Result<(), Box<dyn Error>> {
+    sqlx::query!("DELETE FROM users WHERE id=?1", id)
+        .execute(conn)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn update_store_user(
+    conn: &SqlitePool,
+    id: i64,
+    name: Option<&str>,
+) -> Result<(), Box<dyn Error>> {
+    if let Some(name) = name {
+        let now = get_time()?;
+        sqlx::query!(
+            "UPDATE users SET updated_at=?1, name=?2 WHERE id=?3",
+            now,
+            name,
+            id
+        )
+        .execute(conn)
+        .await?;
+    }
+
+    Ok(())
+}
