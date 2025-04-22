@@ -1,7 +1,6 @@
-use std::{
-    error::Error,
-    time::{self, SystemTime, UNIX_EPOCH},
-};
+use std::error::Error;
+
+use crate::db::db_time::get_time;
 
 use super::*;
 
@@ -33,9 +32,7 @@ pub async fn add_store_receipt(
     item_id: i64,
     qty: i64,
 ) -> Result<StoreReceipt, Box<dyn Error>> {
-    let now = time::SystemTime::now()
-        .duration_since(UNIX_EPOCH)?
-        .as_secs() as i64;
+    let now = get_time()?;
     let res = sqlx::query_as!(
         StoreReceipt,
         "
@@ -73,9 +70,7 @@ pub async fn update_store_receipt(
     qty: Option<i64>,
 ) -> Result<(), Box<dyn Error>> {
     if let Some(qty) = qty {
-        let now = SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)?
-            .as_secs() as i64;
+        let now = get_time()?;
 
         sqlx::query!(
             "UPDATE receipts SET updated_at=?1, item_qty=?2 WHERE id=?3",

@@ -1,9 +1,8 @@
-use std::{
-    error::Error,
-    time::{self, UNIX_EPOCH},
-};
+use std::error::Error;
 
 use sqlx::{SqlitePool, query, query_as};
+
+use crate::db::db_time::get_time;
 
 use super::*;
 
@@ -33,9 +32,7 @@ pub async fn add_store_item(
     name: &str,
     price: f64,
 ) -> Result<StoreItem, Box<dyn Error>> {
-    let now = time::SystemTime::now()
-        .duration_since(UNIX_EPOCH)?
-        .as_secs() as i64;
+    let now = get_time()?;
 
     let new_item = query_as!(
         StoreItem,
@@ -80,10 +77,7 @@ pub async fn update_store_item(
 
     // begin transaction
     let mut tx = conn.begin().await?;
-
-    let now = time::SystemTime::now()
-        .duration_since(UNIX_EPOCH)?
-        .as_secs() as i64;
+    let now = get_time()?;
 
     query!("UPDATE items SET updated_at=?1 WHERE id=?2", now, id)
         .execute(&mut *tx)
