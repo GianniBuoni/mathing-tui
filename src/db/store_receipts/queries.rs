@@ -1,6 +1,6 @@
 use std::{
     error::Error,
-    time::{self, UNIX_EPOCH},
+    time::{self, SystemTime, UNIX_EPOCH},
 };
 
 use super::*;
@@ -13,6 +13,18 @@ pub async fn get_store_receipts(
     let res = sqlx::query_as!(StoreReceipt, "SELECT * FROM receipts")
         .fetch_all(conn)
         .await?;
+    Ok(res)
+}
+
+pub async fn get_store_receipt_single(
+    conn: &SqlitePool,
+    id: i64,
+) -> Result<StoreReceipt, Box<dyn Error>> {
+    let res =
+        sqlx::query_as!(StoreReceipt, "SELECT * FROM receipts WHERE id=?", id)
+            .fetch_one(conn)
+            .await?;
+
     Ok(res)
 }
 
@@ -52,5 +64,27 @@ pub async fn delete_store_receipt(
         .execute(conn)
         .await?;
 
+    Ok(())
+}
+
+pub async fn update_store_receipt(
+    conn: &SqlitePool,
+    id: i64,
+    qty: Option<i64>,
+) -> Result<(), Box<dyn Error>> {
+    if let Some(qty) = qty {
+        let now = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)?
+            .as_secs() as i64;
+
+        sqlx::query!(
+            "UPDATE receipts SET updated_at=?1, item_qty=?2 WHERE id=?3",
+            now,
+            qty,
+            id
+        )
+        .execute(conn)
+        .await?;
+    }
     Ok(())
 }

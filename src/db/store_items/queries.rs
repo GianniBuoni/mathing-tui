@@ -73,8 +73,14 @@ pub async fn update_store_item(
     name: Option<&str>,
     price: Option<f64>,
 ) -> Result<(), Box<dyn Error>> {
+    // early return if theres's nothing to update
+    if name.is_none() && price.is_none() {
+        return Ok(());
+    }
+
     // begin transaction
     let mut tx = conn.begin().await?;
+
     let now = time::SystemTime::now()
         .duration_since(UNIX_EPOCH)?
         .as_secs() as i64;

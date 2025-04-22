@@ -107,3 +107,23 @@ async fn test_update_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
+
+#[sqlx::test]
+async fn test_blank_item_update(
+    conn: SqlitePool,
+) -> Result<(), Box<dyn Error>> {
+    for (name, price) in TEST_ITEMS {
+        let new_item = add_store_item(&conn, name, price).await?;
+
+        sleep_until(Instant::now() + Duration::from_secs(1)).await;
+        update_store_item(&conn, new_item.id(), None, None).await?;
+        let updated_item = get_store_item_single(&conn, new_item.id()).await?;
+        assert_eq!(
+            updated_item.created_at(),
+            updated_item.updated_at(),
+            "None updates should've returned early"
+        );
+    }
+
+    Ok(())
+}
