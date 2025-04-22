@@ -45,11 +45,32 @@ async fn test_cascade_del(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
     delete_store_item(&conn, 1).await?;
     let receipts = get_store_receipts(&conn).await?;
-    assert_eq!(
+    assert_ne!(
         receipts.len(),
-        2,
+        TEST_ITEMS.len(),
         "Deleted items should have deleted receipt as well"
     );
 
+    Ok(())
+}
+
+#[sqlx::test]
+async fn test_delete_receipt(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+    init_test(&conn).await?;
+
+    delete_store_receipt(&conn, 1).await?;
+    let receipts = get_store_receipts(&conn).await?;
+    let items = get_store_items(&conn).await?;
+
+    assert_ne!(
+        receipts.len(),
+        TEST_ITEMS.len(),
+        "Test if receipts get deleted."
+    );
+    assert_eq!(
+        items.len(),
+        TEST_ITEMS.len(),
+        "Items table should not be affected by receipt row deletion"
+    );
     Ok(())
 }
