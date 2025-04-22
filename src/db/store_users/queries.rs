@@ -30,3 +30,23 @@ pub async fn add_store_user(
 
     Ok(row)
 }
+
+pub async fn get_store_user_single(
+    conn: &SqlitePool,
+    id: i64,
+) -> Result<StoreUser, Box<dyn Error>> {
+    let row = sqlx::query_as!(StoreUser, "SELECT * FROM users WHERE id=?1", id)
+        .fetch_one(conn)
+        .await?;
+
+    Ok(row)
+}
+
+pub async fn get_store_users(
+    conn: &SqlitePool,
+) -> Result<Vec<StoreUser>, Box<dyn Error>> {
+    let rows = sqlx::query_as!(StoreUser, "SELECT * FROM users ORDER BY name")
+        .fetch_all(conn)
+        .await?;
+    Ok(rows)
+}
