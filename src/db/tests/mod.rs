@@ -7,6 +7,7 @@ use tokio::time::{Instant, sleep_until};
 mod store_items;
 mod store_receipts;
 mod store_receipts_users;
+mod store_receits_users_init;
 mod store_users;
 
 #[sqlx::test]
