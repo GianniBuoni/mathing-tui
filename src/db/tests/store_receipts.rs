@@ -1,9 +1,4 @@
-use std::{error::Error, time::Duration};
-
-use sqlx::SqlitePool;
-use tokio::time::{Instant, sleep_until};
-
-use crate::prelude::*;
+use super::*;
 
 const TEST_ITEMS: [(&str, f64, i64); 3] = [
     ("Pizza", 10., 1),
@@ -14,7 +9,7 @@ const TEST_ITEMS: [(&str, f64, i64); 3] = [
 async fn init_test(conn: &SqlitePool) -> Result<(), Box<dyn Error>> {
     for (name, price, qty) in TEST_ITEMS {
         let new_item = add_store_item(conn, name, price).await?;
-        let new_receipt = add_store_receipt(&conn, new_item.id(), qty).await;
+        let new_receipt = add_store_receipt(&conn, new_item.id, qty).await;
         assert!(new_receipt.is_ok(), "Test successful reciept add");
     }
     Ok(())
@@ -39,8 +34,7 @@ async fn test_get_receipts(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
     for (receipt, (_, _, qty)) in receipts.iter().zip(TEST_ITEMS) {
         assert_eq!(
-            receipt.item_qty(),
-            qty,
+            receipt.item_qty, qty,
             "Test if returned receipt qty matches expected order."
         )
     }
@@ -72,10 +66,9 @@ async fn test_get_single_receipt(
     let rows = get_store_receipts(&conn).await?;
     for receipt in rows {
         let desc = "Test if getting receipt by id matches expected";
-        let receipt_by_id =
-            get_store_receipt_single(&conn, receipt.id()).await?;
-        assert_eq!(receipt.item_id(), receipt_by_id.item_id(), "{desc}");
-        assert_eq!(receipt.item_qty(), receipt_by_id.item_qty(), "{desc}");
+        let receipt_by_id = get_store_receipt_single(&conn, receipt.id).await?;
+        assert_eq!(receipt.item_id, receipt_by_id.item_id, "{desc}");
+        assert_eq!(receipt.item_qty, receipt_by_id.item_qty, "{desc}");
     }
 
     Ok(())
@@ -88,7 +81,7 @@ async fn test_delete_receipt(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     let receipts = get_store_receipts(&conn).await?;
 
     for receipt in receipts {
-        delete_store_receipt(&conn, receipt.id()).await?;
+        delete_store_receipt(&conn, receipt.id).await?;
     }
 
     let final_receipt = get_store_receipts(&conn).await?;
@@ -113,24 +106,22 @@ async fn test_update_receipt(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
     for (receipt, (qty, desc)) in receipts.iter().zip(update_params) {
         sleep_until(Instant::now() + Duration::from_secs(1)).await;
-        update_store_receipt(&conn, receipt.id(), qty).await?;
+        update_store_receipt(&conn, receipt.id, qty).await?;
         let updated_receipt =
-            get_store_receipt_single(&conn, receipt.id()).await?;
+            get_store_receipt_single(&conn, receipt.id).await?;
 
         match qty {
             Some(_) => {
-                assert_ne!(receipt.item_qty(), updated_receipt.item_qty());
+                assert_ne!(receipt.item_qty, updated_receipt.item_qty);
                 assert_ne!(
-                    updated_receipt.created_at(),
-                    updated_receipt.updated_at(),
+                    updated_receipt.created_at, updated_receipt.updated_at,
                     "{desc}"
                 );
             }
             None => {
-                assert_eq!(receipt.item_qty(), updated_receipt.item_qty());
+                assert_eq!(receipt.item_qty, updated_receipt.item_qty);
                 assert_eq!(
-                    updated_receipt.created_at(),
-                    updated_receipt.updated_at(),
+                    updated_receipt.created_at, updated_receipt.updated_at,
                     "{desc}"
                 );
             }
@@ -139,10 +130,9 @@ async fn test_update_receipt(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
     let reordered_receipts = get_store_receipts(&conn).await?;
     let first_item =
-        get_store_item_single(&conn, reordered_receipts[0].item_id()).await?;
+        get_store_item_single(&conn, reordered_receipts[0].item_id).await?;
     assert_eq!(
-        first_item.name(),
-        "Pastry Pups",
+        first_item.name, "Pastry Pups",
         "Test if returned receipt list get reordered"
     );
 

@@ -1,9 +1,4 @@
-use std::{error::Error, time::Duration};
-
-use sqlx::SqlitePool;
-use tokio::time::{Instant, sleep_until};
-
-use crate::prelude::*;
+use super::*;
 
 const TEST_ITEMS: [&str; 3] = ["Thing", "Noodle", "Jon"];
 
@@ -11,7 +6,7 @@ async fn init_test(conn: &SqlitePool) -> Result<Vec<i64>, Box<dyn Error>> {
     let mut ids = vec![];
     for name in TEST_ITEMS {
         let new_user = add_store_user(conn, name).await?;
-        ids.push(new_user.id());
+        ids.push(new_user.id);
     }
     Ok(ids)
 }
@@ -36,7 +31,7 @@ async fn test_get_user_single(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     for (id, name) in rows.iter().zip(TEST_ITEMS) {
         let desc = "Test if added user matches inputs";
         let user = get_store_user_single(&conn, *id).await?;
-        assert_eq!(user.name(), name, "{desc}");
+        assert_eq!(user.name, name, "{desc}");
     }
 
     Ok(())
@@ -54,8 +49,7 @@ async fn test_get_users(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     );
 
     assert_eq!(
-        users[0].name(),
-        "Jon",
+        users[0].name, "Jon",
         "Test if returned users are alphabetical"
     );
 
@@ -86,17 +80,15 @@ async fn test_update_user(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
         match name {
             Some(_) => {
-                assert_eq!(updated_user.name(), name.unwrap(), "{desc}");
+                assert_eq!(updated_user.name, name.unwrap(), "{desc}");
                 assert_ne!(
-                    updated_user.created_at(),
-                    updated_user.updated_at(),
+                    updated_user.created_at, updated_user.updated_at,
                     "{desc}",
                 );
             }
             None => {
                 assert_eq!(
-                    updated_user.created_at(),
-                    updated_user.updated_at(),
+                    updated_user.created_at, updated_user.updated_at,
                     "{desc}"
                 );
             }
@@ -105,8 +97,7 @@ async fn test_update_user(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
     let updated_users = get_store_users(&conn).await?;
     assert_eq!(
-        updated_users[0].name(),
-        "Doodle",
+        updated_users[0].name, "Doodle",
         "Test order of returned users updated"
     );
 

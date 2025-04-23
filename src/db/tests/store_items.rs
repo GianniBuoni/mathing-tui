@@ -1,9 +1,4 @@
-use std::{error::Error, time::Duration};
-
-use sqlx::SqlitePool;
-use tokio::time::{Instant, sleep_until};
-
-use super::prelude::*;
+use super::*;
 
 const TEST_ITEMS: [(&str, f64); 3] = [
     ("PB Pretzel", 4.99),
@@ -15,8 +10,8 @@ const TEST_ITEMS: [(&str, f64); 3] = [
 async fn test_add_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     for item in TEST_ITEMS {
         let test_item = add_store_item(&conn, item.0, item.1).await?;
-        assert_eq!(item.0, test_item.name(), "Test new item's name match.");
-        assert_eq!(item.1, test_item.price(), "Test new item's price match.");
+        assert_eq!(item.0, test_item.name, "Test new item's name match.");
+        assert_eq!(item.1, test_item.price, "Test new item's price match.");
     }
 
     let test_fetch = get_store_items(&conn).await?;
@@ -26,8 +21,7 @@ async fn test_add_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
         "Test row count and amount items added match."
     );
     assert_eq!(
-        "Chips and Dip",
-        test_fetch[0].name(),
+        "Chips and Dip", test_fetch[0].name,
         "Test db returning in alphabetical order."
     );
 
@@ -40,14 +34,14 @@ async fn test_get_item_single(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
     for (name, price) in TEST_ITEMS {
         let new_items = add_store_item(&conn, name, price).await?;
-        ids.push(new_items.id());
+        ids.push(new_items.id);
     }
 
     for ((name, price), id) in TEST_ITEMS.iter().zip(ids) {
         let item = get_store_item_single(&conn, id).await?;
         let desc = "Test get_item_single match expected id:";
-        assert_eq!(item.name(), *name, "{desc} {id}.");
-        assert_eq!(item.price(), *price, "{desc} {id}.");
+        assert_eq!(item.name, *name, "{desc} {id}.");
+        assert_eq!(item.price, *price, "{desc} {id}.");
     }
 
     Ok(())
@@ -59,7 +53,7 @@ async fn test_delete_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
     for item in TEST_ITEMS {
         let new_item = add_store_item(&conn, item.0, item.1).await?;
-        delete_store_item(&conn, new_item.id()).await?;
+        delete_store_item(&conn, new_item.id).await?;
     }
 
     let final_len = get_store_items(&conn).await?.len();
@@ -74,7 +68,7 @@ async fn test_update_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
     for (name, price) in TEST_ITEMS {
         let new_item = add_store_item(&conn, name, price).await?;
-        ids.push(new_item.id());
+        ids.push(new_item.id);
     }
 
     let update_params = [
@@ -96,11 +90,10 @@ async fn test_update_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
     for (id, (name, price, desc)) in ids.iter().zip(want) {
         let test_item = get_store_item_single(&conn, *id).await?;
-        assert_eq!(test_item.name(), name, "{desc}, id: {id}");
-        assert_eq!(test_item.price(), price, "{desc}, id: {id}");
+        assert_eq!(test_item.name, name, "{desc}, id: {id}");
+        assert_eq!(test_item.price, price, "{desc}, id: {id}");
         assert_ne!(
-            test_item.created_at(),
-            test_item.updated_at(),
+            test_item.created_at, test_item.updated_at,
             "Test update field changed, id: {id}"
         );
     }
@@ -116,11 +109,10 @@ async fn test_blank_item_update(
         let new_item = add_store_item(&conn, name, price).await?;
 
         sleep_until(Instant::now() + Duration::from_secs(1)).await;
-        update_store_item(&conn, new_item.id(), None, None).await?;
-        let updated_item = get_store_item_single(&conn, new_item.id()).await?;
+        update_store_item(&conn, new_item.id, None, None).await?;
+        let updated_item = get_store_item_single(&conn, new_item.id).await?;
         assert_eq!(
-            updated_item.created_at(),
-            updated_item.updated_at(),
+            updated_item.created_at, updated_item.updated_at,
             "None updates should've returned early"
         );
     }

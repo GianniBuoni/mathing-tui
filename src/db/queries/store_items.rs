@@ -1,15 +1,9 @@
-use std::error::Error;
-
-use sqlx::{SqlitePool, query, query_as};
-
-use crate::db::db_time::get_time;
-
 use super::*;
 
 pub async fn get_store_items(
     conn: &SqlitePool,
 ) -> Result<Vec<StoreItem>, Box<dyn Error>> {
-    let rows = query_as!(StoreItem, "SELECT * FROM items ORDER BY name")
+    let rows = sqlx::query_as!(StoreItem, "SELECT * FROM items ORDER BY name")
         .fetch_all(conn)
         .await?;
 
@@ -20,9 +14,10 @@ pub async fn get_store_item_single(
     conn: &SqlitePool,
     id: i64,
 ) -> Result<StoreItem, Box<dyn Error>> {
-    let item = query_as!(StoreItem, "SELECT * FROM items WHERE id=?1", id)
-        .fetch_one(conn)
-        .await?;
+    let item =
+        sqlx::query_as!(StoreItem, "SELECT * FROM items WHERE id=?1", id)
+            .fetch_one(conn)
+            .await?;
 
     Ok(item)
 }
@@ -34,7 +29,7 @@ pub async fn add_store_item(
 ) -> Result<StoreItem, Box<dyn Error>> {
     let now = get_time()?;
 
-    let new_item = query_as!(
+    let new_item = sqlx::query_as!(
         StoreItem,
         "
         INSERT INTO items (
@@ -58,7 +53,7 @@ pub async fn delete_store_item(
     conn: &SqlitePool,
     id: i64,
 ) -> Result<(), Box<dyn Error>> {
-    query!("DELETE FROM items WHERE id=?1", id)
+    sqlx::query!("DELETE FROM items WHERE id=?1", id)
         .execute(conn)
         .await?;
     Ok(())
@@ -79,18 +74,18 @@ pub async fn update_store_item(
     let mut tx = conn.begin().await?;
     let now = get_time()?;
 
-    query!("UPDATE items SET updated_at=?1 WHERE id=?2", now, id)
+    sqlx::query!("UPDATE items SET updated_at=?1 WHERE id=?2", now, id)
         .execute(&mut *tx)
         .await?;
 
     if let Some(name) = name {
-        query!("UPDATE items SET name=?1 WHERE id=?2", name, id)
+        sqlx::query!("UPDATE items SET name=?1 WHERE id=?2", name, id)
             .execute(&mut *tx)
             .await?;
     };
 
     if let Some(price) = price {
-        query!("UPDATE items SET price=?1 WHERE id=?2", price, id)
+        sqlx::query!("UPDATE items SET price=?1 WHERE id=?2", price, id)
             .execute(&mut *tx)
             .await?;
     };
