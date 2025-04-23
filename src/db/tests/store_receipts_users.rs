@@ -71,3 +71,33 @@ async fn test_offset(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
+
+#[sqlx::test]
+async fn test_delete_receipts_users(
+    conn: SqlitePool,
+) -> Result<(), Box<dyn Error>> {
+    init_test(&conn).await?;
+    // remove noodle from third test case
+    delete_store_receipts_users(&conn, 3, 2).await?;
+
+    let rows = get_store_receipts_joined(&conn, 0).await?;
+    assert_eq!(
+        rows.len(),
+        TEST_ITEMS.len(),
+        "Returned rows shouldn't be affected by removing one ueser from receipt"
+    );
+
+    let want = StoreJoinRow {
+        receipt_id: 3,
+        item_id: 3,
+        payee: "Jon".into(),
+        item_name: "Chips and Dip".into(),
+        item_qty: 3,
+        item_price: 5.55,
+        payee_count: 1,
+    };
+
+    assert_eq!(want, rows[2]);
+
+    Ok(())
+}

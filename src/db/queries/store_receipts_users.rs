@@ -38,3 +38,19 @@ pub async fn get_store_receipts_joined(
 
     Ok(rows)
 }
+
+pub async fn delete_store_receipts_users(
+    conn: &SqlitePool,
+    r_id: i64,
+    u_id: i64,
+) -> Result<(), Box<dyn Error>> {
+    sqlx::query!(
+        "DELETE FROM receipts_users WHERE receipt_id=?1 and user_id=?2",
+        r_id,
+        u_id,
+    )
+    .execute(conn)
+    .await?;
+
+    Ok(())
+}
