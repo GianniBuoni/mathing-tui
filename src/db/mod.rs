@@ -35,9 +35,22 @@ pub(self) struct StoreReceiptsUsers {
     user_id: i64,
 }
 
-#[derive(Debug, Clone, Default, PartialEq)]
-pub(self) struct StoreJoinRow {
-    payee: String,
+#[derive(Debug, PartialEq)]
+pub struct StoreJoinRow {
+    user_name: String,
+    user_id: i64,
+    user_count: i64,
+    item_name: String,
+    receipt_id: i64,
+    item_id: i64,
+    item_price: f64,
+    item_qty: i64,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct StoreReceiptJoined {
+    user_name: Vec<String>,
+    user_ids: Vec<i64>,
     item_name: String,
     receipt_id: i64,
     item_id: i64,
@@ -46,12 +59,11 @@ pub(self) struct StoreJoinRow {
     payee_count: i64,
 }
 
-pub struct StoreJoinDisplay {
-    payees: Vec<String>,
-    item: String,
-    item_qty: i64,
-    price: f64,
+#[derive(Debug, PartialEq)]
+pub struct StoreJoinTotal {
     receipt_id: i64,
+    user_id: i64,
+    total: f64,
 }
 
 pub struct StoreUser {

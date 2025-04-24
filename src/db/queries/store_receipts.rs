@@ -1,7 +1,9 @@
+use sqlx::{Executor, SqliteExecutor};
+
 use super::*;
 
 pub async fn get_store_receipts(
-    conn: &SqlitePool,
+    conn: impl SqliteExecutor<'_>,
 ) -> Result<Vec<StoreReceipt>, Box<dyn Error>> {
     let res = sqlx::query_as!(
         StoreReceipt,
@@ -65,7 +67,6 @@ pub async fn delete_store_receipts(
     conn: &SqlitePool,
 ) -> Result<(), Box<dyn Error>> {
     sqlx::query!("DELETE FROM receipts").execute(conn).await?;
-
     Ok(())
 }
 

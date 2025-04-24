@@ -1,7 +1,8 @@
 SELECT
-  r.id as receipt_id , r.item_id, i.name as item_name, i.price as item_price, r.item_qty,
-  GROUP_CONCAT(u.name) as payee,
-  COUNT(u.id) as payee_count
+  r.id as receipt_id , r.item_id,
+  i.name as item_name, i.price as item_price, r.item_qty,
+  u.name as user_name, u.id as user_id,
+  COUNT(u.id) as user_count
 FROM receipts_users ru
 INNER JOIN receipts r
 ON ru.receipt_id= r.id

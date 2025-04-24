@@ -24,7 +24,7 @@ pub async fn add_store_receipts_users(
     Ok(())
 }
 
-pub async fn get_store_receipts_joined(
+pub async fn get_store_joined_rows(
     conn: &SqlitePool,
     offset: i64,
 ) -> Result<Vec<StoreJoinRow>, Box<dyn Error>> {

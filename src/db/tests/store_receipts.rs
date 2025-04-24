@@ -107,7 +107,7 @@ async fn test_delete_store_receipts(
     assert_eq!(
         count.len(),
         0,
-        "Single function call should have deleted all table rows."
+        "Single function call should have deleted all table rowss."
     );
 
     Ok(())

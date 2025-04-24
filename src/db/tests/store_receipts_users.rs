@@ -1,6 +1,6 @@
 use super::*;
 
-use store_receits_users_init::{TEST_ITEMS, init_test, want};
+use store_receits_users_init::{TEST_ITEMS, expected_totals, init_test, want};
 
 #[sqlx::test]
 async fn test_add_receipts_users(
@@ -17,7 +17,7 @@ async fn test_get_receipts_joined(
     init_test(&conn).await?;
 
     let want = want();
-    let got = get_store_receipts_joined(&conn, 0).await?;
+    let got = get_store_joined_rows(&conn, 0).await?;
 
     for (want, got) in want.iter().zip(got) {
         assert_eq!(*want, got);
@@ -30,7 +30,7 @@ async fn test_get_receipts_joined(
 async fn test_delete_cascade(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     init_test(&conn).await?;
 
-    let rows = get_store_receipts_joined(&conn, 0).await?;
+    let rows = get_store_joined_rows(&conn, 0).await?;
     assert_eq!(
         rows.len(),
         TEST_ITEMS.len(),
@@ -40,7 +40,7 @@ async fn test_delete_cascade(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     //delete user Noodle
     delete_store_user(&conn, 2).await?;
 
-    let rows = get_store_receipts_joined(&conn, 0).await?;
+    let rows = get_store_joined_rows(&conn, 0).await?;
     assert_eq!(
         rows.len(),
         2,
@@ -52,7 +52,7 @@ async fn test_delete_cascade(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
     let want = &want()[0];
 
-    let rows = get_store_receipts_joined(&conn, 0).await?;
+    let rows = get_store_joined_rows(&conn, 0).await?;
     assert_eq!(
         rows.len(),
         1,
@@ -66,11 +66,11 @@ async fn test_delete_cascade(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 #[sqlx::test]
 async fn test_reset_cascades(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     init_test(&conn).await?;
-    let rows = get_store_receipts_joined(&conn, 0).await?;
+    let rows = get_store_joined_rows(&conn, 0).await?;
     assert_eq!(rows.len(), TEST_ITEMS.len(), "Confirm test cases exist.");
 
     delete_store_receipts(&conn).await?;
-    let rows = get_store_receipts_joined(&conn, 0).await?;
+    let rows = get_store_joined_rows(&conn, 0).await?;
     assert_eq!(
         rows.len(),
         0,
@@ -83,7 +83,7 @@ async fn test_reset_cascades(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 #[sqlx::test]
 async fn test_offset(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     init_test(&conn).await?;
-    let rows = get_store_receipts_joined(&conn, 1).await?;
+    let rows = get_store_joined_rows(&conn, 1).await?;
     assert_eq!(rows.len(), 2, "Test if offset by 1 affects returned rows.");
 
     Ok(())
@@ -97,7 +97,7 @@ async fn test_delete_receipts_users(
     // remove noodle from third test case
     delete_store_receipts_users(&conn, 3, 2).await?;
 
-    let rows = get_store_receipts_joined(&conn, 0).await?;
+    let rows = get_store_joined_rows(&conn, 0).await?;
     assert_eq!(
         rows.len(),
         TEST_ITEMS.len(),
@@ -107,14 +107,37 @@ async fn test_delete_receipts_users(
     let want = StoreJoinRow {
         receipt_id: 3,
         item_id: 3,
-        payee: "Jon".into(),
+        user_name: "Jon".into(),
+        user_id: 3,
         item_name: "Chips and Dip".into(),
         item_qty: 3,
         item_price: 5.55,
-        payee_count: 1,
+        user_count: 1,
     };
 
     assert_eq!(want, rows[2]);
 
     Ok(())
 }
+
+/* TODO write the function(s)!
+#[sqlx::test]
+async fn test_get_totals(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+    init_test(&conn).await?;
+    let joined_rows = get_receipts_joined(&conn);
+
+    // somehow process StoreReceiptJoined onti StoreJoinTotal stucts
+
+    assert_eq!(
+        totals.len(),
+        want.len(),
+        "Returned rows should match expected length."
+    );
+
+    for (want, got) in want.iter().zip(totals) {
+        assert_eq!(*want, got, "Final totals and ids should match");
+    }
+
+    Ok(())
+}
+*/

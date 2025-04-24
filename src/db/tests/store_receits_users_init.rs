@@ -10,34 +10,72 @@ pub const TEST_ITEMS: [(&str, f64, i64); 3] = [
 
 pub const TEST_USERS: [&str; 3] = ["Thing", "Noodle", "Jon"];
 
-pub fn want() -> [StoreJoinRow; 3] {
+pub fn want() -> [StoreJoinRow; 4] {
     [
         StoreJoinRow {
             receipt_id: 1,
             item_id: 1,
-            payee: "Jon".into(),
+            user_name: "Jon".into(),
+            user_id: 3,
             item_name: "PB Pretzel".into(),
             item_qty: 2,
             item_price: 4.99,
-            payee_count: 1,
+            user_count: 1,
         },
         StoreJoinRow {
             receipt_id: 2,
             item_id: 2,
-            payee: "Noodle".into(),
+            user_name: "Noodle".into(),
+            user_id: 2,
             item_name: "Slamin' Salmon".into(),
             item_qty: 1,
             item_price: 9.49,
-            payee_count: 1,
+            user_count: 1,
         },
         StoreJoinRow {
             receipt_id: 3,
             item_id: 3,
-            payee: "Noodle,Jon".into(),
+            user_name: "Noodle".into(),
+            user_id: 2,
             item_name: "Chips and Dip".into(),
             item_qty: 3,
             item_price: 5.55,
-            payee_count: 2,
+            user_count: 2,
+        },
+        StoreJoinRow {
+            receipt_id: 3,
+            item_id: 3,
+            user_name: "Jon".into(),
+            user_id: 3,
+            item_name: "Chips and Dip".into(),
+            item_qty: 3,
+            item_price: 5.55,
+            user_count: 2,
+        },
+    ]
+}
+
+pub fn expected_totals() -> [StoreJoinTotal; 4] {
+    [
+        StoreJoinTotal {
+            receipt_id: 1,
+            user_id: 3,
+            total: 9.98,
+        },
+        StoreJoinTotal {
+            receipt_id: 2,
+            user_id: 2,
+            total: 9.49,
+        },
+        StoreJoinTotal {
+            receipt_id: 3,
+            user_id: 3,
+            total: 8.325,
+        },
+        StoreJoinTotal {
+            receipt_id: 3,
+            user_id: 2,
+            total: 8.325,
         },
     ]
 }
