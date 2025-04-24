@@ -1,3 +1,5 @@
+use sqlx::SqliteExecutor;
+
 use super::*;
 
 pub async fn add_store_user(
@@ -26,7 +28,7 @@ pub async fn add_store_user(
 }
 
 pub async fn get_store_user_single(
-    conn: &SqlitePool,
+    conn: impl SqliteExecutor<'_>,
     id: i64,
 ) -> Result<StoreUser, Box<dyn Error>> {
     let row = sqlx::query_as!(StoreUser, "SELECT * FROM users WHERE id=?1", id)

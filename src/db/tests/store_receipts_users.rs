@@ -15,8 +15,9 @@ async fn test_get_receipts_joined(
     conn: SqlitePool,
 ) -> Result<(), Box<dyn Error>> {
     init_test(&conn).await?;
+    let users = get_store_users(&conn).await?;
 
-    let want = want();
+    let want = want(&users);
     let got = get_store_joined_rows(&conn, 0).await?;
 
     for (want, got) in want.iter().zip(got) {
@@ -29,12 +30,14 @@ async fn test_get_receipts_joined(
 #[sqlx::test]
 async fn test_delete_cascade(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     init_test(&conn).await?;
+    let users = get_store_users(&conn).await?;
+    let want = &want(&users)[0];
 
     let rows = get_store_joined_rows(&conn, 0).await?;
     assert_eq!(
         rows.len(),
         TEST_ITEMS.len(),
-        "Test initial returnd length is expected."
+        "Test initial returned length is expected."
     );
 
     //delete user Noodle
@@ -43,20 +46,18 @@ async fn test_delete_cascade(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     let rows = get_store_joined_rows(&conn, 0).await?;
     assert_eq!(
         rows.len(),
-        2,
-        "Deleted user should have affected returned rows."
+        3,
+        "Deleted user shouldn't have affected returned rows; receipts can exist w/o users assigned"
     );
 
     // delete item Chips and Dip
     delete_store_item(&conn, 3).await?;
 
-    let want = &want()[0];
-
     let rows = get_store_joined_rows(&conn, 0).await?;
     assert_eq!(
         rows.len(),
-        1,
-        "Deleted item should have affected returned rows"
+        2,
+        "Deleting an item should have affected returned rows"
     );
     assert_eq!(*want, rows[0]);
 
@@ -94,7 +95,7 @@ async fn test_delete_receipts_users(
     conn: SqlitePool,
 ) -> Result<(), Box<dyn Error>> {
     init_test(&conn).await?;
-    // remove noodle from third test case
+    // remove Noodle from third test case
     delete_store_receipts_users(&conn, 3, 2).await?;
 
     let rows = get_store_joined_rows(&conn, 0).await?;
@@ -104,11 +105,12 @@ async fn test_delete_receipts_users(
         "Returned rows shouldn't be affected by removing one ueser from receipt"
     );
 
+    let jon = get_store_user_single(&conn, 3).await?;
+
     let want = StoreJoinRow {
         receipt_id: 3,
         item_id: 3,
-        user_name: "Jon".into(),
-        user_id: 3,
+        users: vec![jon],
         item_name: "Chips and Dip".into(),
         item_qty: 3,
         item_price: 5.55,

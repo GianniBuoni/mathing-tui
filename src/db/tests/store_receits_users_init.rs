@@ -10,13 +10,12 @@ pub const TEST_ITEMS: [(&str, f64, i64); 3] = [
 
 pub const TEST_USERS: [&str; 3] = ["Thing", "Noodle", "Jon"];
 
-pub fn want() -> [StoreJoinRow; 4] {
+pub fn want(test_users: &Vec<StoreUser>) -> [StoreJoinRow; 3] {
     [
         StoreJoinRow {
             receipt_id: 1,
             item_id: 1,
-            user_name: "Jon".into(),
-            user_id: 3,
+            users: vec![test_users[0].clone()],
             item_name: "PB Pretzel".into(),
             item_qty: 2,
             item_price: 4.99,
@@ -25,8 +24,7 @@ pub fn want() -> [StoreJoinRow; 4] {
         StoreJoinRow {
             receipt_id: 2,
             item_id: 2,
-            user_name: "Noodle".into(),
-            user_id: 2,
+            users: vec![test_users[1].clone()],
             item_name: "Slamin' Salmon".into(),
             item_qty: 1,
             item_price: 9.49,
@@ -35,18 +33,7 @@ pub fn want() -> [StoreJoinRow; 4] {
         StoreJoinRow {
             receipt_id: 3,
             item_id: 3,
-            user_name: "Noodle".into(),
-            user_id: 2,
-            item_name: "Chips and Dip".into(),
-            item_qty: 3,
-            item_price: 5.55,
-            user_count: 2,
-        },
-        StoreJoinRow {
-            receipt_id: 3,
-            item_id: 3,
-            user_name: "Jon".into(),
-            user_id: 3,
+            users: vec![test_users[1].clone(), test_users[0].clone()],
             item_name: "Chips and Dip".into(),
             item_qty: 3,
             item_price: 5.55,

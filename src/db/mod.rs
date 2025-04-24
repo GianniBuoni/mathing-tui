@@ -37,26 +37,13 @@ pub(self) struct StoreReceiptsUsers {
 
 #[derive(Debug, PartialEq)]
 pub struct StoreJoinRow {
-    user_name: String,
-    user_id: i64,
-    user_count: i64,
+    users: Vec<StoreUser>,
     item_name: String,
     receipt_id: i64,
     item_id: i64,
     item_price: f64,
     item_qty: i64,
-}
-
-#[derive(Debug, PartialEq)]
-pub struct StoreReceiptJoined {
-    user_name: Vec<String>,
-    user_ids: Vec<i64>,
-    item_name: String,
-    receipt_id: i64,
-    item_id: i64,
-    item_price: f64,
-    item_qty: i64,
-    payee_count: i64,
+    user_count: usize,
 }
 
 #[derive(Debug, PartialEq)]
@@ -66,6 +53,7 @@ pub struct StoreJoinTotal {
     total: f64,
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct StoreUser {
     id: i64,
     created_at: i64,

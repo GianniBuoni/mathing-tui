@@ -25,7 +25,7 @@ async fn test_add_receipts(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 async fn test_get_receipts(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     init_test(&conn).await?;
 
-    let receipts = get_store_receipts(&conn).await?;
+    let receipts = get_store_receipts(&conn, 0).await?;
     assert_eq!(
         TEST_ITEMS.len(),
         receipts.len(),
@@ -47,7 +47,7 @@ async fn test_cascade_del(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     init_test(&conn).await?;
 
     delete_store_item(&conn, 1).await?;
-    let receipts = get_store_receipts(&conn).await?;
+    let receipts = get_store_receipts(&conn, 0).await?;
     assert_ne!(
         receipts.len(),
         TEST_ITEMS.len(),
@@ -63,7 +63,7 @@ async fn test_get_single_receipt(
 ) -> Result<(), Box<dyn Error>> {
     init_test(&conn).await?;
 
-    let rows = get_store_receipts(&conn).await?;
+    let rows = get_store_receipts(&conn, 0).await?;
     for receipt in rows {
         let desc = "Test if getting receipt by id matches expected";
         let receipt_by_id = get_store_receipt_single(&conn, receipt.id).await?;
@@ -78,13 +78,13 @@ async fn test_get_single_receipt(
 async fn test_delete_receipt(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     init_test(&conn).await?;
 
-    let receipts = get_store_receipts(&conn).await?;
+    let receipts = get_store_receipts(&conn, 0).await?;
 
     for receipt in receipts {
         delete_store_receipt_single(&conn, receipt.id).await?;
     }
 
-    let final_receipt = get_store_receipts(&conn).await?;
+    let final_receipt = get_store_receipts(&conn, 0).await?;
     let items = get_store_items(&conn).await?;
 
     assert_eq!(final_receipt.len(), 0, "Test if receipts are deleted.");
@@ -103,7 +103,7 @@ async fn test_delete_store_receipts(
     init_test(&conn).await?;
     delete_store_receipts(&conn).await?;
 
-    let count = get_store_receipts(&conn).await?;
+    let count = get_store_receipts(&conn, 0).await?;
     assert_eq!(
         count.len(),
         0,
@@ -117,7 +117,7 @@ async fn test_delete_store_receipts(
 async fn test_update_receipt(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     init_test(&conn).await?;
 
-    let receipts = get_store_receipts(&conn).await?;
+    let receipts = get_store_receipts(&conn, 0).await?;
     let update_params =
         [(Some(10 as i64), "Change qty"), (None, "Change nothing")];
 
@@ -145,7 +145,7 @@ async fn test_update_receipt(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let reordered_receipts = get_store_receipts(&conn).await?;
+    let reordered_receipts = get_store_receipts(&conn, 0).await?;
     let first_item =
         get_store_item_single(&conn, reordered_receipts[0].item_id).await?;
     assert_eq!(
