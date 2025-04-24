@@ -64,6 +64,23 @@ async fn test_delete_cascade(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
+async fn test_reset_cascades(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+    init_test(&conn).await?;
+    let rows = get_store_receipts_joined(&conn, 0).await?;
+    assert_eq!(rows.len(), TEST_ITEMS.len(), "Confirm test cases exist.");
+
+    delete_store_receipts(&conn).await?;
+    let rows = get_store_receipts_joined(&conn, 0).await?;
+    assert_eq!(
+        rows.len(),
+        0,
+        "Reset receipts table should have reset join table as well."
+    );
+
+    Ok(())
+}
+
+#[sqlx::test]
 async fn test_offset(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     init_test(&conn).await?;
     let rows = get_store_receipts_joined(&conn, 1).await?;

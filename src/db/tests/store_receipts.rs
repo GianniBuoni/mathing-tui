@@ -81,7 +81,7 @@ async fn test_delete_receipt(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     let receipts = get_store_receipts(&conn).await?;
 
     for receipt in receipts {
-        delete_store_receipt(&conn, receipt.id).await?;
+        delete_store_receipt_single(&conn, receipt.id).await?;
     }
 
     let final_receipt = get_store_receipts(&conn).await?;
@@ -93,6 +93,23 @@ async fn test_delete_receipt(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
         TEST_ITEMS.len(),
         "Deleted receipts should not affect items table"
     );
+    Ok(())
+}
+
+#[sqlx::test]
+async fn test_delete_store_receipts(
+    conn: SqlitePool,
+) -> Result<(), Box<dyn Error>> {
+    init_test(&conn).await?;
+    delete_store_receipts(&conn).await?;
+
+    let count = get_store_receipts(&conn).await?;
+    assert_eq!(
+        count.len(),
+        0,
+        "Single function call should have deleted all table rows."
+    );
+
     Ok(())
 }
 

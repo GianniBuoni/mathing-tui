@@ -50,13 +50,21 @@ pub async fn add_store_receipt(
     Ok(res)
 }
 
-pub async fn delete_store_receipt(
+pub async fn delete_store_receipt_single(
     conn: &SqlitePool,
     id: i64,
 ) -> Result<(), Box<dyn Error>> {
     sqlx::query!("DELETE FROM receipts WHERE id=?1", id)
         .execute(conn)
         .await?;
+
+    Ok(())
+}
+
+pub async fn delete_store_receipts(
+    conn: &SqlitePool,
+) -> Result<(), Box<dyn Error>> {
+    sqlx::query!("DELETE FROM receipts").execute(conn).await?;
 
     Ok(())
 }
