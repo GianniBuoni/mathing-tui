@@ -1,12 +1,31 @@
 use super::*;
 
-use store_receits_users_init::{TEST_ITEMS, expected_totals, init_test, want};
+use store_receits_users_init::{
+    TEST_ITEMS, expected_sql_rows, expected_totals, init_test, want,
+};
 
 #[sqlx::test]
 async fn test_add_receipts_users(
     conn: SqlitePool,
 ) -> Result<(), Box<dyn Error>> {
     init_test(&conn).await?;
+    Ok(())
+}
+
+#[sqlx::test]
+async fn test_get_reciepts_users_raw(
+    conn: SqlitePool,
+) -> Result<(), Box<dyn Error>> {
+    init_test(&conn).await?;
+    let raw_rows = get_store_joined_raw(&conn, 0).await?;
+
+    assert_eq!(raw_rows.len(), 3);
+
+    let want = expected_sql_rows();
+    for (want, got) in want.into_iter().zip(raw_rows) {
+        assert_eq!(want, got);
+    }
+
     Ok(())
 }
 
@@ -20,8 +39,8 @@ async fn test_get_receipts_joined(
     let want = want(&users);
     let got = get_store_joined_rows(&conn, 0).await?;
 
-    for (want, got) in want.iter().zip(got) {
-        assert_eq!(*want, got);
+    for (want, got) in want.into_iter().zip(got) {
+        assert_eq!(want, got);
     }
 
     Ok(())
@@ -46,8 +65,8 @@ async fn test_delete_cascade(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     let rows = get_store_joined_rows(&conn, 0).await?;
     assert_eq!(
         rows.len(),
-        3,
-        "Deleted user shouldn't have affected returned rows; receipts can exist w/o users assigned"
+        2,
+        "Deleted user should've affected returned rows"
     );
 
     // delete item Chips and Dip
@@ -56,7 +75,7 @@ async fn test_delete_cascade(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     let rows = get_store_joined_rows(&conn, 0).await?;
     assert_eq!(
         rows.len(),
-        2,
+        1,
         "Deleting an item should have affected returned rows"
     );
     assert_eq!(*want, rows[0]);

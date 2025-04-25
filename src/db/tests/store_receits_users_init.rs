@@ -10,6 +10,38 @@ pub const TEST_ITEMS: [(&str, f64, i64); 3] = [
 
 pub const TEST_USERS: [&str; 3] = ["Thing", "Noodle", "Jon"];
 
+pub fn expected_sql_rows() -> [StoreJoinRaw; 3] {
+    [
+        StoreJoinRaw {
+            item_name: "PB Pretzel".into(),
+            user_ids: "3".into(),
+            receipt_id: 1,
+            item_id: 1,
+            item_price: 4.99,
+            item_qty: 2,
+            user_count: 1,
+        },
+        StoreJoinRaw {
+            item_name: "Slamin' Salmon".into(),
+            user_ids: "2".into(),
+            receipt_id: 2,
+            item_id: 2,
+            item_price: 9.49,
+            item_qty: 1,
+            user_count: 1,
+        },
+        StoreJoinRaw {
+            item_name: "Chips and Dip".into(),
+            user_ids: "2,3".into(),
+            receipt_id: 3,
+            item_id: 3,
+            item_price: 5.55,
+            item_qty: 3,
+            user_count: 2,
+        },
+    ]
+}
+
 pub fn want(test_users: &Vec<StoreUser>) -> [StoreJoinRow; 3] {
     [
         StoreJoinRow {

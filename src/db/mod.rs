@@ -4,6 +4,7 @@ use std::error::Error;
 
 mod connection;
 mod db_time;
+mod processing;
 mod queries;
 #[cfg(test)]
 mod tests;
@@ -36,6 +37,17 @@ pub(self) struct StoreReceiptsUsers {
 }
 
 #[derive(Debug, PartialEq)]
+pub struct StoreJoinRaw {
+    item_name: String,
+    user_ids: String,
+    receipt_id: i64,
+    item_id: i64,
+    item_price: f64,
+    item_qty: i64,
+    user_count: i64,
+}
+
+#[derive(Debug, PartialEq)]
 pub struct StoreJoinRow {
     users: Vec<StoreUser>,
     item_name: String,
@@ -43,7 +55,7 @@ pub struct StoreJoinRow {
     item_id: i64,
     item_price: f64,
     item_qty: i64,
-    user_count: usize,
+    user_count: i64,
 }
 
 #[derive(Debug, PartialEq)]

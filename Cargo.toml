@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+futures = "0.3.31"
 ratatui = "0.29.0"
 sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "tls-native-tls"] }
 tokio = { version = "1.44.2", features = ["full"] }
