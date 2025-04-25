@@ -72,27 +72,14 @@ pub fn expected_joined_rows(test_users: &Vec<StoreUser>) -> [StoreJoinRow; 3] {
     ]
 }
 
-pub fn expected_totals() -> [StoreJoinTotal; 4] {
-    [
-        StoreJoinTotal {
-            receipt_id: 1,
-            user_id: 3,
-            total: 9.98,
-        },
-        StoreJoinTotal {
-            receipt_id: 2,
-            user_id: 2,
-            total: 9.49,
-        },
-        StoreJoinTotal {
-            receipt_id: 3,
-            user_id: 3,
-            total: 8.325,
-        },
-        StoreJoinTotal {
-            receipt_id: 3,
-            user_id: 2,
-            total: 8.325,
-        },
+pub fn intermediate_totals() -> Vec<HashMap<i64, Decimal>> {
+    vec![
+        HashMap::from([(3, dec!(9.98))]),
+        HashMap::from([(2, dec!(9.49))]),
+        HashMap::from([(2, dec!(8.32)), (3, dec!(8.32))]),
     ]
+}
+
+pub fn expected_totals() -> HashMap<i64, Decimal> {
+    HashMap::from([(3, dec!(18.30)), (2, dec!(17.81))])
 }

@@ -1,7 +1,8 @@
 #![cfg_attr(debug_assertions, allow(dead_code, unused_imports))]
-use std::error::Error;
+use std::{collections::HashMap, error::Error};
 
 use futures::future::try_join_all;
+use rust_decimal::prelude::*;
 use sqlx::SqlitePool;
 
 mod connection;
@@ -62,13 +63,6 @@ pub struct StoreJoinRow {
     user_count: i64,
 }
 
-#[derive(Debug, PartialEq)]
-pub struct StoreJoinTotal {
-    receipt_id: i64,
-    user_id: i64,
-    total: f64,
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct StoreUser {
     id: i64,
@@ -76,3 +70,6 @@ pub struct StoreUser {
     updated_at: i64,
     name: String,
 }
+
+#[derive(Debug, Default)]
+pub struct StoreTotal(HashMap<i64, Decimal>);

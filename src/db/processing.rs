@@ -24,3 +24,27 @@ impl StoreJoinRaw {
         })
     }
 }
+
+impl StoreJoinRow {
+    pub fn calc(&self) -> HashMap<i64, Decimal> {
+        let mut out = HashMap::new();
+
+        if let Some(total) = Decimal::from_f64(
+            self.item_price * self.item_qty as f64 / self.user_count as f64,
+        ) {
+            self.users.iter().for_each(|u| {
+                out.insert(u.id, total.round_dp(2));
+            });
+        };
+
+        out
+    }
+}
+
+impl StoreTotal {
+    pub fn add(&mut self, other: HashMap<i64, Decimal>) {
+        other.into_iter().for_each(|(key, val)| {
+            self.0.entry(key).and_modify(|e| *e += val).or_insert(val);
+        });
+    }
+}

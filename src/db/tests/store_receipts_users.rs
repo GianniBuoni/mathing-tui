@@ -138,24 +138,22 @@ async fn test_delete_receipts_users(
     Ok(())
 }
 
-/* TODO write the function(s)!
 #[sqlx::test]
 async fn test_get_totals(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
     init_test(&conn).await?;
-    let joined_rows = get_receipts_joined(&conn);
+    let want = expected_totals();
+    let mut got = StoreTotal::default();
 
-    // somehow process StoreReceiptJoined onti StoreJoinTotal stucts
+    get_store_joined_rows(&conn, 0)
+        .await?
+        .into_iter()
+        .zip(intermediate_totals())
+        .for_each(|(row, want)| {
+            assert_eq!(want, row.calc());
+            got.add(row.calc());
+        });
 
-    assert_eq!(
-        totals.len(),
-        want.len(),
-        "Returned rows should match expected length."
-    );
-
-    for (want, got) in want.iter().zip(totals) {
-        assert_eq!(*want, got, "Final totals and ids should match");
-    }
+    assert_eq!(want, got.0, "Test if all the math is right ✨");
 
     Ok(())
 }
-*/
