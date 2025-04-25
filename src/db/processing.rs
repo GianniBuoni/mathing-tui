@@ -1,5 +1,3 @@
-use futures::future::try_join_all;
-
 use super::*;
 
 impl StoreJoinRaw {
@@ -7,7 +5,6 @@ impl StoreJoinRaw {
         &self,
         conn: &SqlitePool,
     ) -> Result<StoreJoinRow, Box<dyn Error>> {
-        // get ids
         let users = try_join_all(self.user_ids.split(",").map(async |s| {
             Ok::<StoreUser, Box<dyn Error>>({
                 let id = s.parse::<i64>()?;

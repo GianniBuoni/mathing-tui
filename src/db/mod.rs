@@ -1,6 +1,8 @@
 #![cfg_attr(debug_assertions, allow(dead_code, unused_imports))]
-use sqlx::SqlitePool;
 use std::error::Error;
+
+use futures::future::try_join_all;
+use sqlx::SqlitePool;
 
 mod connection;
 mod db_time;
@@ -13,6 +15,7 @@ pub(self) use connection::get_db;
 pub(self) use db_time::get_time;
 pub(self) use queries::prelude::*;
 
+#[derive(Debug, PartialEq)]
 pub struct StoreItem {
     id: i64,
     created_at: i64,
@@ -21,6 +24,7 @@ pub struct StoreItem {
     price: f64,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct StoreReceipt {
     id: i64,
     created_at: i64,

@@ -1,56 +1,59 @@
 use super::*;
 
-const TEST_ITEMS: [(&str, f64, i64); 3] = [
-    ("Pizza", 10., 1),
-    ("Pastry Pups", 4.49, 2),
-    ("Tacquitos", 3.49, 4),
-];
+async fn init_test(
+    conn: &SqlitePool,
+) -> Result<Vec<StoreReceipt>, Box<dyn Error>> {
+    let mut rows = vec![];
 
-async fn init_test(conn: &SqlitePool) -> Result<(), Box<dyn Error>> {
-    for (name, price, qty) in TEST_ITEMS {
-        let new_item = add_store_item(conn, name, price).await?;
-        let new_receipt = add_store_receipt(&conn, new_item.id, qty).await;
-        assert!(new_receipt.is_ok(), "Test successful reciept add");
+    for (name, price, qty) in TEST_ITEMS.into_iter() {
+        let item = add_store_item(conn, name, price).await?;
+        sleep_until(Instant::now() + Duration::from_secs(1)).await;
+        let r = add_store_receipt(conn, item.id, qty).await?;
+        rows.push(r);
     }
-    Ok(())
+
+    Ok(rows)
 }
 
 #[sqlx::test]
 async fn test_add_receipts(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
-    init_test(&conn).await?;
+    assert!(
+        init_test(&conn).await.is_ok(),
+        "Test if receipts are added."
+    );
     Ok(())
 }
 
 #[sqlx::test]
 async fn test_get_receipts(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
-    init_test(&conn).await?;
+    let want = init_test(&conn).await?;
+    let got = get_store_receipts(&conn, 0).await?;
 
-    let receipts = get_store_receipts(&conn, 0).await?;
     assert_eq!(
-        TEST_ITEMS.len(),
-        receipts.len(),
+        want.len(),
+        got.len(),
         "Test added receipt match len of items"
     );
 
-    for (receipt, (_, _, qty)) in receipts.iter().zip(TEST_ITEMS) {
+    want.into_iter().zip(got).for_each(|(want, got)| {
         assert_eq!(
-            receipt.item_qty, qty,
+            want, got,
             "Test if returned receipt qty matches expected order."
         )
-    }
+    });
 
     Ok(())
 }
 
 #[sqlx::test]
 async fn test_cascade_del(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
-    init_test(&conn).await?;
+    let init = init_test(&conn).await?;
 
     delete_store_item(&conn, 1).await?;
     let receipts = get_store_receipts(&conn, 0).await?;
     assert_ne!(
         receipts.len(),
-        TEST_ITEMS.len(),
+        init.len(),
         "Deleted items should affect receipt table"
     );
 
@@ -61,38 +64,42 @@ async fn test_cascade_del(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 async fn test_get_single_receipt(
     conn: SqlitePool,
 ) -> Result<(), Box<dyn Error>> {
-    init_test(&conn).await?;
-
-    let rows = get_store_receipts(&conn, 0).await?;
-    for receipt in rows {
-        let desc = "Test if getting receipt by id matches expected";
-        let receipt_by_id = get_store_receipt_single(&conn, receipt.id).await?;
-        assert_eq!(receipt.item_id, receipt_by_id.item_id, "{desc}");
-        assert_eq!(receipt.item_qty, receipt_by_id.item_qty, "{desc}");
-    }
+    try_join_all(init_test(&conn).await?.into_iter().map(async |want| {
+        Ok::<(), Box<dyn Error>>({
+            let got = get_store_receipt_single(&conn, want.id).await?;
+            assert_eq!(want, got, "Test if id matches expected receipt");
+        })
+    }))
+    .await?;
 
     Ok(())
 }
 
 #[sqlx::test]
 async fn test_delete_receipt(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
-    init_test(&conn).await?;
+    let receipts = init_test(&conn).await?;
+    delete_store_receipt_single(&conn, receipts[0].id).await?;
 
-    let receipts = get_store_receipts(&conn, 0).await?;
+    let got =
+        try_join_all(get_store_receipts(&conn, 0).await?.into_iter().map(
+            async |r| {
+                Ok::<String, Box<dyn Error>>({
+                    get_store_item_single(&conn, r.item_id).await?.name
+                })
+            },
+        ))
+        .await?;
 
-    for receipt in receipts {
-        delete_store_receipt_single(&conn, receipt.id).await?;
-    }
-
-    let final_receipt = get_store_receipts(&conn, 0).await?;
-    let items = get_store_items(&conn).await?;
-
-    assert_eq!(final_receipt.len(), 0, "Test if receipts are deleted.");
-    assert_eq!(
-        items.len(),
-        TEST_ITEMS.len(),
-        "Deleted receipts should not affect items table"
+    assert_ne!(
+        receipts.len(),
+        got.len(),
+        "Test if receipt row was deleted."
     );
+    assert!(
+        !got.contains(&"PB Pretzel".to_string()),
+        "Test if expected receipt row was deleted"
+    );
+
     Ok(())
 }
 
@@ -103,9 +110,8 @@ async fn test_delete_store_receipts(
     init_test(&conn).await?;
     delete_store_receipts(&conn).await?;
 
-    let count = get_store_receipts(&conn, 0).await?;
     assert_eq!(
-        count.len(),
+        get_store_receipts(&conn, 0).await?.len(),
         0,
         "Single function call should have deleted all table rowss."
     );
@@ -115,41 +121,44 @@ async fn test_delete_store_receipts(
 
 #[sqlx::test]
 async fn test_update_receipt(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
-    init_test(&conn).await?;
-
-    let receipts = get_store_receipts(&conn, 0).await?;
     let update_params =
         [(Some(10 as i64), "Change qty"), (None, "Change nothing")];
 
-    for (receipt, (qty, desc)) in receipts.iter().zip(update_params) {
-        sleep_until(Instant::now() + Duration::from_secs(1)).await;
-        update_store_receipt(&conn, receipt.id, qty).await?;
-        let updated_receipt =
-            get_store_receipt_single(&conn, receipt.id).await?;
+    try_join_all(init_test(&conn).await?.into_iter().zip(update_params).map(
+        async |(receipt, (qty, desc))| {
+            Ok::<(), Box<dyn Error>>({
+                sleep_until(Instant::now() + Duration::from_secs(1)).await;
+                update_store_receipt(&conn, receipt.id, qty).await?;
+                let updated_receipt =
+                    get_store_receipt_single(&conn, receipt.id).await?;
 
-        match qty {
-            Some(_) => {
-                assert_ne!(receipt.item_qty, updated_receipt.item_qty);
-                assert_ne!(
-                    updated_receipt.created_at, updated_receipt.updated_at,
-                    "{desc}"
-                );
-            }
-            None => {
-                assert_eq!(receipt.item_qty, updated_receipt.item_qty);
-                assert_eq!(
-                    updated_receipt.created_at, updated_receipt.updated_at,
-                    "{desc}"
-                );
-            }
-        }
-    }
+                match qty {
+                    Some(_) => {
+                        assert_ne!(receipt.item_qty, updated_receipt.item_qty);
+                        assert_ne!(
+                            updated_receipt.created_at,
+                            updated_receipt.updated_at,
+                            "{desc}"
+                        );
+                    }
+                    None => {
+                        assert_eq!(receipt.item_qty, updated_receipt.item_qty);
+                        assert_eq!(
+                            updated_receipt.created_at,
+                            updated_receipt.updated_at,
+                            "{desc}"
+                        );
+                    }
+                }
+            })
+        },
+    ))
+    .await?;
 
-    let reordered_receipts = get_store_receipts(&conn, 0).await?;
-    let first_item =
-        get_store_item_single(&conn, reordered_receipts[0].item_id).await?;
+    let first_item = &get_store_receipts(&conn, 0).await?[0];
+    let first_item = get_store_item_single(&conn, first_item.item_id).await?;
     assert_eq!(
-        first_item.name, "Pastry Pups",
+        first_item.name, "Slamin' Salmon",
         "Test if returned receipt list get reordered"
     );
 

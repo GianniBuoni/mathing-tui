@@ -1,28 +1,41 @@
 use super::*;
 
-const TEST_ITEMS: [(&str, f64); 3] = [
-    ("PB Pretzel", 4.99),
-    ("Slamin' Salmon", 9.49),
-    ("Chips and Dip", 5.55),
-];
+async fn init_test(
+    conn: &SqlitePool,
+) -> Result<Vec<StoreItem>, Box<dyn Error>> {
+    let rows =
+        try_join_all(TEST_ITEMS.into_iter().map(async |(name, price, _)| {
+            Ok::<StoreItem, Box<dyn Error>>(
+                add_store_item(conn, name, price).await?,
+            )
+        }))
+        .await?;
+
+    Ok(rows)
+}
 
 #[sqlx::test]
 async fn test_add_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
-    for item in TEST_ITEMS {
-        let test_item = add_store_item(&conn, item.0, item.1).await?;
-        assert_eq!(item.0, test_item.name, "Test new item's name match.");
-        assert_eq!(item.1, test_item.price, "Test new item's price match.");
-    }
+    assert!(
+        init_test(&conn).await.is_ok(),
+        "Test if items were added to db"
+    );
+    Ok(())
+}
 
-    let test_fetch = get_store_items(&conn).await?;
+#[sqlx::test]
+async fn test_get_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+    let unordered = init_test(&conn).await?;
+    let ordered = get_store_items(&conn).await?;
+
     assert_eq!(
-        TEST_ITEMS.len(),
-        test_fetch.len(),
+        ordered.len(),
+        unordered.len(),
         "Test row count and amount items added match."
     );
     assert_eq!(
-        "Chips and Dip", test_fetch[0].name,
-        "Test db returning in alphabetical order."
+        "Chips and Dip", ordered[0].name,
+        "Test if returned items are ordered alphabetically."
     );
 
     Ok(())
@@ -30,73 +43,72 @@ async fn test_add_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 
 #[sqlx::test]
 async fn test_get_item_single(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
-    let mut ids = vec![];
-
-    for (name, price) in TEST_ITEMS {
-        let new_items = add_store_item(&conn, name, price).await?;
-        ids.push(new_items.id);
-    }
-
-    for ((name, price), id) in TEST_ITEMS.iter().zip(ids) {
-        let item = get_store_item_single(&conn, id).await?;
-        let desc = "Test get_item_single match expected id:";
-        assert_eq!(item.name, *name, "{desc} {id}.");
-        assert_eq!(item.price, *price, "{desc} {id}.");
-    }
+    try_join_all(init_test(&conn).await?.into_iter().map(async |want| {
+        Ok::<(), Box<dyn Error>>({
+            let got = get_store_item_single(&conn, want.id).await?;
+            assert_eq!(want, got, "Teet if id returns expected item");
+        })
+    }))
+    .await?;
 
     Ok(())
 }
 
 #[sqlx::test]
 async fn test_delete_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
-    let original_len = get_store_items(&conn).await?.len();
+    let added_items = init_test(&conn).await?;
+    delete_store_item(&conn, added_items[0].id).await?;
 
-    for item in TEST_ITEMS {
-        let new_item = add_store_item(&conn, item.0, item.1).await?;
-        delete_store_item(&conn, new_item.id).await?;
-    }
+    let items = get_store_items(&conn)
+        .await?
+        .into_iter()
+        .map(|item| item.name)
+        .collect::<Vec<String>>();
 
-    let final_len = get_store_items(&conn).await?.len();
-    assert_eq!(original_len, final_len, "Test adding removing rows.");
+    assert_ne!(added_items.len(), items.len(), "Test if item was deleted");
+    assert!(!items.contains(&"PB Pretzel".to_string()));
 
     Ok(())
 }
 
 #[sqlx::test]
 async fn test_update_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
-    let mut ids = vec![];
-
-    for (name, price) in TEST_ITEMS {
-        let new_item = add_store_item(&conn, name, price).await?;
-        ids.push(new_item.id);
-    }
-
     let update_params = [
         (Some("Pretzel"), Some(6.99)),
         (Some("Salmon"), None),
         (None, Some(100.)),
     ];
-
-    for (id, (name, price)) in ids.iter().zip(update_params) {
-        sleep_until(Instant::now() + Duration::from_secs(1)).await;
-        update_store_item(&conn, *id, name, price).await?;
-    }
-
     let want = [
         ("Pretzel", 6.99, "Test update name and price"),
         ("Salmon", 9.49, "Test update name only"),
         ("Chips and Dip", 100., "Test update price only"),
     ];
+    let got = try_join_all(
+        init_test(&conn).await?.into_iter().zip(update_params).map(
+            async |(item, (name, price)): (
+                StoreItem,
+                (Option<&str>, Option<f64>),
+            )| {
+                Ok::<StoreItem, Box<dyn Error>>({
+                    sleep_until(Instant::now() + Duration::from_secs(1)).await;
+                    update_store_item(&conn, item.id, name, price).await?;
+                    get_store_item_single(&conn, item.id).await?
+                })
+            },
+        ),
+    )
+    .await?;
 
-    for (id, (name, price, desc)) in ids.iter().zip(want) {
-        let test_item = get_store_item_single(&conn, *id).await?;
-        assert_eq!(test_item.name, name, "{desc}, id: {id}");
-        assert_eq!(test_item.price, price, "{desc}, id: {id}");
-        assert_ne!(
-            test_item.created_at, test_item.updated_at,
-            "Test update field changed, id: {id}"
-        );
-    }
+    want.into_iter()
+        .zip(got)
+        .for_each(|((name, price, desc), got)| {
+            assert_eq!(name, got.name, "{desc}");
+            assert_eq!(price, got.price, "{desc}");
+            assert_ne!(
+                got.created_at, got.updated_at,
+                "Test if updated_at was updated"
+            );
+        });
 
     Ok(())
 }
@@ -105,7 +117,7 @@ async fn test_update_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 async fn test_blank_item_update(
     conn: SqlitePool,
 ) -> Result<(), Box<dyn Error>> {
-    for (name, price) in TEST_ITEMS {
+    for (name, price, _) in TEST_ITEMS {
         let new_item = add_store_item(&conn, name, price).await?;
 
         sleep_until(Instant::now() + Duration::from_secs(1)).await;
