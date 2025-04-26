@@ -1,4 +1,4 @@
-use sqlx::{Executor, SqliteExecutor};
+use sqlx::SqliteExecutor;
 
 use super::*;
 

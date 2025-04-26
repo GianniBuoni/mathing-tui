@@ -1,4 +1,3 @@
-#![cfg_attr(debug_assertions, allow(dead_code, unused_imports))]
 use std::{collections::HashMap, error::Error};
 
 use futures::future::try_join_all;
@@ -12,7 +11,12 @@ mod queries;
 #[cfg(test)]
 mod tests;
 
-pub(self) use connection::get_db;
+pub mod prelude {
+    pub use super::connection::get_db;
+    pub use super::queries::prelude::*;
+    pub use super::{StoreItem, StoreJoinRow, StoreTotal, StoreUser};
+}
+
 pub(self) use db_time::get_time;
 pub(self) use queries::prelude::*;
 
@@ -32,13 +36,6 @@ pub struct StoreReceipt {
     updated_at: i64,
     item_id: i64,
     item_qty: i64,
-}
-
-pub(self) struct StoreReceiptsUsers {
-    created_at: i64,
-    updated_at: i64,
-    receipt_id: i64,
-    user_id: i64,
 }
 
 #[derive(Debug, PartialEq)]
