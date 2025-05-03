@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, ui::model_block};
 
 pub(crate) mod prelude {
     pub(crate) use super::Receipt;
@@ -32,5 +32,8 @@ impl Model for Receipt {
     }
     fn toggle(&mut self) {
         self.active = !self.active
+    }
+    fn render(&self, area: Rect, buf: &mut Buffer) {
+        model_block(self).render(area, buf);
     }
 }

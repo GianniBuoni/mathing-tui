@@ -13,4 +13,5 @@ mod events;
 mod items;
 mod model;
 mod receipt;
+mod table;
 mod ui;

@@ -23,14 +23,9 @@ impl Widget for &App {
         .spacing(1)
         .areas(main_block.inner(area));
 
-        self.list_models().iter().zip(chunks).for_each(
+        self.list_models().into_iter().zip(chunks).for_each(
             |(model, inner_area)| {
-                let color = if model.is_active() {
-                    Color::Reset
-                } else {
-                    Color::DarkGray
-                };
-                model_block(color, model).render(inner_area, buf);
+                model.render(inner_area, buf);
             },
         );
 
@@ -38,9 +33,19 @@ impl Widget for &App {
     }
 }
 
-pub fn model_block(color: Color, model: &Box<dyn Model>) -> Block {
+pub fn model_block<'a>(model: &impl Model) -> Block<'a> {
+    let color = if model.is_active() {
+        Color::Reset
+    } else {
+        Color::DarkGray
+    };
     Block::bordered()
         .border_style(Style::default().fg(color))
         .border_type(BorderType::Rounded)
         .title(model.title())
+}
+
+pub fn render_list(area: Rect, buf: &mut Buffer) {
+    use ratatui::prelude::Widget;
+    Widget::render(List::new(vec!["Thing", "Thing 1"]), area, buf);
 }
