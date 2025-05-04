@@ -24,3 +24,6 @@ jobs:
 
       - name: Build shell and test enviroment
         run: devenv test
+
+      - name: Run tests
+        run: just test

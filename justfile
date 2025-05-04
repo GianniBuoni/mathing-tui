@@ -1,10 +1,9 @@
 run:
-  just check
-  just test
+  cargo check
+  cargo test
   cargo run
 
 test:
-  cargo test
-
-check:
   cargo check
+  cargo clippy -- -Dwarnings
+  cargo test
