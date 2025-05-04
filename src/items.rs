@@ -40,7 +40,7 @@ impl Model for Items {
         self.active = !self.active
     }
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        let block = model_block(self);
+        let block = model_block(self).padding(Padding::uniform(1));
         let inner_area = block.inner(area);
 
         let display_items = [

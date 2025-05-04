@@ -1,11 +1,10 @@
-use std::{borrow::Cow, error::Error, rc::Rc};
+use std::{borrow::Cow, rc::Rc};
 
-use rust_decimal::{Decimal, prelude::FromPrimitive};
+use rust_decimal::Decimal;
 
 use crate::prelude::*;
 
 pub struct AppColors {
-    buffer_bg: Color,
     header_bg: Color,
     header_fg: Color,
     row_fg: Color,
@@ -16,7 +15,6 @@ pub struct AppColors {
 impl AppColors {
     fn new() -> Self {
         Self {
-            buffer_bg: Color::Reset,
             header_bg: Color::Yellow,
             header_fg: Color::Black,
             row_fg: Color::Reset,
@@ -127,6 +125,10 @@ where
             StatefulWidget::render(t, area, buf, &mut self.state);
         }
     }
-    fn next_row(&mut self) {}
-    fn prev_row(&mut self) {}
+    fn next_row(&mut self) {
+        todo!()
+    }
+    fn prev_row(&mut self) {
+        todo!()
+    }
 }

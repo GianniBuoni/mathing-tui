@@ -44,8 +44,3 @@ pub fn model_block<'a>(model: &impl Model) -> Block<'a> {
         .border_type(BorderType::Rounded)
         .title(model.title())
 }
-
-pub fn render_list(area: Rect, buf: &mut Buffer) {
-    use ratatui::prelude::Widget;
-    Widget::render(List::new(vec!["Thing", "Thing 1"]), area, buf);
-}
