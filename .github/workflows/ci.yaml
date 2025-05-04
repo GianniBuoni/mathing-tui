@@ -5,6 +5,9 @@ on:
     branches: [main]
 
 jobs:
+  defaults:
+    run:
+      shell: devenv shell bash -- -e {0}
   tests:
     name: Tests
     runs-on: ubuntu-latest
@@ -20,6 +23,7 @@ jobs:
         with:
           name: devenv
       - name: Setup devenv
+        shell: bash
         run: nix profile install nixpkgs#devenv
 
       - name: Build shell and test enviroment
