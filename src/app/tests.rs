@@ -52,3 +52,21 @@ fn test_view_data() {
         );
     }
 }
+
+#[test]
+fn test_model_order() {
+    // Note this test does not 100% catch that it's sorted.
+    // The underlying hashmap may or may not get collected
+    // in the correct order the amount of times its iterated.
+    // More iterations do not seem to make the test more likely
+    // to catch issues
+
+    let app = App::default();
+    let desc = "Test models are displayed in the correct order";
+
+    for _ in 0..100 {
+        let models = app.list_models();
+        assert_eq!(models[0].index(), 0, "{desc}");
+        assert_eq!(models[1].index(), 1, "{desc}");
+    }
+}
