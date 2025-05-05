@@ -30,7 +30,7 @@ impl Widget for &App {
                 } else {
                     Color::DarkGray
                 };
-                model_block(color, model).render(inner_area, buf);
+                model_block(color, *model).render(inner_area, buf);
             },
         );
 
@@ -38,7 +38,7 @@ impl Widget for &App {
     }
 }
 
-pub fn model_block(color: Color, model: &Box<dyn Model>) -> Block {
+pub fn model_block(color: Color, model: &dyn Model) -> Block {
     Block::bordered()
         .border_style(Style::default().fg(color))
         .border_type(BorderType::Rounded)
