@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT * FROM receipts ORDER BY updated_at LIMIT 20 OFFSET ?1",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "item_id",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "item_qty",
+        "ordinal": 4,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "9be963d6524a43fc36cc86f85e82cdcb1303a54f839709017e98be236126d685"
+}

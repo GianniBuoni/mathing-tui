@@ -1,10 +1,12 @@
 run:
-  just check
-  just test
+  cargo check
+  cargo test
   cargo run
 
 test:
+  cargo check
   cargo test
 
-check:
-  cargo check
+lint:
+  test -z $(cargo fmt)
+  cargo clippy -- -Dwarnings

@@ -28,7 +28,7 @@ impl App {
     }
 
     fn toggle_current_model(&mut self) {
-        if let Some(item) = self.models.get_mut(&mut self.current_model) {
+        if let Some(item) = self.models.get_mut(&self.current_model) {
             item.toggle();
         }
     }

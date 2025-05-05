@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT * FROM receipts WHERE id=?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "item_id",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "item_qty",
+        "ordinal": 4,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "8671510a55a55e50a7d1b4a23fdfba807d85c7cd3b1f99ca850222860f6c3b22"
+}

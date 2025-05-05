@@ -4,6 +4,9 @@ use futures::future::try_join_all;
 use rust_decimal::prelude::*;
 use sqlx::SqlitePool;
 
+use db_time::get_time;
+use queries::prelude::*;
+
 mod connection;
 mod db_time;
 mod processing;
@@ -16,9 +19,6 @@ pub mod prelude {
     pub use super::queries::prelude::*;
     pub use super::{StoreItem, StoreJoinRow, StoreTotal, StoreUser};
 }
-
-pub(self) use db_time::get_time;
-pub(self) use queries::prelude::*;
 
 #[derive(Debug, PartialEq)]
 pub struct StoreItem {

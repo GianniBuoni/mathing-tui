@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        INSERT INTO receipts (\n            created_at, updated_at, item_id, item_qty\n        ) VALUES (\n            ?1, ?2, ?3, ?4\n        ) RETURNING *\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "item_id",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "item_qty",
+        "ordinal": 4,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "8bc5a9f8faa45957208c5ca12e82c2f113568b770edf3fad280bbc0bea4220e9"
+}

@@ -1,0 +1,70 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: devenv shell bash -- -e {0}
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v26
+
+      - uses: cachix/cachix-action@v14
+        with:
+          name: devenv
+
+      - name: Setup devenv
+        shell: bash
+        run: nix profile install nixpkgs#devenv
+
+      - name: Add sqlx via cargo
+        run: cargo install sqlx-cli
+
+      - name: Build shell and test enviroment
+        run: devenv test
+
+      - name: Set up test db
+        run: touch data.db
+
+      - name: Run test migrations
+        run: sqlx migrate run
+
+      - name: Run tests
+        run: just test
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: devenv shell bash -- -e {0}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v26
+
+      - uses: cachix/cachix-action@v14
+        with:
+          name: devenv
+
+      - name: Setup devenv
+        shell: bash
+        run: nix profile install nixpkgs#devenv
+
+      - name: Lint
+        run: just lint

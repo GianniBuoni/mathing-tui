@@ -6,9 +6,8 @@ pub fn send_key_event(
     rx: mpsc::Sender<KeyEvent>,
 ) -> Result<(), Box<dyn Error>> {
     loop {
-        match event::read()? {
-            Event::Key(key_event) => rx.send(key_event)?,
-            _ => (),
+        if let Event::Key(key_event) = event::read()? {
+            rx.send(key_event)?
         }
     }
 }

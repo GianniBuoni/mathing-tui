@@ -40,10 +40,8 @@ impl App {
         Ok(())
     }
 
-    pub fn list_models(&self) -> Vec<&Box<dyn Model>> {
-        let mut models: Vec<&Box<dyn Model>> = self.models.values().collect();
-        models.sort_by_key(|f| f.index());
-        models
+    pub fn list_models(&self) -> Vec<&dyn Model> {
+        self.models.values().map(|model| model.as_ref()).collect()
     }
 
     fn handle_key_events(&mut self, key_event: event::KeyEvent) {
