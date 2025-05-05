@@ -4,26 +4,6 @@ use rust_decimal::Decimal;
 
 use crate::prelude::*;
 
-pub struct AppColors {
-    header_bg: Color,
-    header_fg: Color,
-    row_fg: Color,
-    row_bg: Color,
-    selected_row_fg: Color,
-}
-
-impl AppColors {
-    fn new() -> Self {
-        Self {
-            header_bg: Color::Yellow,
-            header_fg: Color::Black,
-            row_fg: Color::Reset,
-            row_bg: Color::Reset,
-            selected_row_fg: Color::Black,
-        }
-    }
-}
-
 pub struct TableData<T>
 where
     T: TableDisplay + Sized,
@@ -40,9 +20,9 @@ where
     pub fn new(items: impl Into<Rc<[T]>>) -> Self {
         let items: Rc<[T]> = items.into();
         Self {
-            state: TableState::default(),
+            state: TableState::new().with_selected(0),
             items,
-            colors: AppColors::new(),
+            colors: AppColors::inactive(),
         }
     }
 }
@@ -88,11 +68,10 @@ where
     fn render_table(&mut self, area: Rect, buf: &mut Buffer) {
         let header_style = Style::default()
             .fg(self.colors.header_fg)
-            .bg(self.colors.header_bg);
+            .bg(self.colors.header_bg)
+            .bold();
 
-        let highlight_style = Style::default()
-            .add_modifier(Modifier::REVERSED)
-            .fg(self.colors.selected_row_fg);
+        let highlight_style = Style::default().fg(self.colors.selected_row_fg);
 
         let row_style = Style::default()
             .fg(self.colors.row_fg)
