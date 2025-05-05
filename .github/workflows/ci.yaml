@@ -12,7 +12,7 @@ jobs:
       run:
         shell: devenv shell bash -- -e {0}
     env:
-      - DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     steps:
       - name: Check out code
