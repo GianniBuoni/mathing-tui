@@ -4,9 +4,11 @@
     openssl
   ];
 
+  # sqlx is installed using cargo
   enterTest = ''
     cargo --version
     just --version
+    sqlx --version
   '';
 
   languages.rust = {

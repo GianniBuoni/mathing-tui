@@ -22,9 +22,13 @@ jobs:
       - uses: cachix/cachix-action@v14
         with:
           name: devenv
+
       - name: Setup devenv
         shell: bash
         run: nix profile install nixpkgs#devenv
+
+      - name: Add sqlx via cargo
+        run: cargo install sqlx-cli
 
       - name: Build shell and test enviroment
         run: devenv test
