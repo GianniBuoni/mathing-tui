@@ -41,7 +41,13 @@ impl App {
     }
 
     pub fn list_models(&self) -> Vec<&dyn Model> {
-        self.models.values().map(|model| model.as_ref()).collect()
+        let mut models = self
+            .models
+            .values()
+            .map(|model| model.as_ref())
+            .collect::<Vec<&dyn Model>>();
+        models.sort_by_key(|model| model.index());
+        models
     }
 
     fn handle_key_events(&mut self, key_event: event::KeyEvent) {
