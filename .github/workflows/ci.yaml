@@ -35,5 +35,11 @@ jobs:
       - name: Build shell and test enviroment
         run: devenv test
 
+      - name: Set up test db
+        run: touch data.db
+
+      - name: run test migrations
+        run: sqlx migrate run
+
       - name: Run tests
         run: just test
