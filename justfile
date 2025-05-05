@@ -5,5 +5,8 @@ run:
 
 test:
   cargo check
-  cargo clippy -- -Dwarnings
   cargo test
+
+lint:
+  test -z $(cargo fmt)
+  cargo clippy -- -Dwarnings
