@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        INSERT INTO users (\n            created_at, updated_at, name\n        ) VALUES (\n            ?1, ?2, ?3\n        ) RETURNING *\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_at",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "updated_at",
+        "ordinal": 2,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 3,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "66469b89e5e3f990ee7fb2751ea3b4f98eea700c819e4848881650dcefb46c92"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n    INSERT INTO receipts_users (\n    created_at, updated_at, receipt_id, user_id\n    ) VALUES (\n        ?1, ?2, ?3, ?4\n    )",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "341ffa9d7e11f8bba1d1be5bf11623adddcc98720280ccfcc45d8aa1c01a51c9"
+}

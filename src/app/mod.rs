@@ -40,9 +40,13 @@ impl App {
         Ok(())
     }
 
-    pub fn list_models(&self) -> Vec<&Box<dyn Model>> {
-        let mut models: Vec<&Box<dyn Model>> = self.models.values().collect();
-        models.sort_by_key(|f| f.index());
+    pub fn list_models(&self) -> Vec<&dyn Model> {
+        let mut models = self
+            .models
+            .values()
+            .map(|model| model.as_ref())
+            .collect::<Vec<&dyn Model>>();
+        models.sort_by_key(|model| model.index());
         models
     }
 

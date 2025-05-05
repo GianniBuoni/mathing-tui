@@ -46,11 +46,10 @@ pub async fn get_store_joined_rows(
     offset: i64,
 ) -> Result<Vec<StoreJoinRow>, Box<dyn Error>> {
     let rows = try_join_all(
-        get_store_joined_raw(conn, offset).await?.into_iter().map(
-            async |row| {
-                Ok::<StoreJoinRow, Box<dyn Error>>(row.as_join_row(conn).await?)
-            },
-        ),
+        get_store_joined_raw(conn, offset)
+            .await?
+            .into_iter()
+            .map(async |row| row.as_join_row(conn).await),
     )
     .await?;
 

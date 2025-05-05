@@ -1,9 +1,11 @@
-#![cfg_attr(debug_assertions, allow(dead_code, unused_imports))]
 use std::{collections::HashMap, error::Error};
 
 use futures::future::try_join_all;
 use rust_decimal::prelude::*;
 use sqlx::SqlitePool;
+
+use db_time::get_time;
+use queries::prelude::*;
 
 mod connection;
 mod db_time;
@@ -12,9 +14,11 @@ mod queries;
 #[cfg(test)]
 mod tests;
 
-pub(self) use connection::get_db;
-pub(self) use db_time::get_time;
-pub(self) use queries::prelude::*;
+pub mod prelude {
+    pub use super::connection::get_db;
+    pub use super::queries::prelude::*;
+    pub use super::{StoreItem, StoreJoinRow, StoreTotal, StoreUser};
+}
 
 #[derive(Debug, PartialEq)]
 pub struct StoreItem {
@@ -32,13 +36,6 @@ pub struct StoreReceipt {
     updated_at: i64,
     item_id: i64,
     item_qty: i64,
-}
-
-pub(self) struct StoreReceiptsUsers {
-    created_at: i64,
-    updated_at: i64,
-    receipt_id: i64,
-    user_id: i64,
 }
 
 #[derive(Debug, PartialEq)]
