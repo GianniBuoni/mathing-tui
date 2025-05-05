@@ -1,6 +1,4 @@
 run:
-  cargo check
-  cargo test
   cargo run
 
 test:
