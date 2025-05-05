@@ -2,9 +2,9 @@
   packages = with pkgs; [
     just
     openssl
+    # sqlx is installed using cargo
   ];
 
-  # sqlx is installed using cargo
   enterTest = ''
     cargo --version
     just --version
