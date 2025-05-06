@@ -8,29 +8,23 @@ pub struct TableData<T>
 where
     T: TableDisplay + Sized,
 {
-    colors: AppColors,
     items: Rc<[T]>,
     table_index: usize,
+    active: bool,
 }
 
 impl<T> TableData<T>
 where
     T: TableDisplay,
 {
-    pub fn new(items: impl Into<Rc<[T]>>) -> Self {
+    pub fn new(items: impl Into<Rc<[T]>>, active: bool) -> Self {
         let items: Rc<[T]> = items.into();
         Self {
             items,
-            colors: AppColors::inactive(),
             table_index: 0,
+            active,
         }
     }
-}
-
-pub trait TableView {
-    fn render_table(&self, area: Rect, buf: &mut Buffer);
-    fn next_row(&mut self);
-    fn prev_row(&mut self);
 }
 
 pub trait TableDisplay {
@@ -61,21 +55,24 @@ impl TableDisplay for MockItems {
     }
 }
 
-impl<T> TableView for TableData<T>
+impl<T> TableData<T>
 where
     T: TableDisplay,
 {
-    fn render_table(&self, area: Rect, buf: &mut Buffer) {
+    pub fn render_table(&self, area: Rect, buf: &mut Buffer) {
+        let colors = match self.active {
+            true => AppColors::ACTIVE,
+            false => AppColors::INACTIVE,
+        };
+
         let header_style = Style::default()
-            .fg(self.colors.header_fg)
-            .bg(self.colors.header_bg)
+            .fg(colors.header_fg)
+            .bg(colors.header_bg)
             .bold();
 
-        let highlight_style = Style::default().fg(self.colors.selected_row_fg);
+        let highlight_style = Style::default().fg(colors.selected_row_fg);
 
-        let row_style = Style::default()
-            .fg(self.colors.row_fg)
-            .bg(self.colors.row_bg);
+        let row_style = Style::default().fg(colors.row_fg).bg(colors.row_bg);
 
         let header = ["Item Name", "Price"]
             .into_iter()
@@ -105,10 +102,13 @@ where
             StatefulWidget::render(t, area, buf, &mut state);
         }
     }
-    fn next_row(&mut self) {
+    pub fn next_row(&mut self) {
         todo!()
     }
-    fn prev_row(&mut self) {
+    pub fn prev_row(&mut self) {
         todo!()
+    }
+    pub fn sync_block(&mut self, active: bool) {
+        self.active = active;
     }
 }

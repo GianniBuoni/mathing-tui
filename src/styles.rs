@@ -13,22 +13,19 @@ pub struct AppColors {
 }
 
 impl AppColors {
-    pub fn active() -> Self {
-        Self {
-            header_bg: Color::Magenta,
-            header_fg: Color::Black,
-            row_fg: Color::Reset,
-            row_bg: Color::Reset,
-            selected_row_fg: Color::Red,
-        }
-    }
-    pub fn inactive() -> Self {
-        Self {
-            header_bg: Color::DarkGray,
-            header_fg: Color::Black,
-            row_fg: Color::DarkGray,
-            row_bg: Color::Reset,
-            selected_row_fg: Color::DarkGray,
-        }
-    }
+    pub const ACTIVE: Self = Self {
+        header_bg: Color::Magenta,
+        header_fg: Color::Black,
+        row_fg: Color::Reset,
+        row_bg: Color::Reset,
+        selected_row_fg: Color::Red,
+    };
+
+    pub const INACTIVE: Self = Self {
+        header_bg: Color::DarkGray,
+        header_fg: Color::Black,
+        row_fg: Color::DarkGray,
+        row_bg: Color::Reset,
+        selected_row_fg: Color::DarkGray,
+    };
 }

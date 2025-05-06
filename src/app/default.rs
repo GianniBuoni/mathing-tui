@@ -4,7 +4,7 @@ impl Default for App {
     fn default() -> Self {
         let mut models = HashMap::new();
 
-        let items = Box::new(Items::default());
+        let items = Box::new(Items::new());
         let reciept = Box::new(Receipt::default());
 
         models.insert(CurrentModel::Items, items as Box<dyn Model>);

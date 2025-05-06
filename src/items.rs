@@ -2,7 +2,7 @@ use rust_decimal::dec;
 
 use crate::{
     prelude::*,
-    table::{MockItems, TableData, TableView},
+    table::{MockItems, TableData},
     ui::model_block,
 };
 
@@ -17,20 +17,21 @@ pub struct Items {
     active: bool,
 }
 
-impl Default for Items {
-    fn default() -> Self {
+impl Items {
+    pub fn new() -> Self {
         let display_items = [
             MockItems::new("Slamon", dec!(9.49)),
             MockItems::new("Pretzels", dec!(5.59)),
             MockItems::new("Blueberries", dec!(4.59)),
         ];
 
-        let table = TableData::new(display_items);
+        let active = false;
+        let table = TableData::new(display_items, active);
 
         Self {
             title: "Grocery Items".into(),
             index: u8::default(),
-            active: false,
+            active,
             table,
         }
     }
@@ -57,6 +58,7 @@ impl Model for Items {
         self.index
     }
     fn toggle(&mut self) {
-        self.active = !self.active
+        self.active = !self.active;
+        self.table.sync_block(self.active)
     }
 }
