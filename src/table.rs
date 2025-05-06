@@ -1,25 +1,32 @@
-use std::{borrow::Cow, rc::Rc};
+use std::{borrow::Cow, ops::Deref, rc::Rc};
 
 use rust_decimal::Decimal;
 
 use crate::prelude::*;
 
-pub struct TableData<T>
+pub struct TableData<'a, T>
 where
     T: TableDisplay + Sized,
 {
+    headings: Rc<[Cow<'a, str>]>,
     items: Rc<[T]>,
     table_index: usize,
     active: bool,
 }
 
-impl<T> TableData<T>
+impl<'a, T> TableData<'a, T>
 where
     T: TableDisplay,
 {
-    pub fn new(items: impl Into<Rc<[T]>>, active: bool) -> Self {
+    pub fn new(
+        headings: Rc<[Cow<'a, str>]>,
+        items: impl Into<Rc<[T]>>,
+        active: bool,
+    ) -> Self {
         let items: Rc<[T]> = items.into();
+
         Self {
+            headings,
             items,
             table_index: 0,
             active,
@@ -55,7 +62,7 @@ impl TableDisplay for MockItems {
     }
 }
 
-impl<T> TableData<T>
+impl<T> TableData<'_, T>
 where
     T: TableDisplay,
 {
@@ -74,9 +81,10 @@ where
 
         let row_style = Style::default().fg(colors.row_fg).bg(colors.row_bg);
 
-        let header = ["Item Name", "Price"]
+        let header = self
+            .headings
             .into_iter()
-            .map(Cell::from)
+            .map(|cow| Cell::from(cow.deref()))
             .collect::<Row>()
             .style(header_style)
             .height(1);

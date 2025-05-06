@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use rust_decimal::dec;
 
 use crate::{
@@ -10,14 +12,14 @@ pub(crate) mod prelude {
     pub(crate) use super::Items;
 }
 
-pub struct Items {
-    table: TableData<MockItems>,
+pub struct Items<'a> {
+    table: TableData<'a, MockItems>,
     title: String,
     index: u8,
     active: bool,
 }
 
-impl Items {
+impl<'a> Items<'a> {
     pub fn new() -> Self {
         let display_items = [
             MockItems::new("Slamon", dec!(9.49)),
@@ -26,7 +28,13 @@ impl Items {
         ];
 
         let active = false;
-        let table = TableData::new(display_items, active);
+
+        let headings = ["Items", "Price"]
+            .iter()
+            .map(|string| Cow::Borrowed(*string))
+            .collect();
+
+        let table = TableData::new(headings, display_items, active);
 
         Self {
             title: "Grocery Items".into(),
@@ -37,7 +45,7 @@ impl Items {
     }
 }
 
-impl WidgetRef for Items {
+impl<'a> WidgetRef for Items<'a> {
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
         let block = model_block(self).padding(Padding::uniform(1));
         let inner_area = block.inner(area);
@@ -47,7 +55,7 @@ impl WidgetRef for Items {
     }
 }
 
-impl Model for Items {
+impl<'a> Model for Items<'a> {
     fn title(&self) -> String {
         format!(" [{}] {} ", self.index, self.title)
     }
