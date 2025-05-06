@@ -8,8 +8,9 @@ pub struct TableData<T>
 where
     T: TableDisplay + Sized,
 {
-    items: Rc<[T]>,
     colors: AppColors,
+    items: Rc<[T]>,
+    table_index: usize,
 }
 
 impl<T> TableData<T>
@@ -21,6 +22,7 @@ where
         Self {
             items,
             colors: AppColors::inactive(),
+            table_index: 0,
         }
     }
 }
@@ -99,10 +101,7 @@ where
 
         {
             use ratatui::widgets::StatefulWidget;
-            // currently putting state here to keep self needing to
-            // be a mutable reference; this probably won't work since
-            // its creation is part of the loop
-            let mut state = TableState::new().with_selected(0);
+            let mut state = TableState::new().with_selected(self.table_index);
             StatefulWidget::render(t, area, buf, &mut state);
         }
     }

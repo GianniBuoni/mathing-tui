@@ -11,10 +11,10 @@ pub(crate) mod prelude {
 }
 
 pub struct Items {
+    table: TableData<MockItems>,
     title: String,
     index: u8,
     active: bool,
-    table: TableData<MockItems>,
 }
 
 impl Default for Items {
@@ -29,7 +29,7 @@ impl Default for Items {
 
         Self {
             title: "Grocery Items".into(),
-            index: 0,
+            index: u8::default(),
             active: false,
             table,
         }
