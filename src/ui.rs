@@ -25,7 +25,7 @@ impl Widget for &App {
 
         self.list_models().into_iter().zip(chunks).for_each(
             |(model, inner_area)| {
-                model.render(inner_area, buf);
+                model.render_ref(inner_area, buf);
             },
         );
 

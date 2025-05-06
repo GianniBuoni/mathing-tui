@@ -8,7 +8,6 @@ pub struct TableData<T>
 where
     T: TableDisplay + Sized,
 {
-    state: TableState,
     items: Rc<[T]>,
     colors: AppColors,
 }
@@ -20,7 +19,6 @@ where
     pub fn new(items: impl Into<Rc<[T]>>) -> Self {
         let items: Rc<[T]> = items.into();
         Self {
-            state: TableState::new().with_selected(0),
             items,
             colors: AppColors::inactive(),
         }
@@ -28,7 +26,7 @@ where
 }
 
 pub trait TableView {
-    fn render_table(&mut self, area: Rect, buf: &mut Buffer);
+    fn render_table(&self, area: Rect, buf: &mut Buffer);
     fn next_row(&mut self);
     fn prev_row(&mut self);
 }
@@ -65,7 +63,7 @@ impl<T> TableView for TableData<T>
 where
     T: TableDisplay,
 {
-    fn render_table(&mut self, area: Rect, buf: &mut Buffer) {
+    fn render_table(&self, area: Rect, buf: &mut Buffer) {
         let header_style = Style::default()
             .fg(self.colors.header_fg)
             .bg(self.colors.header_bg)
@@ -101,7 +99,11 @@ where
 
         {
             use ratatui::widgets::StatefulWidget;
-            StatefulWidget::render(t, area, buf, &mut self.state);
+            // currently putting state here to keep self needing to
+            // be a mutable reference; this probably won't work since
+            // its creation is part of the loop
+            let mut state = TableState::new().with_selected(0);
+            StatefulWidget::render(t, area, buf, &mut state);
         }
     }
     fn next_row(&mut self) {

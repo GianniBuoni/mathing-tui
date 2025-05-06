@@ -20,6 +20,12 @@ impl Default for Receipt {
     }
 }
 
+impl WidgetRef for Receipt {
+    fn render_ref(&self, area: Rect, buf: &mut Buffer) {
+        model_block(self).render(area, buf);
+    }
+}
+
 impl Model for Receipt {
     fn title(&self) -> String {
         format!(" [{}] {} ", self.index, self.title)
@@ -32,8 +38,5 @@ impl Model for Receipt {
     }
     fn toggle(&mut self) {
         self.active = !self.active
-    }
-    fn render(&self, area: Rect, buf: &mut Buffer) {
-        model_block(self).render(area, buf);
     }
 }
