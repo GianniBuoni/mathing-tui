@@ -6,6 +6,7 @@ pub mod prelude {
     pub(crate) use crate::model::prelude::*;
     pub(crate) use crate::receipt::prelude::*;
     pub(crate) use crate::styles::prelude::*;
+    pub(crate) use crate::table::prelude::*;
     pub(crate) use ratatui::{crossterm::event, prelude::*, widgets::*};
 }
 

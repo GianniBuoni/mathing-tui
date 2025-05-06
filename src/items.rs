@@ -2,11 +2,7 @@ use std::borrow::Cow;
 
 use rust_decimal::dec;
 
-use crate::{
-    prelude::*,
-    table::{MockItems, TableData},
-    ui::model_block,
-};
+use crate::{prelude::*, ui::model_block};
 
 pub(crate) mod prelude {
     pub(crate) use super::Items;
@@ -51,7 +47,7 @@ impl<'a> WidgetRef for Items<'a> {
         let inner_area = block.inner(area);
 
         self.table.render_table(inner_area, buf);
-        block.render(area, buf);
+        block.render(area, buf)
     }
 }
 
