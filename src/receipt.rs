@@ -15,7 +15,7 @@ pub struct Receipt<'a> {
     active: bool,
 }
 
-impl<'a> Default for Receipt<'a> {
+impl Default for Receipt<'_> {
     fn default() -> Self {
         let mock_receipts = [
             MockReceipt::new("Slamon", "Jon, Noodle", dec!(9.49), 1),
@@ -39,7 +39,7 @@ impl<'a> Default for Receipt<'a> {
     }
 }
 
-impl<'a> WidgetRef for Receipt<'a> {
+impl WidgetRef for Receipt<'_> {
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
         let block = model_block(self).padding(Padding::uniform(1));
         let inner_area = block.inner(area);
@@ -49,7 +49,7 @@ impl<'a> WidgetRef for Receipt<'a> {
     }
 }
 
-impl<'a> Model for Receipt<'a> {
+impl Model for Receipt<'_> {
     fn title(&self) -> String {
         format!(" [{}] {} ", self.index, self.title)
     }

@@ -15,7 +15,7 @@ pub struct Items<'a> {
     active: bool,
 }
 
-impl<'a> Items<'a> {
+impl Items<'_> {
     pub fn new() -> Self {
         let display_items = [
             MockItems::new("Slamon", dec!(9.49)),
@@ -41,7 +41,7 @@ impl<'a> Items<'a> {
     }
 }
 
-impl<'a> WidgetRef for Items<'a> {
+impl WidgetRef for Items<'_> {
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
         let block = model_block(self).padding(Padding::uniform(1));
         let inner_area = block.inner(area);
@@ -51,7 +51,7 @@ impl<'a> WidgetRef for Items<'a> {
     }
 }
 
-impl<'a> Model for Items<'a> {
+impl Model for Items<'_> {
     fn title(&self) -> String {
         format!(" [{}] {} ", self.index, self.title)
     }

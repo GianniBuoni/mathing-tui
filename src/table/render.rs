@@ -21,7 +21,7 @@ where
 
         let header = self
             .headings
-            .into_iter()
+            .iter()
             .map(|cow| Cell::from(cow.deref()))
             .collect::<Row>()
             .style(header_style)
@@ -35,7 +35,7 @@ where
                 .style(row_style)
         });
 
-        let fills = vec![1 as u16; self.headings.len()];
+        let fills = vec![1; self.headings.len()];
 
         let t = Table::new(rows, Constraint::from_fills(fills))
             .header(header)
