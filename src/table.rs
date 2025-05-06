@@ -110,11 +110,22 @@ where
             StatefulWidget::render(t, area, buf, &mut state);
         }
     }
+
     pub fn next_row(&mut self) {
-        todo!()
+        let max = self.items.len();
+        if self.table_index < max {
+            self.table_index += 1
+        } else {
+            self.table_index = 0
+        }
     }
     pub fn prev_row(&mut self) {
-        todo!()
+        let max = self.items.len();
+        if self.table_index > 0 {
+            self.table_index -= 1
+        } else {
+            self.table_index = max
+        }
     }
     pub fn sync_block(&mut self, active: bool) {
         self.active = active;

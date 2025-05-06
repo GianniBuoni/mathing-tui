@@ -69,4 +69,10 @@ impl<'a> Model for Items<'a> {
         self.active = !self.active;
         self.table.sync_block(self.active)
     }
+    fn next_row(&mut self) {
+        self.table.next_row();
+    }
+    fn prev_row(&mut self) {
+        self.table.prev_row();
+    }
 }

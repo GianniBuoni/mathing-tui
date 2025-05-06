@@ -39,4 +39,10 @@ impl Model for Receipt {
     fn toggle(&mut self) {
         self.active = !self.active
     }
+    fn next_row(&mut self) {
+        todo!()
+    }
+    fn prev_row(&mut self) {
+        todo!()
+    }
 }

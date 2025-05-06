@@ -61,6 +61,16 @@ impl App {
             event::KeyCode::Tab => {
                 self.cycle_view();
             }
+            event::KeyCode::Char('j') => {
+                if let Some(model) = self.models.get_mut(&self.current_model) {
+                    model.next_row();
+                }
+            }
+            event::KeyCode::Char('k') => {
+                if let Some(model) = self.models.get_mut(&self.current_model) {
+                    model.prev_row();
+                }
+            }
             _ => {}
         }
     }
