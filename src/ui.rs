@@ -32,15 +32,3 @@ impl Widget for &App {
         main_block.render(area, buf);
     }
 }
-
-pub fn model_block<'a>(model: &'a dyn Model) -> Block<'a> {
-    let color = if model.is_active() {
-        Color::Reset
-    } else {
-        Color::DarkGray
-    };
-    Block::bordered()
-        .border_style(Style::default().fg(color))
-        .border_type(BorderType::Rounded)
-        .title(model.title())
-}
