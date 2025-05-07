@@ -16,10 +16,10 @@ impl MockItems {
         Self { name, price }
     }
     fn name(&self) -> Cow<str> {
-        Cow::Borrowed(self.name.as_str())
+        Cow::Owned(format!(" {} ", self.name))
     }
     fn price(&self) -> Cow<str> {
-        Cow::Owned(format!("{}", self.price))
+        Cow::Owned(format!(" {} ", self.price))
     }
 }
 
@@ -54,10 +54,10 @@ impl MockReceipt {
 
 impl TableDisplay for MockReceipt {
     fn ref_array(&self) -> Vec<Cow<str>> {
-        let item_name = Cow::Borrowed(self.item_name.as_str());
-        let payees = Cow::Borrowed(self.payees.as_str());
-        let item_price: Cow<str> = Cow::Owned(format!("{}", self.item_price));
-        let item_qty: Cow<str> = Cow::Owned(format!("{}", self.item_qty));
+        let item_name = Cow::Owned(format!(" {} ", self.item_name));
+        let payees = Cow::Owned(format!(" {} ", self.payees.as_str()));
+        let item_price: Cow<str> = Cow::Owned(format!(" {} ", self.item_price));
+        let item_qty: Cow<str> = Cow::Owned(format!(" {} ", self.item_qty));
 
         vec![item_name, item_price, item_qty, payees]
     }

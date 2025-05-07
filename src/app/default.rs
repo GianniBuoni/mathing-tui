@@ -13,7 +13,7 @@ impl Default for App {
             MockItems::new("Pretzels", dec!(5.59)),
             MockItems::new("Blueberries", dec!(4.59)),
         ];
-        let item_headings = ["Items", "Price"]
+        let item_headings = [" Items ", " Price "]
             .iter()
             .map(|string| Cow::Borrowed(*string))
             .collect();
@@ -28,10 +28,11 @@ impl Default for App {
             MockReceipt::new("Slamon", "Jon, Noodle", dec!(9.49), 1),
             MockReceipt::new("Blueberries", "Jon", dec!(5.59), 4),
         ];
-        let rec_headings = ["Item Name", "Item Price", "Item Qty", "Payees"]
-            .iter()
-            .map(|string| Cow::Borrowed(*string))
-            .collect();
+        let rec_headings =
+            [" Item Name ", " Item Price ", " Item Qty ", " Payees "]
+                .iter()
+                .map(|string| Cow::Borrowed(*string))
+                .collect();
         let receipt = Box::new(TableData::new(
             "Receipt Items",
             rec_headings,
