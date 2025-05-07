@@ -1,10 +1,15 @@
+use crate::ui::model_block;
+
 use super::*;
 
-impl<T> TableData<'_, T>
+impl<T> WidgetRef for TableData<'_, T>
 where
     T: TableDisplay,
 {
-    pub fn render_table(&self, area: Rect, buf: &mut Buffer) {
+    fn render_ref(&self, area: Rect, buf: &mut Buffer) {
+        let block = model_block(self).padding(Padding::uniform(1));
+        let inner_area = block.inner(area);
+
         let colors = match self.active {
             true => AppColors::ACTIVE,
             false => AppColors::INACTIVE,
@@ -37,14 +42,16 @@ where
 
         let fills = vec![1; self.headings.len()];
 
-        let t = Table::new(rows, Constraint::from_fills(fills))
+        let table = Table::new(rows, Constraint::from_fills(fills))
             .header(header)
             .row_highlight_style(highlight_style);
 
         {
             use ratatui::widgets::StatefulWidget;
             let mut state = TableState::new().with_selected(self.table_index);
-            StatefulWidget::render(t, area, buf, &mut state);
+            StatefulWidget::render(table, inner_area, buf, &mut state);
         }
+
+        block.render(area, buf)
     }
 }

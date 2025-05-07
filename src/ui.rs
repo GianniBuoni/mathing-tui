@@ -33,7 +33,7 @@ impl Widget for &App {
     }
 }
 
-pub fn model_block<'a>(model: &impl Model) -> Block<'a> {
+pub fn model_block<'a>(model: &'a dyn Model) -> Block<'a> {
     let color = if model.is_active() {
         Color::Reset
     } else {

@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use ratatui::widgets::WidgetRef;
 
 pub(crate) mod prelude {
@@ -5,7 +7,7 @@ pub(crate) mod prelude {
 }
 
 pub trait Model: WidgetRef {
-    fn title(&self) -> String;
+    fn title(&self) -> Cow<str>;
     fn is_active(&self) -> bool;
     fn index(&self) -> u8;
     fn toggle(&mut self);
