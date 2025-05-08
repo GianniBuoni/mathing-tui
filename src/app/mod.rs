@@ -13,6 +13,7 @@ mod default;
 mod tests;
 mod views;
 
+#[derive(Debug)]
 pub struct App {
     models: HashMap<CurrentModel, Box<dyn Model>>,
     current_model: CurrentModel,

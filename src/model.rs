@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, fmt::Debug};
 
 use ratatui::widgets::WidgetRef;
 
@@ -6,7 +6,7 @@ pub(crate) mod prelude {
     pub(crate) use super::Model;
 }
 
-pub trait Model: WidgetRef {
+pub trait Model: WidgetRef + Debug {
     fn title(&self) -> Cow<str>;
     fn is_active(&self) -> bool;
     fn index(&self) -> u8;

@@ -5,6 +5,7 @@ use super::*;
 
 use rust_decimal::Decimal;
 
+#[derive(Debug)]
 pub struct MockItems {
     name: String,
     price: Decimal,
@@ -29,6 +30,7 @@ impl TableDisplay for MockItems {
     }
 }
 
+#[derive(Debug)]
 pub struct MockReceipt {
     item_name: String,
     payees: String,

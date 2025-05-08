@@ -1,20 +1,23 @@
-use std::{borrow::Cow, ops::Deref, rc::Rc};
+use std::{borrow::Cow, fmt::Debug, ops::Deref, rc::Rc};
 
 use crate::prelude::*;
 
 mod interactions;
 mod mock_structs;
 mod render;
+#[cfg(test)]
+mod tests;
 
 pub(crate) mod prelude {
     pub(crate) use super::TableData;
     pub(crate) use super::mock_structs::{MockItems, MockReceipt};
 }
 
-pub trait TableDisplay {
+pub trait TableDisplay: Debug {
     fn ref_array(&self) -> Vec<Cow<str>>;
 }
 
+#[derive(Debug)]
 pub struct TableData<'a, T>
 where
     T: TableDisplay + Sized,
