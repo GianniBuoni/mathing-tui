@@ -1,10 +1,11 @@
 use ratatui::crossterm::event::KeyCode;
 
 use super::*;
+use crate::test_cases::*;
 
 #[test]
 fn test_state_cycling() {
-    let mut app = App::default();
+    let mut app = test_app();
     let key_event = event::KeyEvent::from(KeyCode::Tab);
 
     assert_eq!(
@@ -30,7 +31,7 @@ fn test_state_cycling() {
 
 #[test]
 fn test_view_data() {
-    let mut app = App::default();
+    let mut app = test_app();
     let key_event = event::KeyEvent::from(KeyCode::Tab);
 
     assert!(
@@ -61,7 +62,7 @@ fn test_model_order() {
     // More iterations do not seem to make the test more likely
     // to catch issues
 
-    let app = App::default();
+    let app = test_app();
     let desc = "Test models are displayed in the correct order";
 
     for _ in 0..100 {
@@ -110,7 +111,7 @@ fn test_down_navigation_input() {
     ];
 
     down_events.iter().for_each(|(event, key)| {
-        let mut app = App::default();
+        let mut app = test_app();
         let mut buf = Buffer::empty(Rect::new(0, 0, 50, 8));
         let mut want = base_buffer();
 
@@ -136,7 +137,7 @@ fn test_up_navigation_input() {
     ];
 
     up_events.iter().for_each(|(event, key)| {
-        let mut app = App::default();
+        let mut app = test_app();
         let mut buf = Buffer::empty(Rect::new(0, 0, 50, 8));
         let mut want = base_buffer();
 

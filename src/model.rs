@@ -7,9 +7,9 @@ pub(crate) mod prelude {
 }
 
 pub trait Model: WidgetRef + Debug {
-    fn title(&self) -> Cow<str>;
-    fn is_active(&self) -> bool;
     fn index(&self) -> u8;
+    fn is_active(&self) -> bool;
+    fn title(&self) -> Cow<str>;
     fn toggle(&mut self);
     fn next_row(&mut self);
     fn prev_row(&mut self);

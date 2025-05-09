@@ -8,12 +8,12 @@ pub mod prelude {
     pub(crate) use super::views::CurrentModel;
 }
 
-mod default;
+mod models;
 #[cfg(test)]
 mod tests;
 mod views;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct App {
     models: HashMap<CurrentModel, Box<dyn Model>>,
     current_model: CurrentModel,
@@ -41,16 +41,6 @@ impl App {
         Ok(())
     }
 
-    pub fn list_models(&self) -> Vec<&dyn Model> {
-        let mut models = self
-            .models
-            .values()
-            .map(|model| model.as_ref())
-            .collect::<Vec<&dyn Model>>();
-        models.sort_by_key(|model| model.index());
-        models
-    }
-
     fn handle_key_events(&mut self, key_event: event::KeyEvent) {
         if key_event.kind != event::KeyEventKind::Press {
             return;
@@ -62,12 +52,12 @@ impl App {
             event::KeyCode::Tab => {
                 self.cycle_view();
             }
-            event::KeyCode::Char('j') => {
+            event::KeyCode::Char('j') | event::KeyCode::Down => {
                 if let Some(model) = self.models.get_mut(&self.current_model) {
                     model.next_row();
                 }
             }
-            event::KeyCode::Char('k') => {
+            event::KeyCode::Char('k') | event::KeyCode::Up => {
                 if let Some(model) = self.models.get_mut(&self.current_model) {
                     model.prev_row();
                 }
