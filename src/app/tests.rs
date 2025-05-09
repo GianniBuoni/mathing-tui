@@ -112,7 +112,7 @@ fn test_down_navigation_input() {
 
     down_events.iter().for_each(|(event, key)| {
         let mut app = test_app();
-        let mut buf = Buffer::empty(Rect::new(0, 0, 50, 8));
+        let mut buf = Buffer::empty(test_rect());
         let mut want = base_buffer();
 
         want.set_style(Rect::new(0, 0, 50, 1), test_styles().0);
@@ -138,7 +138,7 @@ fn test_up_navigation_input() {
 
     up_events.iter().for_each(|(event, key)| {
         let mut app = test_app();
-        let mut buf = Buffer::empty(Rect::new(0, 0, 50, 8));
+        let mut buf = Buffer::empty(test_rect());
         let mut want = base_buffer();
 
         want.set_style(Rect::new(0, 0, 50, 1), test_styles().0);

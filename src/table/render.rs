@@ -11,16 +11,12 @@ where
             .render_block(&colors.border_fg)
             .padding(Padding::proportional(1));
 
-        let styles: AppTableStyles = colors.into();
-
-        let inner_area = block.inner(area);
-
         {
             use ratatui::widgets::StatefulWidget;
             let mut state = TableState::new().with_selected(self.table_index);
             StatefulWidget::render(
-                self.render_table(&styles),
-                inner_area,
+                self.render_table(&colors.into()),
+                block.inner(area),
                 buf,
                 &mut state,
             );
@@ -34,14 +30,14 @@ impl<T> TableData<'_, T>
 where
     T: TableDisplay,
 {
-    pub fn render_block<'a>(&'a self, fg: &Color) -> Block<'a> {
+    pub(super) fn render_block<'a>(&'a self, fg: &Color) -> Block<'a> {
         Block::bordered()
             .border_style(Style::default().fg(*fg))
             .border_type(BorderType::Rounded)
             .title(self.title())
     }
 
-    pub fn render_rows(&self, styles: &AppTableStyles) -> Vec<Row> {
+    pub(super) fn render_rows(&self, styles: &AppTableStyles) -> Vec<Row> {
         self.items
             .iter()
             .map(|data| {
@@ -54,7 +50,7 @@ where
             .collect()
     }
 
-    pub fn render_headers(&self, styles: &AppTableStyles) -> Row {
+    pub(super) fn render_heading(&self, styles: &AppTableStyles) -> Row {
         self.headings
             .iter()
             .map(|cow| Cell::from(cow.deref()))
@@ -63,12 +59,12 @@ where
             .height(1)
     }
 
-    pub fn render_table(&self, styles: &AppTableStyles) -> Table {
+    pub(super) fn render_table(&self, styles: &AppTableStyles) -> Table {
         Table::new(
             self.render_rows(styles),
             Constraint::from_fills(vec![1; self.headings.len()]),
         )
-        .header(self.render_headers(styles))
+        .header(self.render_heading(styles))
         .row_highlight_style(styles.highlight_style)
     }
 }

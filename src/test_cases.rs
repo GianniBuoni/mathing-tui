@@ -6,6 +6,10 @@ use std::borrow::Cow;
 use crate::prelude::*;
 use rust_decimal::{Decimal, dec};
 
+pub fn test_rect() -> Rect {
+    Rect::new(0, 0, 50, 8)
+}
+
 pub fn mock_items<'a>() -> TableData<'a, MockItems> {
     let item_headings = [" Items ", " Price "]
         .iter()
