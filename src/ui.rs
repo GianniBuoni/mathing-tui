@@ -23,24 +23,12 @@ impl Widget for &App {
         .spacing(1)
         .areas(main_block.inner(area));
 
-        self.list_models().iter().zip(chunks).for_each(
+        self.list_models().into_iter().zip(chunks).for_each(
             |(model, inner_area)| {
-                let color = if model.is_active() {
-                    Color::Reset
-                } else {
-                    Color::DarkGray
-                };
-                model_block(color, *model).render(inner_area, buf);
+                model.render_ref(inner_area, buf);
             },
         );
 
         main_block.render(area, buf);
     }
-}
-
-pub fn model_block(color: Color, model: &dyn Model) -> Block {
-    Block::bordered()
-        .border_style(Style::default().fg(color))
-        .border_type(BorderType::Rounded)
-        .title(model.title())
 }
