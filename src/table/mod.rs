@@ -32,22 +32,26 @@ impl<'a, T> TableData<'a, T>
 where
     T: TableDisplay,
 {
-    pub fn new(
-        title: &'a str,
-        headings: Rc<[Cow<'a, str>]>,
-        items: impl Into<Rc<[T]>>,
-        app_index: u8,
-    ) -> Self {
-        let items: Rc<[T]> = items.into();
-        let title = Cow::Borrowed(title);
-
-        Self {
-            title,
-            headings,
-            items,
-            table_index: 0,
-            active: false,
-            app_index,
-        }
+    pub fn set_title(mut self, title: &'a str) -> Self {
+        self.title = Cow::Borrowed(&title);
+        self
+    }
+    pub fn headings<U>(mut self, headings: U) -> Self
+    where
+        U: Into<Rc<[Cow<'a, str>]>>,
+    {
+        self.headings = headings.into();
+        self
+    }
+    pub fn items<U>(mut self, items: U) -> Self
+    where
+        U: Into<Rc<[T]>>,
+    {
+        self.items = items.into();
+        self
+    }
+    pub fn set_index(mut self, index: u8) -> Self {
+        self.app_index = index;
+        self
     }
 }

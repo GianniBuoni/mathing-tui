@@ -1,7 +1,7 @@
 //! These are example structs that implement `[TableDisplay]`
 //! for use within test cases
 
-use std::borrow::Cow;
+use std::{borrow::Cow, rc::Rc};
 
 use crate::prelude::*;
 use rust_decimal::{Decimal, dec};
@@ -14,7 +14,7 @@ pub fn mock_items<'a>() -> TableData<'a, MockItems> {
     let item_headings = [" Items ", " Price "]
         .iter()
         .map(|string| Cow::Borrowed(*string))
-        .collect();
+        .collect::<Rc<[Cow<str>]>>();
 
     let mock_items = [
         MockItems::new("Slamon", dec!(9.49)),
@@ -22,7 +22,11 @@ pub fn mock_items<'a>() -> TableData<'a, MockItems> {
         MockItems::new("Blueberries", dec!(4.59)),
     ];
 
-    TableData::new("Grocery Items", item_headings, mock_items, 0)
+    TableData::default()
+        .set_title("Grocery Items")
+        .set_index(0)
+        .items(mock_items)
+        .headings(item_headings)
 }
 
 pub fn mock_receipts<'a>() -> TableData<'a, MockReceipt> {
@@ -30,14 +34,18 @@ pub fn mock_receipts<'a>() -> TableData<'a, MockReceipt> {
         [" Item Name ", " Item Price ", " Item Qty ", " Payees "]
             .iter()
             .map(|string| Cow::Borrowed(*string))
-            .collect();
+            .collect::<Rc<[Cow<str>]>>();
 
     let mock_receipt = [
         MockReceipt::new("Slamon", "Jon, Noodle", dec!(9.49), 1),
         MockReceipt::new("Blueberries", "Jon", dec!(5.59), 4),
     ];
 
-    TableData::new("Receipt Items", rec_headings, mock_receipt, 1)
+    TableData::default()
+        .set_title("Receipt Items")
+        .set_index(1)
+        .headings(rec_headings)
+        .items(mock_receipt)
 }
 
 pub fn test_app() -> App {
