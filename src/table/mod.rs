@@ -33,7 +33,7 @@ where
     T: TableDisplay,
 {
     pub fn set_title(mut self, title: &'a str) -> Self {
-        self.title = Cow::Borrowed(&title);
+        self.title = Cow::Borrowed(title);
         self
     }
     pub fn headings<U>(mut self, headings: U) -> Self
