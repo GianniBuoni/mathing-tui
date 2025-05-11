@@ -2,10 +2,10 @@ use super::*;
 
 impl App {
     pub fn register_model(
-        &mut self,
+        mut self,
         key: CurrentModel,
         model: Box<dyn Model>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<Self, Box<dyn Error>> {
         // early return if key is already registered
         match self.models.contains_key(&key) {
             true => return Err("Key already is registered".into()),
@@ -14,7 +14,7 @@ impl App {
             }
         }
 
-        Ok(())
+        Ok(self)
     }
 
     pub fn list_models(&self) -> Vec<&dyn Model> {

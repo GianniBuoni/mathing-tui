@@ -8,8 +8,9 @@ pub enum CurrentModel {
 }
 
 impl App {
-    pub fn init_view(&mut self) {
+    pub fn init_view(mut self) -> Self {
         self.toggle_current_model();
+        self
     }
 
     pub fn cycle_view(&mut self) {
