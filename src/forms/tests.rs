@@ -49,3 +49,6 @@ fn test_form_menu() {
 
     assert_eq!(want, got)
 }
+
+#[test]
+fn test_registering_forms() {}

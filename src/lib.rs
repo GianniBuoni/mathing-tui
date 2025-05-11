@@ -2,8 +2,8 @@ pub mod prelude {
     pub use crate::app::prelude::*;
     pub use crate::db::prelude::*;
     pub use crate::events::send_key_event;
+    pub(crate) use crate::forms::prelude::*;
     pub(crate) use crate::model::prelude::*;
-    pub(crate) use crate::popups::prelude::*;
     pub(crate) use crate::styles::prelude::*;
     pub use crate::table::prelude::*;
     pub(crate) use ratatui::{crossterm::event, prelude::*, widgets::*};
@@ -12,8 +12,8 @@ pub mod prelude {
 mod app;
 mod db;
 mod events;
+mod forms;
 mod model;
-mod popups;
 mod styles;
 mod table;
 #[cfg(test)]

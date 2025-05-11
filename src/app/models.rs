@@ -11,10 +11,9 @@ impl App {
             true => return Err("Key already is registered".into()),
             false => {
                 self.models.insert(key, model);
+                Ok(self)
             }
         }
-
-        Ok(self)
     }
 
     pub fn list_models(&self) -> Vec<&dyn Model> {

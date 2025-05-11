@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::{collections::HashMap, fmt::Debug, rc::Rc};
+use std::{collections::HashMap, error::Error, fmt::Debug, rc::Rc};
 
 use crate::prelude::*;
 
@@ -56,5 +56,25 @@ impl<'a, T> FormWidget<'a, T> {
     {
         self.context_menu = line.into();
         self
+    }
+    pub fn layout<U>(mut self, layout: U) -> Self
+    where
+        U: Into<Rc<[Constraint]>>,
+    {
+        self.layout = layout.into();
+        self
+    }
+    pub fn register_component<U>(
+        mut self,
+        key: i32,
+        component: Box<dyn FormComponent>,
+    ) -> Result<Self, Box<dyn Error>> {
+        match self.components.contains_key(&key) {
+            true => return Err("Key already is registered".into()),
+            false => {
+                self.components.insert(key, component);
+                Ok(self)
+            }
+        }
     }
 }
