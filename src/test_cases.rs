@@ -49,12 +49,12 @@ pub fn mock_receipts<'a>() -> TableData<'a, MockReceipt> {
 }
 
 pub fn test_app() -> App {
-    App::default()
+    App::new()
         .register_model(CurrentModel::Items, Box::new(mock_items()))
         .expect("Test app should be empty")
         .register_model(CurrentModel::Receipt, Box::new(mock_receipts()))
         .expect("Test app shouldn't already have the Receipts key")
-        .init_view()
+        .build()
 }
 
 #[derive(Debug, Default)]

@@ -8,7 +8,7 @@ pub mod prelude {
     pub(crate) use super::views::CurrentModel;
 }
 
-mod models;
+mod builder;
 #[cfg(test)]
 mod tests;
 mod views;
@@ -39,6 +39,22 @@ impl App {
             })?;
         }
         Ok(())
+    }
+
+    pub fn list_models(&self) -> Vec<&dyn Model> {
+        let mut models = self
+            .models
+            .values()
+            .map(|model| model.as_ref())
+            .collect::<Vec<&dyn Model>>();
+        models.sort_by_key(|model| model.index());
+        models
+    }
+
+    fn toggle_current_model(&mut self) {
+        if let Some(item) = self.models.get_mut(&self.current_model) {
+            item.toggle();
+        }
     }
 
     fn handle_key_events(&mut self, key_event: event::KeyEvent) {
