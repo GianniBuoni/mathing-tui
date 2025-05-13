@@ -39,7 +39,7 @@ impl<'a> InputWidget<'a> {
 
 impl WidgetRef for InputWidget<'_> {
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
-        let style: AppTableStyles = match self.input_mode {
+        let style: AppStyles = match self.input_mode {
             InputMode::Normal => AppColors::INACTIVE.into(),
             InputMode::Editing => AppColors::ACTIVE.into(),
         };

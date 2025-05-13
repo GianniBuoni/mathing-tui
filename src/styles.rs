@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 pub(crate) mod prelude {
-    pub(crate) use super::{AppColors, AppTableStyles};
+    pub(crate) use super::{AppColors, AppStyles};
 }
 
 pub struct AppColors {
@@ -39,14 +39,15 @@ impl AppColors {
     }
 }
 
-pub struct AppTableStyles {
+pub struct AppStyles {
     pub header_style: Style,
     pub row_style: Style,
     pub highlight_style: Style,
     pub input_style: Style,
+    pub block_style: Style,
 }
 
-impl From<AppColors> for AppTableStyles {
+impl From<AppColors> for AppStyles {
     fn from(value: AppColors) -> Self {
         Self {
             header_style: Style::default()
@@ -56,6 +57,7 @@ impl From<AppColors> for AppTableStyles {
             row_style: Style::default().fg(value.row_fg),
             highlight_style: Style::default().fg(value.selected_row_fg),
             input_style: Style::default().fg(value.input_fg),
+            block_style: Style::default().fg(value.border_fg),
         }
     }
 }

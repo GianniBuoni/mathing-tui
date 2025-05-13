@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn test_render_block() {
-    let style: AppTableStyles = AppColors::ACTIVE.into();
+    let style: AppStyles = AppColors::ACTIVE.into();
     let items = mock_receipts();
     let mut buf = Buffer::empty(test_rect());
 

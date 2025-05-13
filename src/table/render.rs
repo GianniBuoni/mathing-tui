@@ -5,7 +5,7 @@ where
     T: TableDisplay,
 {
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
-        let styles: AppTableStyles = AppColors::get(self.active).into();
+        let styles: AppStyles = AppColors::get(self.active).into();
 
         let block = self
             .render_block(&styles.block_style)
@@ -37,7 +37,7 @@ where
             .title(self.title())
     }
 
-    pub(super) fn render_rows(&self, styles: &AppTableStyles) -> Vec<Row> {
+    pub(super) fn render_rows(&self, styles: &AppStyles) -> Vec<Row> {
         self.items
             .iter()
             .map(|data| {
@@ -50,7 +50,7 @@ where
             .collect()
     }
 
-    pub(super) fn render_heading(&self, styles: &AppTableStyles) -> Row {
+    pub(super) fn render_heading(&self, styles: &AppStyles) -> Row {
         self.headings
             .iter()
             .map(|cow| Cell::from(cow.deref()))
@@ -59,7 +59,7 @@ where
             .height(1)
     }
 
-    pub(super) fn render_table(&self, styles: &AppTableStyles) -> Table {
+    pub(super) fn render_table(&self, styles: &AppStyles) -> Table {
         Table::new(
             self.render_rows(styles),
             Constraint::from_fills(vec![1; self.headings.len()]),
