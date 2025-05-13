@@ -5,17 +5,17 @@ where
     T: TableDisplay,
 {
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
-        let colors = AppColors::get(self.active);
+        let styles: AppTableStyles = AppColors::get(self.active).into();
 
         let block = self
-            .render_block(&colors.border_fg)
+            .render_block(&styles.block_style)
             .padding(Padding::proportional(1));
 
         {
             use ratatui::widgets::StatefulWidget;
             let mut state = TableState::new().with_selected(self.table_index);
             StatefulWidget::render(
-                self.render_table(&colors.into()),
+                self.render_table(&styles),
                 block.inner(area),
                 buf,
                 &mut state,
@@ -30,9 +30,9 @@ impl<T> TableData<'_, T>
 where
     T: TableDisplay,
 {
-    pub(super) fn render_block<'a>(&'a self, fg: &Color) -> Block<'a> {
+    pub(super) fn render_block<'a>(&'a self, block_style: &Style) -> Block<'a> {
         Block::bordered()
-            .border_style(Style::default().fg(*fg))
+            .border_style(*block_style)
             .border_type(BorderType::Rounded)
             .title(self.title())
     }

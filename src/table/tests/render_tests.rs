@@ -2,12 +2,12 @@ use super::*;
 
 #[test]
 fn test_render_block() {
-    let colors = AppColors::ACTIVE;
+    let style: AppTableStyles = AppColors::ACTIVE.into();
     let items = mock_receipts();
     let mut buf = Buffer::empty(test_rect());
 
     items
-        .render_block(&colors.border_fg)
+        .render_block(&style.block_style)
         .render(buf.area, &mut buf);
 
     let mut want = Buffer::with_lines(vec![
