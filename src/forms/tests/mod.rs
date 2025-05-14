@@ -11,7 +11,7 @@ use crate::test_cases::*;
 
 mod inputs;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 struct EmptyFormData;
 
 fn test_input_area() -> Rect {
@@ -26,6 +26,7 @@ fn test_defaut_form() {
     form.render_ref(got.area, &mut got);
 
     let want = Buffer::with_lines(vec![
+        "                                                  ",
         "╭────────────────────────────────────────────────╮",
         "│                                                │",
         "│                                                │",
@@ -33,7 +34,6 @@ fn test_defaut_form() {
         "│                                                │",
         "│                                                │",
         "╰────────────────────────────────────────────────╯",
-        "                                                  ",
     ]);
 
     assert_eq!(want, got)
@@ -41,13 +41,14 @@ fn test_defaut_form() {
 
 #[test]
 fn test_form_menu() {
-    let line = "Submit <enter> | Cancel <esc>";
-    let form: FormWidget<MockReceipt> = FormWidget::default().menu(line);
+    let line = "Add New Item";
+    let form: FormWidget<MockReceipt> = FormWidget::default().title(line);
     let mut got = Buffer::empty(test_rect());
 
     form.render_ref(got.area, &mut got);
 
     let want = Buffer::with_lines(vec![
+        " Add New Item                                     ",
         "╭────────────────────────────────────────────────╮",
         "│                                                │",
         "│                                                │",
@@ -55,7 +56,6 @@ fn test_form_menu() {
         "│                                                │",
         "│                                                │",
         "╰────────────────────────────────────────────────╯",
-        "          Submit <enter> | Cancel <esc>           ",
     ]);
 
     assert_eq!(want, got)
