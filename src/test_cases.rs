@@ -49,7 +49,7 @@ pub fn mock_receipts<'a>() -> TableData<'a, MockReceipt> {
 }
 
 pub fn test_app() -> App {
-    App::new()
+    App::new_builder()
         .register_model(CurrentModel::Items, Box::new(mock_items()))
         .expect("Test app should be empty")
         .register_model(CurrentModel::Receipt, Box::new(mock_receipts()))
