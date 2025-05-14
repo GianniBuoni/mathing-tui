@@ -1,13 +1,13 @@
 use super::*;
 
-#[derive(Default, Debug, PartialEq, Eq, Hash)]
+#[derive(Default, Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum CurrentModel {
     #[default]
     Items,
     Receipt,
 }
 
-impl App {
+impl App<'_> {
     pub fn cycle_view(&mut self) {
         match self.current_model {
             CurrentModel::Items => {

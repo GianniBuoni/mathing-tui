@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-impl Widget for &App {
+impl Widget for &App<'_> {
     fn render(self, area: Rect, buf: &mut Buffer)
     where
         Self: Sized,
