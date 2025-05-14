@@ -3,10 +3,13 @@ use super::*;
 #[derive(Debug, Default)]
 pub struct AppBuilder {
     models: HashMap<CurrentModel, Box<dyn Model>>,
+    forms: HashMap<(CurrentModel, FormAction), Box<dyn Form>>,
 }
 
 impl App {
-    pub fn new() -> AppBuilder {
+    /// Creates an [`AppBuilder`] for App, AppBuilder's `build` method
+    /// must be called to finish the process for constucting an App struct.
+    pub fn new_builder() -> AppBuilder {
         AppBuilder::default()
     }
 }
@@ -19,7 +22,7 @@ impl AppBuilder {
     ) -> Result<Self, Box<dyn Error>> {
         // early return if key is already registered
         match self.models.contains_key(&key) {
-            true => return Err("Key already is registered".into()),
+            true => Err("Key already is registered".into()),
             false => {
                 self.models.insert(key, model);
                 Ok(self)
@@ -27,8 +30,10 @@ impl AppBuilder {
         }
     }
     pub fn build(self) -> App {
-        let mut app = App::default();
-        app.models = self.models;
+        let mut app = App {
+            models: self.models,
+            ..Default::default()
+        };
         app.toggle_current_model();
         app
     }

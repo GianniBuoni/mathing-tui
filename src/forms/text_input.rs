@@ -30,7 +30,7 @@ impl<'a> InputWidget<'a> {
     }
     pub fn get_cursor(&self) -> Result<Position, Box<dyn Error>> {
         let pos = self.cursor_pos.try_borrow()?;
-        Ok(pos.clone())
+        Ok(*pos)
     }
     pub fn output(&self) -> Cow<str> {
         Cow::Borrowed(self.input.value())
