@@ -3,7 +3,6 @@ use super::*;
 #[derive(Debug, Default)]
 pub struct AppBuilder {
     models: HashMap<CurrentModel, Box<dyn Model>>,
-    forms: HashMap<(CurrentModel, FormAction), Box<dyn Form>>,
 }
 
 impl App {

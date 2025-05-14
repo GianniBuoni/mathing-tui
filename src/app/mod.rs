@@ -11,6 +11,7 @@ pub mod prelude {
 mod builder;
 #[cfg(test)]
 mod tests;
+mod ui;
 mod views;
 
 #[derive(Debug, Default)]

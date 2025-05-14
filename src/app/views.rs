@@ -7,7 +7,7 @@ pub enum CurrentModel {
     Receipt,
 }
 
-impl App<'_> {
+impl App {
     pub fn cycle_view(&mut self) {
         match self.current_model {
             CurrentModel::Items => {
