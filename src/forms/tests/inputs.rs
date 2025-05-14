@@ -66,6 +66,40 @@ fn test_input_get_cursor() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
+fn test_stacking_layout() {
+    let active_input = InputWidget::default().title("Active Input");
+    let other_input = InputWidget::default().title("Other Input");
+
+    let mut got = Buffer::empty(Rect::new(0, 0, 50, 6));
+    let chunks = Layout::vertical([
+        Constraint::Percentage(50),
+        Constraint::Percentage(50),
+    ])
+    .split(got.area);
+
+    let mut want = Buffer::with_lines(vec![
+        "╭ Active Input ──────────────────────────────────╮",
+        "│                                                │",
+        "╰────────────────────────────────────────────────╯",
+        "╭ Other Input ───────────────────────────────────╮",
+        "│                                                │",
+        "╰────────────────────────────────────────────────╯",
+    ]);
+
+    want.set_style(
+        Rect::new(0, 0, 50, 6),
+        Style::default()
+            .fg(Color::DarkGray)
+            .add_modifier(Modifier::RAPID_BLINK),
+    );
+
+    active_input.render_ref(chunks[0], &mut got);
+    other_input.render_ref(chunks[1], &mut got);
+
+    assert_eq!(want, got);
+}
+
+#[test]
 fn test_input_handle_event() -> Result<(), Box<dyn Error>> {
     // init input
     let mut input = InputWidget::default().title("Active Input");

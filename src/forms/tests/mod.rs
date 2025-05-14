@@ -10,9 +10,7 @@ use super::*;
 use crate::test_cases::*;
 
 mod inputs;
-
-#[derive(Default, Debug)]
-struct EmptyFormData;
+mod render;
 
 fn test_input_area() -> Rect {
     Rect::new(0, 0, 50, 3)
@@ -20,7 +18,7 @@ fn test_input_area() -> Rect {
 
 #[test]
 fn test_defaut_form() {
-    let form: FormWidget<EmptyFormData> = FormWidget::default();
+    let form: FormWidget = FormWidget::default();
     let mut got = Buffer::empty(test_rect());
 
     form.render_ref(got.area, &mut got);
@@ -42,7 +40,7 @@ fn test_defaut_form() {
 #[test]
 fn test_form_menu() {
     let line = "Add New Item";
-    let form: FormWidget<MockReceipt> = FormWidget::default().title(line);
+    let form: FormWidget = FormWidget::default().title(line);
     let mut got = Buffer::empty(test_rect());
 
     form.render_ref(got.area, &mut got);
