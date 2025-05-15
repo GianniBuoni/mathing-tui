@@ -58,14 +58,12 @@ impl WidgetRef for InputWidget<'_> {
                     .border_type(BorderType::Rounded),
             );
 
-        Clear.render(area, buf);
         input.render(area, buf);
 
         if self.input_mode == InputMode::Editing {
-            let x = self.input.visual_cursor().max(scroll) - scroll + 1;
             {
                 let mut cursor = self.cursor_pos.borrow_mut();
-                cursor.x = x as u16;
+                cursor.x = area.x + self.input.visual_cursor() as u16 + 1;
                 cursor.y = area.y + 1
             }
         }
