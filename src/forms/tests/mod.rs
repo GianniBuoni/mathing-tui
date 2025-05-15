@@ -25,7 +25,9 @@ struct TestStruct;
 
 #[test]
 fn test_form() {
-    let form: FormWidget<TestStruct> = FormWidget::default().area(test_rect());
+    let form = FormWidget::<TestStruct>::new_builder()
+        .area(test_rect())
+        .build();
     let mut got = Buffer::empty(test_big_area());
 
     form.render_ref(got.area, &mut got);
@@ -49,8 +51,11 @@ fn test_form() {
 #[test]
 fn test_form_menu() {
     let line = "Add New Item";
-    let form: FormWidget<TestStruct> =
-        FormWidget::default().area(test_rect()).title(line);
+    let form = FormWidget::<TestStruct>::new_builder()
+        .area(test_rect())
+        .title(line)
+        .build();
+
     let mut got = Buffer::empty(test_big_area());
 
     form.render_ref(got.area, &mut got);
