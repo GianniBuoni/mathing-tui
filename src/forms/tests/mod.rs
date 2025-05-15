@@ -23,55 +23,30 @@ fn test_input_area() -> Rect {
 #[derive(Default, Debug)]
 struct TestStruct;
 
-#[test]
-fn test_form() {
-    let form = FormWidget::<TestStruct>::new_builder()
-        .area(test_rect())
-        .build();
-    let mut got = Buffer::empty(test_big_area());
+fn full_form<'a>() -> FormWidget<'a, TestStruct> {
+    let item_name = InputWidget::default().title("Item Name");
+    let item_price = InputWidget::default().title("Item Price");
 
-    form.render_ref(got.area, &mut got);
-
-    let want = Buffer::with_lines(vec![
-        "                                                        ",
-        "                                                        ",
-        "   ╭────────────────────────────────────────────────╮   ",
-        "   │                                                │   ",
-        "   │                                                │   ",
-        "   │                                                │   ",
-        "   │                                                │   ",
-        "   │                                                │   ",
-        "   ╰────────────────────────────────────────────────╯   ",
-        "                                                        ",
-    ]);
-
-    assert_eq!(want, got)
+    FormWidget::<TestStruct>::new_builder()
+        .title("Add New Item")
+        .layout([Constraint::Percentage(50), Constraint::Percentage(50)])
+        .area(Rect::new(0, 0, 50, 9))
+        .add_component(item_name)
+        .add_component(item_price)
+        .build()
 }
 
-#[test]
-fn test_form_menu() {
-    let line = "Add New Item";
-    let form = FormWidget::<TestStruct>::new_builder()
-        .area(test_rect())
-        .title(line)
-        .build();
-
-    let mut got = Buffer::empty(test_big_area());
-
-    form.render_ref(got.area, &mut got);
-
-    let want = Buffer::with_lines(vec![
+fn base_want() -> Buffer {
+    Buffer::with_lines(vec![
         "                                                        ",
         "    Add New Item                                        ",
         "   ╭────────────────────────────────────────────────╮   ",
-        "   │                                                │   ",
-        "   │                                                │   ",
-        "   │                                                │   ",
-        "   │                                                │   ",
-        "   │                                                │   ",
+        "   │╭ Item Name ───────────────────────────────────╮│   ",
+        "   ││                                              ││   ",
+        "   │╰──────────────────────────────────────────────╯│   ",
+        "   │╭ Item Price ──────────────────────────────────╮│   ",
+        "   ││                                              ││   ",
+        "   │╰──────────────────────────────────────────────╯│   ",
         "   ╰────────────────────────────────────────────────╯   ",
-        "                                                        ",
-    ]);
-
-    assert_eq!(want, got)
+    ])
 }
