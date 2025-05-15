@@ -8,7 +8,7 @@ pub mod prelude {
     pub(crate) use crate::styles::prelude::*;
     pub use crate::table::prelude::*;
     pub(crate) use ratatui::{crossterm::event, prelude::*, widgets::*};
-    pub(crate) use tui_input::Input;
+    pub(crate) use tui_input::{Input, backend::crossterm::EventHandler};
 }
 
 mod app;
