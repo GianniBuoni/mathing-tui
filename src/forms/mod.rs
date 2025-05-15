@@ -9,6 +9,7 @@ pub(crate) mod prelude {
     pub(crate) use super::from_trait::Form;
 }
 
+mod builder;
 mod from_render;
 mod from_trait;
 #[cfg(test)]
@@ -37,44 +38,37 @@ where
     params: T,
 }
 
-impl<'a, T> FormWidget<'a, T>
+impl<T> FormWidget<'_, T>
 where
     T: Debug + Default,
 {
-    pub fn title(mut self, line: &'a str) -> Self {
-        self.title = Cow::Borrowed(line);
-        self
-    }
-    pub fn layout<U>(mut self, layout: U) -> Self
-    where
-        U: Into<Rc<[Constraint]>>,
-    {
-        self.layout = layout.into();
-        self
-    }
-    pub fn add_component(mut self, component: InputWidget<'a>) -> Self {
-        self.inputs.push(component);
-        self
-    }
-    pub fn area(mut self, size: Rect) -> Self {
-        self.area = size;
-        self
-    }
     pub fn final_feild(&self) -> usize {
         self.inputs.len() - 1
     }
     pub fn next_feild(&mut self) {
+        if let Some(feild) = self.inputs.get_mut(self.active_field) {
+            feild.toggle();
+        }
         if self.active_field < self.final_feild() {
             self.active_field += 1;
         } else {
             self.active_field = 0;
         }
+        if let Some(feild) = self.inputs.get_mut(self.active_field) {
+            feild.toggle();
+        }
     }
     pub fn prev_feild(&mut self) {
+        if let Some(feild) = self.inputs.get_mut(self.active_field) {
+            feild.toggle();
+        }
         if self.active_field > 0 {
             self.active_field -= 1;
         } else {
             self.active_field = self.final_feild();
+        }
+        if let Some(feild) = self.inputs.get_mut(self.active_field) {
+            feild.toggle();
         }
     }
 }
