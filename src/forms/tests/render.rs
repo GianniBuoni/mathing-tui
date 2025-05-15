@@ -1,3 +1,5 @@
+use ratatui::crossterm::event::KeyEvent;
+
 use super::*;
 
 fn full_form<'a>() -> FormWidget<'a, TestStruct> {
@@ -115,4 +117,36 @@ fn test_form_prev_feild() {
     let want = Position::new(5, 7);
 
     assert_eq!(want, got, "Test if input gives correct cursor potision.");
+}
+
+#[test]
+fn test_form_handle_inputs_tracking_cursor() {
+    let mut form = full_form();
+    let mut buf = Buffer::empty(test_big_area());
+
+    let test_cases = [
+        (
+            KeyEvent::new(KeyCode::Tab, KeyModifiers::NONE),
+            Position::new(5, 7),
+            "Test tab go to next feild.",
+        ),
+        (
+            KeyEvent::new(KeyCode::Char('a'), KeyModifiers::NONE),
+            Position::new(6, 7),
+            "Test handling char input",
+        ),
+        (
+            KeyEvent::new(KeyCode::Tab, KeyModifiers::SHIFT),
+            Position::new(5, 4),
+            "Test handling SHIFT+Tab",
+        ),
+    ];
+
+    test_cases.iter().for_each(|(key_event, want, desc)| {
+        form.handle_event(key_event);
+        form.render(buf.area, &mut buf);
+
+        let got = form.cursor_pos().unwrap();
+        assert_eq!(got, *want, "{desc}");
+    });
 }
