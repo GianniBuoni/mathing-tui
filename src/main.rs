@@ -1,22 +1,13 @@
-use std::{error::Error, sync::mpsc::channel, thread};
+use std::error::Error;
 
 use mathing_tui::prelude::*;
-use ratatui::crossterm::event::KeyEvent;
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let terminal = ratatui::init();
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    let tui = Tui::new().start();
     let mut app = App::default();
 
-    let (event_tx, event_rx) = channel::<KeyEvent>();
-
-    thread::spawn(move || {
-        if let Err(e) = send_key_event(event_tx) {
-            ratatui::restore();
-            eprint!("{e}");
-        }
-    });
-
-    let app_result = app.run(terminal, event_rx);
+    let app_result = app.run(tui).await;
 
     ratatui::restore();
     app_result

@@ -1,13 +1,15 @@
-use std::{collections::HashMap, error::Error, sync::mpsc::Receiver};
+use std::{collections::HashMap, error::Error};
 
 use crate::prelude::*;
-use ratatui::DefaultTerminal;
+use crossterm::event::{KeyCode, KeyModifiers};
 
 pub mod prelude {
     pub use super::App;
+    pub(crate) use super::actions::Action;
     pub(crate) use super::views::CurrentModel;
 }
 
+mod actions;
 mod models;
 #[cfg(test)]
 mod tests;
@@ -21,48 +23,43 @@ pub struct App {
 }
 
 impl App {
-    pub fn run(
-        &mut self,
-        mut terminal: DefaultTerminal,
-        rx: Receiver<event::KeyEvent>,
-    ) -> Result<(), Box<dyn Error>> {
-        // first draw before event loop
-        terminal.draw(|frame| {
-            self.render(frame.area(), frame.buffer_mut());
-        })?;
-
+    pub async fn run(&mut self, mut tui: Tui) -> Result<(), Box<dyn Error>> {
         while !self.should_exit {
-            self.handle_key_events(rx.recv()?);
+            let event = tui.next_event().await;
+            let action = self.handle_events(event);
+            self.update(action);
 
-            terminal.draw(|frame| {
+            tui.terminal.draw(|frame| {
                 self.render(frame.area(), frame.buffer_mut());
             })?;
         }
         Ok(())
     }
 
-    fn handle_key_events(&mut self, key_event: event::KeyEvent) {
-        if key_event.kind != event::KeyEventKind::Press {
-            return;
-        }
-        match key_event.code {
-            event::KeyCode::Char('q') => {
-                self.should_exit = true;
-            }
-            event::KeyCode::Tab => {
-                self.cycle_view();
-            }
-            event::KeyCode::Char('j') | event::KeyCode::Down => {
-                if let Some(model) = self.models.get_mut(&self.current_model) {
-                    model.next_row();
+    fn handle_events(&mut self, event: Option<Event>) -> Option<Action> {
+        match event {
+            Some(Event::Quit) => Some(Action::Quit),
+            Some(Event::Key(key_event)) => {
+                match (key_event.code, key_event.modifiers) {
+                    (KeyCode::Char('c'), KeyModifiers::CONTROL) => {
+                        Some(Action::Quit)
+                    }
+                    (KeyCode::Tab, KeyModifiers::NONE) => {
+                        Some(Action::SwitchPane)
+                    }
+                    (KeyCode::Char('j'), KeyModifiers::NONE)
+                    | (KeyCode::Down, KeyModifiers::NONE) => {
+                        Some(Action::TableNavigateDown)
+                    }
+                    (KeyCode::Char('k'), KeyModifiers::NONE)
+                    | (KeyCode::Up, KeyModifiers::NONE) => {
+                        Some(Action::TableNavigateUp)
+                    }
+                    _ => None,
                 }
             }
-            event::KeyCode::Char('k') | event::KeyCode::Up => {
-                if let Some(model) = self.models.get_mut(&self.current_model) {
-                    model.prev_row();
-                }
-            }
-            _ => {}
+            Some(_) => None,
+            None => None,
         }
     }
 }

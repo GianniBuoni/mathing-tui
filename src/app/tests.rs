@@ -1,4 +1,4 @@
-use ratatui::crossterm::event::KeyCode;
+use crossterm::event::{KeyCode, KeyEvent};
 
 use super::*;
 use crate::test_cases::*;
@@ -6,7 +6,7 @@ use crate::test_cases::*;
 #[test]
 fn test_state_cycling() {
     let mut app = test_app();
-    let key_event = event::KeyEvent::from(KeyCode::Tab);
+    let key_event = KeyEvent::from(KeyCode::Tab);
 
     assert_eq!(
         app.current_model,
@@ -21,7 +21,8 @@ fn test_state_cycling() {
             CurrentModel::Items
         };
 
-        app.handle_key_events(key_event);
+        let action = app.handle_events(Some(Event::Key(key_event)));
+        app.update(action);
         assert_eq!(
             app.current_model, want,
             "Test if current view changes with repeated input"
@@ -32,7 +33,7 @@ fn test_state_cycling() {
 #[test]
 fn test_view_data() {
     let mut app = test_app();
-    let key_event = event::KeyEvent::from(KeyCode::Tab);
+    let key_event = KeyEvent::from(KeyCode::Tab);
 
     assert!(
         app.models.get(&app.current_model).unwrap().is_active(),
@@ -45,7 +46,7 @@ fn test_view_data() {
     );
 
     for i in 0..100 {
-        app.handle_key_events(key_event);
+        app.handle_events(Some(Event::Key(key_event)));
 
         assert!(
             app.models.get(&app.current_model).unwrap().is_active(),
@@ -106,8 +107,8 @@ fn test_styles() -> (Style, Style, Style) {
 #[test]
 fn test_down_navigation_input() {
     let down_events = [
-        (event::KeyEvent::from(KeyCode::Char('j')), "j"),
-        (event::KeyEvent::from(KeyCode::Down), "Down"),
+        (KeyEvent::from(KeyCode::Char('j')), "j"),
+        (KeyEvent::from(KeyCode::Down), "Down"),
     ];
 
     down_events.iter().for_each(|(event, key)| {
@@ -119,7 +120,8 @@ fn test_down_navigation_input() {
         want.set_style(Rect::new(3, 2, 44, 1), test_styles().1);
         want.set_style(Rect::new(3, 4, 44, 1), test_styles().2);
 
-        app.handle_key_events(*event);
+        let action = app.handle_events(Some(Event::Key(*event)));
+        app.update(action);
         app.models
             .get(&app.current_model)
             .unwrap()
@@ -132,8 +134,8 @@ fn test_down_navigation_input() {
 #[test]
 fn test_up_navigation_input() {
     let up_events = [
-        (event::KeyEvent::from(KeyCode::Char('k')), "k"),
-        (event::KeyEvent::from(KeyCode::Up), "Up"),
+        (KeyEvent::from(KeyCode::Char('k')), "k"),
+        (KeyEvent::from(KeyCode::Up), "Up"),
     ];
 
     up_events.iter().for_each(|(event, key)| {
@@ -145,7 +147,8 @@ fn test_up_navigation_input() {
         want.set_style(Rect::new(3, 2, 44, 1), test_styles().1);
         want.set_style(Rect::new(3, 5, 44, 1), test_styles().2);
 
-        app.handle_key_events(*event);
+        let action = app.handle_events(Some(Event::Key(*event)));
+        app.update(action);
         app.models
             .get(&app.current_model)
             .unwrap()
