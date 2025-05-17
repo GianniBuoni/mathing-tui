@@ -9,6 +9,7 @@ pub mod prelude {
 }
 
 mod app;
+mod component;
 mod db;
 mod model;
 mod styles;
