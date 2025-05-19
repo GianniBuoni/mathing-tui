@@ -44,18 +44,32 @@ impl<T> Component for TableData<'_, T>
 where
     T: TableDisplay,
 {
-    fn handle_key_events(&mut self, _key: KeyEvent) -> Option<Action> {
-        None
+    fn handle_key_events(&mut self, key: KeyEvent) -> Option<Action> {
+        match key.code {
+            KeyCode::Char('j') | KeyCode::Down => {
+                Some(Action::TableNavigateDown)
+            }
+            KeyCode::Char('k') | KeyCode::Up => Some(Action::TableNavigateUp),
+            _ => None,
+        }
     }
+
     fn update(&mut self, action: Option<Action>) {
         match action {
             Some(Action::SwitchPane) => {
                 self.check_active();
             }
+            Some(Action::TableNavigateDown) => {
+                self.next_row();
+            }
+            Some(Action::TableNavigateUp) => {
+                self.prev_row();
+            }
             Some(_) => {}
             None => {}
         }
     }
+
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
         let colors = AppColors::get(self.active);
 
@@ -76,6 +90,7 @@ where
 
         block.render(rect, frame.buffer_mut())
     }
+
     fn add_tracker(&mut self, tracker: Rc<RefCell<usize>>) {
         self.tracker = tracker;
     }
