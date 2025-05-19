@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use crate::prelude::*;
 
-use crossterm::event::KeyCode;
-
-use super::*;
+pub(crate) mod prelude {
+    pub(crate) use super::Home;
+}
 
 #[derive(Default, Debug)]
 pub enum Mode {
@@ -14,8 +14,8 @@ pub enum Mode {
 #[derive(Default, Debug)]
 pub struct Home {
     action_tx: Option<UnboundedSender<Action>>,
-    components: HashMap<CurrentModel, Box<dyn Component>>,
-    current_model: CurrentModel,
+    components: Vec<Box<dyn Component>>,
+    current_model: usize,
     keymap: HashMap<KeyEvent, Action>,
     last_events: Vec<KeyEvent>,
     mode: Mode,
@@ -70,7 +70,7 @@ impl Component for Home {
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
         let context_menu = Line::from(vec![
             " Quit ".gray(),
-            "<q>".dark_gray(),
+            "<CTRL-c>".dark_gray(),
             " | ".gray(),
             "Switch pane ".gray(),
             "<Tab> ".dark_gray(),
@@ -88,13 +88,11 @@ impl Component for Home {
 
         main_block.render(rect, frame.buffer_mut());
 
-        self.components
-            .values_mut()
-            .into_iter()
-            .zip(chunks)
-            .for_each(|(component, chunk)| {
+        self.components.iter_mut().zip(chunks).for_each(
+            |(component, chunk)| {
                 component.draw(frame, chunk);
-            });
+            },
+        );
     }
 }
 

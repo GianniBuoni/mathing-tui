@@ -1,18 +1,16 @@
 use std::error::Error;
 
-use crate::{component::Component, prelude::*};
+use crate::prelude::*;
 use crossterm::event::{KeyCode, KeyModifiers};
 
 pub mod prelude {
     pub use super::App;
     pub(crate) use super::actions::Action;
-    pub(crate) use super::views::CurrentModel;
 }
 
 mod actions;
 #[cfg(test)]
 mod tests;
-mod views;
 
 #[derive(Debug, Default)]
 pub struct App {

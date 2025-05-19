@@ -1,9 +1,9 @@
-use crossterm::event::{
-    Event as CrosstermEvent, EventStream, KeyEvent, KeyEventKind,
-};
+use crossterm::event::{EventStream, KeyEventKind};
 use futures::{FutureExt, StreamExt};
 use ratatui::DefaultTerminal;
 use tokio::{sync::mpsc::UnboundedSender, task::JoinHandle};
+
+use crate::prelude::*;
 
 pub mod prelude {
     pub use super::{Event, Tui};

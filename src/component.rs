@@ -1,15 +1,9 @@
-use std::{error::Error, fmt::Debug};
-
-use crossterm::event::KeyEvent;
-use futures::channel::mpsc::UnboundedSender;
-
 use crate::prelude::*;
+use std::fmt::Debug;
 
 pub(crate) mod prelude {
-    pub(crate) use super::home::Home;
+    pub(crate) use super::{Component, ComponentBuilder};
 }
-
-mod home;
 
 pub trait ComponentBuilder<T, U>
 where
