@@ -1,6 +1,6 @@
-use std::{collections::HashMap, error::Error};
+use std::error::Error;
 
-use crate::prelude::*;
+use crate::{component::Component, prelude::*};
 use crossterm::event::{KeyCode, KeyModifiers};
 
 pub mod prelude {
@@ -17,8 +17,7 @@ mod views;
 
 #[derive(Debug, Default)]
 pub struct App {
-    models: HashMap<CurrentModel, Box<dyn Model>>,
-    current_model: CurrentModel,
+    component: Home,
     should_exit: bool,
 }
 
@@ -29,9 +28,8 @@ impl App {
             let action = self.handle_events(event);
             self.update(action);
 
-            tui.terminal.draw(|frame| {
-                self.render(frame.area(), frame.buffer_mut());
-            })?;
+            tui.terminal
+                .draw(|frame| self.component.draw(frame, frame.area()))?;
         }
         Ok(())
     }
@@ -44,22 +42,21 @@ impl App {
                     (KeyCode::Char('c'), KeyModifiers::CONTROL) => {
                         Some(Action::Quit)
                     }
-                    (KeyCode::Tab, KeyModifiers::NONE) => {
-                        Some(Action::SwitchPane)
-                    }
-                    (KeyCode::Char('j'), KeyModifiers::NONE)
-                    | (KeyCode::Down, KeyModifiers::NONE) => {
-                        Some(Action::TableNavigateDown)
-                    }
-                    (KeyCode::Char('k'), KeyModifiers::NONE)
-                    | (KeyCode::Up, KeyModifiers::NONE) => {
-                        Some(Action::TableNavigateUp)
-                    }
-                    _ => None,
+                    _ => self.component.handle_events(event),
                 }
             }
             Some(_) => None,
             None => None,
+        }
+    }
+
+    pub fn update(&mut self, action: Option<Action>) {
+        match action {
+            Some(Action::Quit) => {
+                self.should_exit = true;
+            }
+            Some(_) => {}
+            None => {}
         }
     }
 }

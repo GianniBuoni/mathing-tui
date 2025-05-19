@@ -1,5 +1,6 @@
 pub mod prelude {
     pub use crate::app::prelude::*;
+    pub(crate) use crate::component::prelude::*;
     pub use crate::db::prelude::*;
     pub(crate) use crate::model::prelude::*;
     pub(crate) use crate::styles::prelude::*;
