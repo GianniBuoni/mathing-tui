@@ -1,5 +1,8 @@
 use crate::prelude::*;
 
+#[cfg(test)]
+mod tests;
+
 pub(crate) mod prelude {
     pub(crate) use super::Home;
 }
@@ -54,7 +57,11 @@ impl Component for Home {
     fn update(&mut self, action: Option<Action>) {
         match action {
             Some(Action::SwitchPane) => {
-                todo!()
+                if self.current_model < self.components.len() - 1 {
+                    self.current_model += 1;
+                } else {
+                    self.current_model = 0;
+                }
             }
             Some(Action::Query(_q_params)) => {
                 todo!()

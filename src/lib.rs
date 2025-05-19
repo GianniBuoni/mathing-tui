@@ -10,7 +10,6 @@ pub mod prelude {
     pub(crate) use crossterm::event::{
         Event as CrosstermEvent, KeyCode, KeyEvent,
     };
-    pub(crate) use futures::channel::mpsc::UnboundedSender;
     pub(crate) use ratatui::{prelude::*, widgets::*};
     pub(crate) use std::collections::HashMap;
 }

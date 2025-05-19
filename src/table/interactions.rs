@@ -20,7 +20,7 @@ where
         self.active
     }
     fn index(&self) -> u8 {
-        self.app_index
+        self.app_index as u8
     }
     fn toggle(&mut self) {
         self.active = !self.active;

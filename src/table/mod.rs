@@ -1,7 +1,9 @@
 use std::{borrow::Cow, fmt::Debug, ops::Deref, rc::Rc};
 
 use crate::prelude::*;
+use builder::TableBuilder;
 
+mod builder;
 mod interactions;
 mod render;
 #[cfg(test)]
@@ -11,20 +13,20 @@ pub mod prelude {
     pub use super::{TableData, TableDisplay};
 }
 
-pub trait TableDisplay: Debug {
+pub trait TableDisplay: Debug + Default {
     fn ref_array(&self) -> Vec<Cow<str>>;
 }
 
 #[derive(Debug, Default)]
 pub struct TableData<'a, T>
 where
-    T: TableDisplay + Sized,
+    T: TableDisplay,
 {
     title: Cow<'a, str>,
     headings: Rc<[Cow<'a, str>]>,
     items: Rc<[T]>,
     table_index: usize,
-    app_index: u8,
+    app_index: usize,
     active: bool,
 }
 
@@ -32,22 +34,22 @@ impl<'a, T> TableData<'a, T>
 where
     T: TableDisplay,
 {
-    pub fn new(
-        title: &'a str,
-        headings: Rc<[Cow<'a, str>]>,
-        items: impl Into<Rc<[T]>>,
-        app_index: u8,
-    ) -> Self {
-        let items: Rc<[T]> = items.into();
-        let title = Cow::Borrowed(title);
+    pub fn new_builder() -> TableBuilder<'a, T> {
+        TableBuilder::default()
+    }
+}
 
-        Self {
-            title,
-            headings,
-            items,
-            table_index: 0,
-            active: false,
-            app_index,
-        }
+impl<T> Component for TableData<'_, T>
+where
+    T: TableDisplay,
+{
+    fn handle_key_events(&mut self, key: KeyEvent) -> Option<Action> {
+        None
+    }
+    fn update(&mut self, action: Option<Action>) {
+        ()
+    }
+    fn draw(&mut self, frame: &mut Frame, rect: Rect) {
+        ()
     }
 }
