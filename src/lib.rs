@@ -18,4 +18,3 @@ mod table;
 #[cfg(test)]
 mod test_cases;
 mod tui;
-mod ui;

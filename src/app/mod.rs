@@ -10,7 +10,6 @@ pub mod prelude {
 }
 
 mod actions;
-mod models;
 #[cfg(test)]
 mod tests;
 mod views;
