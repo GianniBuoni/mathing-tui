@@ -27,6 +27,7 @@ pub struct Home {
 #[derive(Default, Debug)]
 pub struct HomeBuilder {
     components: Vec<Box<dyn Component>>,
+    component_tracker: Rc<RefCell<usize>>,
     keymap: HashMap<KeyEvent, Action>,
 }
 
@@ -111,9 +112,14 @@ impl Component for Home {
 }
 
 impl ComponentBuilder<HomeBuilder, Home> for HomeBuilder {
-    fn build(self) -> Home {
+    fn build(mut self) -> Home {
+        self.components.iter_mut().for_each(|component| {
+            component.add_tracker(self.component_tracker.clone());
+            component.init();
+        });
         Home {
             components: self.components,
+            component_tracker: self.component_tracker,
             keymap: self.keymap,
             ..Default::default()
         }

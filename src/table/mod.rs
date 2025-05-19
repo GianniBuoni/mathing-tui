@@ -47,13 +47,42 @@ where
     fn handle_key_events(&mut self, _key: KeyEvent) -> Option<Action> {
         None
     }
-    fn update(&mut self, _action: Option<Action>) {
-        let current_index = self.tracker.borrow();
-        if current_index.deref() == &self.app_index {
-            self.active = true;
+    fn update(&mut self, action: Option<Action>) {
+        match action {
+            Some(Action::SwitchPane) => {
+                self.check_active();
+            }
+            Some(_) => {}
+            None => {}
         }
     }
-    fn draw(&mut self, _frame: &mut Frame, _rect: Rect) {
-        ()
+    fn draw(&mut self, frame: &mut Frame, rect: Rect) {
+        let colors = AppColors::get(self.active);
+
+        let block = self
+            .render_block(&colors.border_fg)
+            .padding(Padding::proportional(1));
+
+        {
+            use ratatui::widgets::StatefulWidget;
+            let mut state = TableState::new().with_selected(self.table_index);
+            StatefulWidget::render(
+                self.render_table(&colors.into()),
+                block.inner(rect),
+                frame.buffer_mut(),
+                &mut state,
+            );
+        }
+
+        block.render(rect, frame.buffer_mut())
+    }
+    fn add_tracker(&mut self, tracker: Rc<RefCell<usize>>) {
+        self.tracker = tracker;
+    }
+    fn is_active(&self) -> bool {
+        self.active
+    }
+    fn init(&mut self) {
+        self.check_active();
     }
 }

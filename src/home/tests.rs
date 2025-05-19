@@ -39,3 +39,23 @@ fn test_component_cycling() {
         );
     }
 }
+
+#[test]
+fn test_tracker_sync() {
+    let mut home = test_home();
+    let key_event = KeyEvent::from(KeyCode::Tab);
+
+    for i in 0..100 {
+        let action = home.handle_events(Some(Event::Key(key_event)));
+        home.update(action);
+
+        let want = if i % 2 == 0 { false } else { true };
+
+        let [item, receipts] = &home.components[..] else {
+            panic!("Test case should only have two components.");
+        };
+
+        assert_eq!(want, item.is_active(), "Item iteration: {i}");
+        assert_eq!(!want, receipts.is_active(), "Receipt iteration: {i}");
+    }
+}

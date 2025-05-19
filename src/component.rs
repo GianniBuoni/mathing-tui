@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use std::fmt::Debug;
+use std::{cell::RefCell, fmt::Debug, rc::Rc};
 
 pub(crate) mod prelude {
     pub(crate) use super::{Component, ComponentBuilder};
@@ -25,4 +25,9 @@ pub trait Component: Debug {
             _ => None,
         }
     }
+    fn add_tracker(&mut self, _tracker: Rc<RefCell<usize>>) {}
+    fn is_active(&self) -> bool {
+        false
+    }
+    fn init(&mut self) {}
 }

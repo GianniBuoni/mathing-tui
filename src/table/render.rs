@@ -1,31 +1,5 @@
 use super::*;
 
-impl<T> WidgetRef for TableData<'_, T>
-where
-    T: TableDisplay,
-{
-    fn render_ref(&self, area: Rect, buf: &mut Buffer) {
-        let colors = AppColors::get(self.active);
-
-        let block = self
-            .render_block(&colors.border_fg)
-            .padding(Padding::proportional(1));
-
-        {
-            use ratatui::widgets::StatefulWidget;
-            let mut state = TableState::new().with_selected(self.table_index);
-            StatefulWidget::render(
-                self.render_table(&colors.into()),
-                block.inner(area),
-                buf,
-                &mut state,
-            );
-        }
-
-        block.render(area, buf)
-    }
-}
-
 impl<T> TableData<'_, T>
 where
     T: TableDisplay,

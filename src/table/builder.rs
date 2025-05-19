@@ -32,10 +32,6 @@ where
         self.app_index = index;
         self
     }
-    pub fn add_tracker(mut self, tracker: Rc<RefCell<usize>>) -> Self {
-        self.tracker = tracker;
-        self
-    }
 }
 
 impl<'a, T> ComponentBuilder<TableBuilder<'a, T>, TableData<'a, T>>
