@@ -1,4 +1,4 @@
-use std::{borrow::Cow, fmt::Debug, ops::Deref, rc::Rc};
+use std::{borrow::Cow, cell::RefCell, fmt::Debug, ops::Deref, rc::Rc};
 
 use crate::prelude::*;
 use builder::TableBuilder;
@@ -27,6 +27,7 @@ where
     items: Rc<[T]>,
     table_index: usize,
     app_index: usize,
+    tracker: Rc<RefCell<usize>>,
     active: bool,
 }
 
@@ -43,13 +44,16 @@ impl<T> Component for TableData<'_, T>
 where
     T: TableDisplay,
 {
-    fn handle_key_events(&mut self, key: KeyEvent) -> Option<Action> {
+    fn handle_key_events(&mut self, _key: KeyEvent) -> Option<Action> {
         None
     }
-    fn update(&mut self, action: Option<Action>) {
-        ()
+    fn update(&mut self, _action: Option<Action>) {
+        let current_index = self.tracker.borrow();
+        if current_index.deref() == &self.app_index {
+            self.active = true;
+        }
     }
-    fn draw(&mut self, frame: &mut Frame, rect: Rect) {
+    fn draw(&mut self, _frame: &mut Frame, _rect: Rect) {
         ()
     }
 }

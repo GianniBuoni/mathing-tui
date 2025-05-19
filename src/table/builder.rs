@@ -9,6 +9,7 @@ where
     headings: Vec<Cow<'a, str>>,
     items: Vec<T>,
     app_index: usize,
+    tracker: Rc<RefCell<usize>>,
 }
 
 impl<'a, T> TableBuilder<'a, T>
@@ -31,6 +32,10 @@ where
         self.app_index = index;
         self
     }
+    pub fn add_tracker(mut self, tracker: Rc<RefCell<usize>>) -> Self {
+        self.tracker = tracker;
+        self
+    }
 }
 
 impl<'a, T> ComponentBuilder<TableBuilder<'a, T>, TableData<'a, T>>
@@ -44,6 +49,7 @@ where
             headings: self.headings.into(),
             items: self.items.into(),
             app_index: self.app_index,
+            tracker: self.tracker,
             ..Default::default()
         }
     }

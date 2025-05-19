@@ -1,3 +1,5 @@
+use std::{cell::RefCell, ops::Deref, rc::Rc};
+
 use crate::prelude::*;
 
 #[cfg(test)]
@@ -17,7 +19,7 @@ pub enum Mode {
 #[derive(Default, Debug)]
 pub struct Home {
     components: Vec<Box<dyn Component>>,
-    current_model: usize,
+    component_tracker: Rc<RefCell<usize>>,
     keymap: HashMap<KeyEvent, Action>,
     mode: Mode,
 }
@@ -31,6 +33,15 @@ pub struct HomeBuilder {
 impl Home {
     pub fn new_builder() -> HomeBuilder {
         HomeBuilder::default()
+    }
+    fn cycle_view(&mut self) {
+        let mut current = self.component_tracker.borrow_mut();
+        let new_index = if *current.deref() < self.components.len() - 1 {
+            current.deref() + 1
+        } else {
+            0
+        };
+        *current = new_index
     }
 }
 
@@ -57,11 +68,10 @@ impl Component for Home {
     fn update(&mut self, action: Option<Action>) {
         match action {
             Some(Action::SwitchPane) => {
-                if self.current_model < self.components.len() - 1 {
-                    self.current_model += 1;
-                } else {
-                    self.current_model = 0;
-                }
+                self.cycle_view();
+                self.components
+                    .iter_mut()
+                    .for_each(|component| component.update(action));
             }
             Some(Action::Query(_q_params)) => {
                 todo!()

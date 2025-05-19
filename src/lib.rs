@@ -3,7 +3,6 @@ pub mod prelude {
     pub(crate) use crate::component::prelude::*;
     pub use crate::db::prelude::*;
     pub(crate) use crate::home::prelude::*;
-    pub(crate) use crate::model::prelude::*;
     pub(crate) use crate::styles::prelude::*;
     pub use crate::table::prelude::*;
     pub use crate::tui::prelude::*;
@@ -18,7 +17,6 @@ mod app;
 mod component;
 mod db;
 mod home;
-mod model;
 mod styles;
 mod table;
 #[cfg(test)]
