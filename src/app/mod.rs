@@ -10,6 +10,8 @@ pub mod prelude {
 
 mod actions;
 mod builder;
+#[cfg(test)]
+mod tests;
 
 #[derive(Debug, Default)]
 pub struct App {
@@ -30,7 +32,7 @@ impl App {
         Ok(())
     }
 
-    fn handle_events(&mut self, event: Option<Event>) -> Option<Action> {
+    pub fn handle_events(&mut self, event: Option<Event>) -> Option<Action> {
         match event {
             Some(Event::Quit) => Some(Action::Quit),
             Some(Event::Key(key_event)) => {
@@ -51,7 +53,9 @@ impl App {
             Some(Action::Quit) => {
                 self.should_exit = true;
             }
-            Some(_) => {}
+            Some(_) => {
+                self.component.update(action);
+            }
             None => {}
         }
     }

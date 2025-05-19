@@ -53,7 +53,14 @@ impl Component for Home {
                 KeyCode::Tab => Action::SwitchPane,
                 KeyCode::Char('i') => Action::EnterInsert,
                 _ => {
-                    return None;
+                    let current = self.component_tracker.borrow();
+                    if let Some(component) =
+                        self.components.get_mut(*current.deref())
+                    {
+                        return component.handle_events(Some(Event::Key(key)));
+                    } else {
+                        return None;
+                    };
                 }
             },
             Mode::Insert => match key.code {
@@ -68,6 +75,8 @@ impl Component for Home {
 
     fn update(&mut self, action: Option<Action>) {
         match action {
+            Some(Action::EnterInsert) => self.mode = Mode::Insert,
+            Some(Action::EnterNormal) => self.mode = Mode::Normal,
             Some(Action::SwitchPane) => {
                 self.cycle_view();
                 self.components
