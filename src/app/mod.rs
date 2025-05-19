@@ -9,8 +9,7 @@ pub mod prelude {
 }
 
 mod actions;
-#[cfg(test)]
-mod tests;
+mod builder;
 
 #[derive(Debug, Default)]
 pub struct App {

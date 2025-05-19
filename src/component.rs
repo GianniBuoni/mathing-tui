@@ -10,8 +10,8 @@ where
     T: ComponentBuilder<T, U>,
     U: Component,
 {
-    fn add_action_handler(self, tx: UnboundedSender<Action>) -> T;
-    fn build(&self) -> U;
+    fn add_component(self, component: Box<dyn Component>) -> T;
+    fn build(self) -> U;
 }
 
 pub trait Component: Debug {

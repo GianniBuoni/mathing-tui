@@ -13,17 +13,15 @@ pub enum Mode {
 
 #[derive(Default, Debug)]
 pub struct Home {
-    action_tx: Option<UnboundedSender<Action>>,
     components: Vec<Box<dyn Component>>,
     current_model: usize,
     keymap: HashMap<KeyEvent, Action>,
-    last_events: Vec<KeyEvent>,
     mode: Mode,
 }
 
 #[derive(Default, Debug)]
 pub struct HomeBuilder {
-    action_tx: Option<UnboundedSender<Action>>,
+    components: Vec<Box<dyn Component>>,
     keymap: HashMap<KeyEvent, Action>,
 }
 
@@ -35,7 +33,6 @@ impl Home {
 
 impl Component for Home {
     fn handle_key_events(&mut self, key: KeyEvent) -> Option<Action> {
-        self.last_events.push(key);
         let action = match self.mode {
             Mode::Normal => match key.code {
                 KeyCode::Tab => Action::SwitchPane,
@@ -97,18 +94,15 @@ impl Component for Home {
 }
 
 impl ComponentBuilder<HomeBuilder, Home> for HomeBuilder {
-    fn build(&self) -> Home {
+    fn build(self) -> Home {
         Home {
-            action_tx: self.action_tx.clone(),
-            keymap: self.keymap.clone(),
+            components: self.components,
+            keymap: self.keymap,
             ..Default::default()
         }
     }
-    fn add_action_handler(
-        mut self,
-        tx: UnboundedSender<Action>,
-    ) -> HomeBuilder {
-        self.action_tx = Some(tx);
+    fn add_component(mut self, component: Box<dyn Component>) -> HomeBuilder {
+        self.components.push(component);
         self
     }
 }
