@@ -42,7 +42,7 @@ where
         TableData::<'a, T> {
             title: self.title,
             headings: self.headings.into(),
-            items: self.items.into(),
+            items: self.items,
             app_index: self.app_index,
             tracker: self.tracker,
             ..Default::default()

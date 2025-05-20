@@ -19,7 +19,7 @@ impl TableDisplay for StoreJoinRow {
         let payees = self
             .users
             .iter()
-            .map(|user| format!("{}", user.name))
+            .map(|user| user.name.to_owned())
             .collect::<Vec<String>>()
             .join(", ");
         let payees = Cow::Owned(format!(" {payees} "));

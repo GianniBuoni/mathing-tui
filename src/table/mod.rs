@@ -6,7 +6,7 @@ mod builder;
 mod data;
 mod interactions;
 mod render;
-mod table;
+mod table_tui;
 #[cfg(test)]
 mod tests;
 

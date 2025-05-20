@@ -40,7 +40,7 @@ impl<'a> Home<'a> {
         HomeBuilder::default()
     }
     fn cycle_view(&mut self) {
-        if self.components.len() == 0 {
+        if self.components.is_empty() {
             return;
         }
 

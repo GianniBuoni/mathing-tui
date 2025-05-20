@@ -32,11 +32,6 @@ where
 
     pub fn check_active(&mut self) {
         let current_index = self.tracker.borrow();
-
-        if current_index.deref() == &self.app_index {
-            self.active = true;
-        } else {
-            self.active = false;
-        }
+        self.active = current_index.deref() == &self.app_index;
     }
 }

@@ -1,5 +1,11 @@
 use super::*;
 
+impl Default for Tui {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Tui {
     pub fn new() -> Self {
         let (event_tx, event_rx) = tokio::sync::mpsc::unbounded_channel();
