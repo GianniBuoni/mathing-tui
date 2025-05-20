@@ -11,6 +11,7 @@ mod table_tui;
 mod tests;
 
 pub mod prelude {
+    #[allow(unused_imports)]
     pub use super::{TableData, TableDisplay, TableTui};
 }
 

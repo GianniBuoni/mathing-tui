@@ -1,8 +1,8 @@
 use crate::prelude::*;
 use std::fmt::Debug;
 
-pub(crate) mod prelude {
-    pub(crate) use super::{Component, ComponentBuilder};
+pub mod prelude {
+    pub use super::{Component, ComponentBuilder};
 }
 
 pub trait ComponentBuilder<T>

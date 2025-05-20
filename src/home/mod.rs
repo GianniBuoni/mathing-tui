@@ -24,7 +24,6 @@ pub enum Mode {
 pub struct Home<'a> {
     components: Vec<TableTui<'a>>,
     component_tracker: Rc<RefCell<usize>>,
-    keymap: HashMap<KeyEvent, Action>,
     mode: Mode,
 }
 
@@ -32,7 +31,6 @@ pub struct Home<'a> {
 pub struct HomeBuilder<'a> {
     components: Vec<TableTui<'a>>,
     component_tracker: Rc<RefCell<usize>>,
-    keymap: HashMap<KeyEvent, Action>,
 }
 
 impl<'a> Home<'a> {
@@ -144,7 +142,6 @@ impl<'a> ComponentBuilder<Home<'a>> for HomeBuilder<'a> {
         Home {
             components: self.components,
             component_tracker: self.component_tracker,
-            keymap: self.keymap,
             ..Default::default()
         }
     }
