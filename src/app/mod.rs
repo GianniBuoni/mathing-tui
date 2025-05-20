@@ -1,68 +1,61 @@
-use std::{collections::HashMap, error::Error, sync::mpsc::Receiver};
+use std::error::Error;
 
 use crate::prelude::*;
-use ratatui::DefaultTerminal;
 
 pub mod prelude {
     pub use super::App;
-    pub(crate) use super::views::CurrentModel;
+    pub(crate) use super::actions::Action;
 }
 
-mod models;
+mod actions;
+mod builder;
 #[cfg(test)]
 mod tests;
-mod views;
 
 #[derive(Debug, Default)]
-pub struct App {
-    models: HashMap<CurrentModel, Box<dyn Model>>,
-    current_model: CurrentModel,
+pub struct App<'a> {
+    component: Home<'a>,
     should_exit: bool,
 }
 
-impl App {
-    pub fn run(
-        &mut self,
-        mut terminal: DefaultTerminal,
-        rx: Receiver<event::KeyEvent>,
-    ) -> Result<(), Box<dyn Error>> {
-        // first draw before event loop
-        terminal.draw(|frame| {
-            self.render(frame.area(), frame.buffer_mut());
-        })?;
-
+impl App<'_> {
+    pub async fn run(&mut self, mut tui: Tui) -> Result<(), Box<dyn Error>> {
         while !self.should_exit {
-            self.handle_key_events(rx.recv()?);
+            let event = tui.next_event().await;
+            let action = self.handle_events(event);
+            self.update(action);
 
-            terminal.draw(|frame| {
-                self.render(frame.area(), frame.buffer_mut());
-            })?;
+            tui.terminal
+                .draw(|frame| self.component.draw(frame, frame.area()))?;
         }
         Ok(())
     }
 
-    fn handle_key_events(&mut self, key_event: event::KeyEvent) {
-        if key_event.kind != event::KeyEventKind::Press {
-            return;
+    pub fn handle_events(&mut self, event: Option<Event>) -> Option<Action> {
+        match event {
+            Some(Event::Quit) => Some(Action::Quit),
+            Some(Event::Key(key_event)) => {
+                match (key_event.code, key_event.modifiers) {
+                    (KeyCode::Char('c'), KeyModifiers::CONTROL) => {
+                        Some(Action::Quit)
+                    }
+                    _ => self.component.handle_events(event),
+                }
+            }
+            Some(_) => None,
+            None => None,
         }
-        match key_event.code {
-            event::KeyCode::Char('q') => {
+    }
+
+    pub fn update(&mut self, action: Option<Action>) {
+        match action {
+            Some(Action::Quit) => {
                 self.should_exit = true;
             }
-            event::KeyCode::Tab => {
-                self.cycle_view();
+            Some(_) => {
+                self.component.update(action);
             }
-            event::KeyCode::Char('j') | event::KeyCode::Down => {
-                if let Some(model) = self.models.get_mut(&self.current_model) {
-                    model.next_row();
-                }
-            }
-            event::KeyCode::Char('k') | event::KeyCode::Up => {
-                if let Some(model) = self.models.get_mut(&self.current_model) {
-                    model.prev_row();
-                }
-            }
-            _ => {}
+            None => {}
         }
     }
 }

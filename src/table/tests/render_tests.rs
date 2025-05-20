@@ -36,7 +36,7 @@ fn test_render_rows() {
         Cell::new(Text::from(Line::from(" Slamon "))),
         Cell::new(Text::from(Line::from(" 9.49 "))),
     ])
-    .style(Style::default().fg(Color::Reset).bg(Color::Reset));
+    .style(Style::default().fg(Color::Reset));
 
     assert_eq!(3, got.len(), "Test if correct amount of rows are returned.");
     assert_eq!(want, got[0], "Test if table outputs expected row.")
@@ -84,11 +84,8 @@ fn test_render_table() {
         Rect::new(0, 0, 50, 1),
         Style::new().black().on_magenta().bold(),
     );
-    want.set_style(
-        Rect::new(0, 1, 50, 1),
-        Style::new().fg(Color::Reset).bg(Color::Reset),
-    );
-    want.set_style(Rect::new(0, 2, 50, 1), Style::new().red().bg(Color::Reset));
+    want.set_style(Rect::new(0, 1, 50, 1), Style::new().fg(Color::Reset));
+    want.set_style(Rect::new(0, 2, 50, 1), Style::new().red());
 
     assert_eq!(
         want, got,

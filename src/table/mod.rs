@@ -1,53 +1,40 @@
-use std::{borrow::Cow, fmt::Debug, ops::Deref, rc::Rc};
+use std::{borrow::Cow, cell::RefCell, fmt::Debug, ops::Deref, rc::Rc};
 
 use crate::prelude::*;
 
+mod builder;
+mod data;
 mod interactions;
 mod render;
+mod table_tui;
 #[cfg(test)]
 mod tests;
 
 pub mod prelude {
-    pub use super::{TableData, TableDisplay};
+    #[allow(unused_imports)]
+    pub use super::{TableData, TableDisplay, TableTui};
 }
 
-pub trait TableDisplay: Debug {
+pub trait TableDisplay: Debug + Default {
     fn ref_array(&self) -> Vec<Cow<str>>;
+}
+
+#[derive(Debug)]
+pub enum TableTui<'a> {
+    Items(TableData<'a, StoreItem>),
+    Receipt(TableData<'a, StoreJoinRow>),
 }
 
 #[derive(Debug, Default)]
 pub struct TableData<'a, T>
 where
-    T: TableDisplay + Sized,
+    T: TableDisplay,
 {
     title: Cow<'a, str>,
     headings: Rc<[Cow<'a, str>]>,
-    items: Rc<[T]>,
+    items: Vec<T>,
     table_index: usize,
-    app_index: u8,
+    app_index: usize,
+    tracker: Rc<RefCell<usize>>,
     active: bool,
-}
-
-impl<'a, T> TableData<'a, T>
-where
-    T: TableDisplay,
-{
-    pub fn new(
-        title: &'a str,
-        headings: Rc<[Cow<'a, str>]>,
-        items: impl Into<Rc<[T]>>,
-        app_index: u8,
-    ) -> Self {
-        let items: Rc<[T]> = items.into();
-        let title = Cow::Borrowed(title);
-
-        Self {
-            title,
-            headings,
-            items,
-            table_index: 0,
-            active: false,
-            app_index,
-        }
-    }
 }
