@@ -1,33 +1,28 @@
 use crate::prelude::*;
-use std::{cell::RefCell, fmt::Debug, rc::Rc};
+use std::fmt::Debug;
 
 pub(crate) mod prelude {
     pub(crate) use super::{Component, ComponentBuilder};
 }
 
-pub trait ComponentBuilder<T, U>
+pub trait ComponentBuilder<T>
 where
-    T: ComponentBuilder<T, U>,
-    U: Component,
+    T: Component,
 {
-    fn add_component(self, component: Box<dyn Component>) -> T;
-    fn build(self) -> U;
+    fn build(self) -> T;
 }
 
 pub trait Component: Debug {
-    fn handle_key_events(&mut self, key: KeyEvent) -> Option<Action>;
     fn update(&mut self, action: Option<Action>);
     fn draw(&mut self, frame: &mut Frame, rect: Rect);
 
+    fn handle_key_events(&mut self, key: KeyEvent) -> Option<Action>;
     fn handle_events(&mut self, event: Option<Event>) -> Option<Action> {
         match event {
             Some(Event::Key(key_event)) => self.handle_key_events(key_event),
             _ => None,
         }
     }
-    fn add_tracker(&mut self, _tracker: Rc<RefCell<usize>>) {}
-    fn is_active(&self) -> bool {
-        false
-    }
+
     fn init(&mut self) {}
 }

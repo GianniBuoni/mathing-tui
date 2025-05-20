@@ -7,7 +7,7 @@ pub mod prelude {
     pub use crate::table::prelude::*;
     pub use crate::tui::prelude::*;
     pub(crate) use crossterm::event::{
-        Event as CrosstermEvent, KeyCode, KeyEvent,
+        Event as CrosstermEvent, KeyCode, KeyEvent, KeyModifiers,
     };
     pub(crate) use ratatui::{prelude::*, widgets::*};
     pub(crate) use std::collections::HashMap;
@@ -19,6 +19,4 @@ mod db;
 mod home;
 mod styles;
 mod table;
-#[cfg(test)]
-mod test_cases;
 mod tui;

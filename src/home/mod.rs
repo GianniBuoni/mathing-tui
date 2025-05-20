@@ -3,10 +3,14 @@ use std::{cell::RefCell, ops::Deref, rc::Rc};
 use crate::prelude::*;
 
 #[cfg(test)]
+mod test_cases;
+#[cfg(test)]
 mod tests;
 
 pub(crate) mod prelude {
     pub(crate) use super::Home;
+    #[cfg(test)]
+    pub(crate) use super::test_cases::test_home;
 }
 
 #[derive(Default, Debug)]
@@ -17,36 +21,40 @@ pub enum Mode {
 }
 
 #[derive(Default, Debug)]
-pub struct Home {
-    components: Vec<Box<dyn Component>>,
+pub struct Home<'a> {
+    components: Vec<TableTui<'a>>,
     component_tracker: Rc<RefCell<usize>>,
     keymap: HashMap<KeyEvent, Action>,
     mode: Mode,
 }
 
 #[derive(Default, Debug)]
-pub struct HomeBuilder {
-    components: Vec<Box<dyn Component>>,
+pub struct HomeBuilder<'a> {
+    components: Vec<TableTui<'a>>,
     component_tracker: Rc<RefCell<usize>>,
     keymap: HashMap<KeyEvent, Action>,
 }
 
-impl Home {
-    pub fn new_builder() -> HomeBuilder {
+impl<'a> Home<'a> {
+    pub fn new_builder() -> HomeBuilder<'a> {
         HomeBuilder::default()
     }
     fn cycle_view(&mut self) {
+        if self.components.len() == 0 {
+            return;
+        }
+
         let mut current = self.component_tracker.borrow_mut();
-        let new_index = if *current.deref() < self.components.len() - 1 {
+
+        *current = if *current.deref() < self.components.len() - 1 {
             current.deref() + 1
         } else {
             0
         };
-        *current = new_index
     }
 }
 
-impl Component for Home {
+impl Component for Home<'_> {
     fn handle_key_events(&mut self, key: KeyEvent) -> Option<Action> {
         let action = match self.mode {
             Mode::Normal => match key.code {
@@ -120,8 +128,15 @@ impl Component for Home {
     }
 }
 
-impl ComponentBuilder<HomeBuilder, Home> for HomeBuilder {
-    fn build(mut self) -> Home {
+impl<'a> HomeBuilder<'a> {
+    pub fn add_component(mut self, component: TableTui<'a>) -> HomeBuilder<'a> {
+        self.components.push(component);
+        self
+    }
+}
+
+impl<'a> ComponentBuilder<Home<'a>> for HomeBuilder<'a> {
+    fn build(mut self) -> Home<'a> {
         self.components.iter_mut().for_each(|component| {
             component.add_tracker(self.component_tracker.clone());
             component.init();
@@ -132,9 +147,5 @@ impl ComponentBuilder<HomeBuilder, Home> for HomeBuilder {
             keymap: self.keymap,
             ..Default::default()
         }
-    }
-    fn add_component(mut self, component: Box<dyn Component>) -> HomeBuilder {
-        self.components.push(component);
-        self
     }
 }

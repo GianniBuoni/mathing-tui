@@ -1,7 +1,7 @@
 use super::*;
 
-impl App {
-    pub fn new(home: Home) -> Self {
+impl<'a> App<'a> {
+    pub fn new(home: Home<'a>) -> Self {
         App {
             component: home,
             ..Default::default()

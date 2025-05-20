@@ -34,8 +34,7 @@ where
     }
 }
 
-impl<'a, T> ComponentBuilder<TableBuilder<'a, T>, TableData<'a, T>>
-    for TableBuilder<'a, T>
+impl<'a, T> ComponentBuilder<TableData<'a, T>> for TableBuilder<'a, T>
 where
     T: TableDisplay,
 {
@@ -48,8 +47,5 @@ where
             tracker: self.tracker,
             ..Default::default()
         }
-    }
-    fn add_component(self, _: Box<dyn Component>) -> TableBuilder<'a, T> {
-        self
     }
 }

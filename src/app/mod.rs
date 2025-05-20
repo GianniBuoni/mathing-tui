@@ -1,7 +1,6 @@
 use std::error::Error;
 
 use crate::prelude::*;
-use crossterm::event::{KeyCode, KeyModifiers};
 
 pub mod prelude {
     pub use super::App;
@@ -14,12 +13,12 @@ mod builder;
 mod tests;
 
 #[derive(Debug, Default)]
-pub struct App {
-    component: Home,
+pub struct App<'a> {
+    component: Home<'a>,
     should_exit: bool,
 }
 
-impl App {
+impl App<'_> {
     pub async fn run(&mut self, mut tui: Tui) -> Result<(), Box<dyn Error>> {
         while !self.should_exit {
             let event = tui.next_event().await;

@@ -1,6 +1,8 @@
-use crate::test_cases::test_app;
+use crate::prelude::*;
 
-use super::*;
+pub fn test_app<'a>() -> App<'a> {
+    App::new(test_home())
+}
 
 #[test]
 fn test_input_propogation() {
