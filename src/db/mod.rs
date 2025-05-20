@@ -11,6 +11,7 @@ mod connection;
 mod db_time;
 mod processing;
 mod queries;
+mod table_displays;
 #[cfg(test)]
 mod tests;
 
@@ -20,7 +21,7 @@ pub mod prelude {
     pub use super::{StoreItem, StoreJoinRow, StoreTotal, StoreUser};
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Default, PartialEq)]
 pub struct StoreItem {
     id: i64,
     created_at: i64,
@@ -49,7 +50,7 @@ pub struct StoreJoinRaw {
     user_count: i64,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct StoreJoinRow {
     users: Vec<StoreUser>,
     item_name: String,
