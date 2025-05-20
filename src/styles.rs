@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 pub(crate) mod prelude {
-    pub(crate) use super::{AppColors, AppTableStyles};
+    pub(crate) use super::{AppColors, AppStyles};
 }
 
 pub struct AppColors {
@@ -9,8 +9,8 @@ pub struct AppColors {
     pub header_bg: Color,
     pub header_fg: Color,
     pub row_fg: Color,
-    pub row_bg: Color,
     pub selected_row_fg: Color,
+    pub input_fg: Color,
 }
 
 impl AppColors {
@@ -19,8 +19,8 @@ impl AppColors {
         header_bg: Color::Magenta,
         header_fg: Color::Black,
         row_fg: Color::Reset,
-        row_bg: Color::Reset,
         selected_row_fg: Color::Red,
+        input_fg: Color::Magenta,
     };
 
     pub const INACTIVE: Self = Self {
@@ -28,8 +28,8 @@ impl AppColors {
         header_bg: Color::DarkGray,
         header_fg: Color::Black,
         row_fg: Color::DarkGray,
-        row_bg: Color::Reset,
         selected_row_fg: Color::DarkGray,
+        input_fg: Color::DarkGray,
     };
     pub fn get(active: bool) -> Self {
         match active {
@@ -39,21 +39,25 @@ impl AppColors {
     }
 }
 
-pub struct AppTableStyles {
+pub struct AppStyles {
     pub header_style: Style,
     pub row_style: Style,
     pub highlight_style: Style,
+    pub input_style: Style,
+    pub block_style: Style,
 }
 
-impl From<AppColors> for AppTableStyles {
+impl From<AppColors> for AppStyles {
     fn from(value: AppColors) -> Self {
         Self {
             header_style: Style::default()
                 .fg(value.header_fg)
                 .bg(value.header_bg)
                 .bold(),
-            row_style: Style::default().fg(value.row_fg).bg(value.row_bg),
+            row_style: Style::default().fg(value.row_fg),
             highlight_style: Style::default().fg(value.selected_row_fg),
+            input_style: Style::default().fg(value.input_fg),
+            block_style: Style::default().fg(value.border_fg),
         }
     }
 }
