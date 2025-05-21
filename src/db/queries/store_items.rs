@@ -1,8 +1,6 @@
 use super::*;
 
-pub async fn get_store_items(
-    conn: &SqlitePool,
-) -> Result<Vec<StoreItem>, Box<dyn Error>> {
+pub async fn get_store_items(conn: &SqlitePool) -> Result<Vec<StoreItem>> {
     let rows = sqlx::query_as!(StoreItem, "SELECT * FROM items ORDER BY name")
         .fetch_all(conn)
         .await?;
@@ -13,7 +11,7 @@ pub async fn get_store_items(
 pub async fn get_store_item_single(
     conn: &SqlitePool,
     id: i64,
-) -> Result<StoreItem, Box<dyn Error>> {
+) -> Result<StoreItem> {
     let item =
         sqlx::query_as!(StoreItem, "SELECT * FROM items WHERE id=?1", id)
             .fetch_one(conn)
@@ -26,7 +24,7 @@ pub async fn add_store_item(
     conn: &SqlitePool,
     name: &str,
     price: f64,
-) -> Result<StoreItem, Box<dyn Error>> {
+) -> Result<StoreItem> {
     let now = get_time()?;
 
     let new_item = sqlx::query_as!(
@@ -49,10 +47,7 @@ pub async fn add_store_item(
     Ok(new_item)
 }
 
-pub async fn delete_store_item(
-    conn: &SqlitePool,
-    id: i64,
-) -> Result<(), Box<dyn Error>> {
+pub async fn delete_store_item(conn: &SqlitePool, id: i64) -> Result<()> {
     sqlx::query!("DELETE FROM items WHERE id=?1", id)
         .execute(conn)
         .await?;
@@ -64,7 +59,7 @@ pub async fn update_store_item(
     id: i64,
     name: Option<&str>,
     price: Option<f64>,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<()> {
     // early return if theres's nothing to update
     if name.is_none() && price.is_none() {
         return Ok(());

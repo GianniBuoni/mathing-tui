@@ -1,12 +1,10 @@
-use futures::future::try_join_all;
-
 use super::*;
 
 pub async fn add_store_receipts_users(
     conn: &SqlitePool,
     r_id: i64,
     u_id: i64,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<()> {
     let now = get_time()?;
     sqlx::query!(
         "
@@ -29,7 +27,7 @@ pub async fn add_store_receipts_users(
 pub async fn get_store_joined_raw(
     conn: &SqlitePool,
     offset: i64,
-) -> Result<Vec<StoreJoinRaw>, Box<dyn Error>> {
+) -> Result<Vec<StoreJoinRaw>> {
     let rows = sqlx::query_file_as!(
         StoreJoinRaw,
         "sql/get_receipts_users.sql",
@@ -44,7 +42,7 @@ pub async fn get_store_joined_raw(
 pub async fn get_store_joined_rows(
     conn: &SqlitePool,
     offset: i64,
-) -> Result<Vec<StoreJoinRow>, Box<dyn Error>> {
+) -> Result<Vec<StoreJoinRow>> {
     let rows = try_join_all(
         get_store_joined_raw(conn, offset)
             .await?
@@ -60,7 +58,7 @@ pub async fn delete_store_receipts_users(
     conn: &SqlitePool,
     r_id: i64,
     u_id: i64,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<()> {
     sqlx::query!(
         "DELETE FROM receipts_users WHERE receipt_id=?1 and user_id=?2",
         r_id,

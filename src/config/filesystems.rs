@@ -5,9 +5,7 @@ use std::{
     path::PathBuf,
 };
 
-use anyhow::Result;
-
-use super::DEFAULT_CONFIG_PATH;
+use super::*;
 
 pub fn config_dir() -> Result<PathBuf> {
     let mut path = match env::var("PLATFORM")?.as_ref() {

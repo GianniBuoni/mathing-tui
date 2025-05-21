@@ -1,4 +1,3 @@
-use anyhow::Result;
 use temp_env::with_vars;
 
 use super::*;

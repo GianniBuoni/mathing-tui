@@ -1,5 +1,6 @@
-use std::{collections::HashMap, error::Error};
+use std::collections::HashMap;
 
+use anyhow::{Error, Result};
 use futures::future::try_join_all;
 use rust_decimal::prelude::*;
 use sqlx::SqlitePool;

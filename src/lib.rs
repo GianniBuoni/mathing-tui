@@ -7,6 +7,7 @@ pub mod prelude {
     pub(crate) use crate::styles::prelude::*;
     pub(crate) use crate::table::prelude::*;
     pub use crate::tui::prelude::*;
+    pub use anyhow::Result;
     pub(crate) use crossterm::event::{
         Event as CrosstermEvent, KeyCode, KeyEvent, KeyModifiers,
     };

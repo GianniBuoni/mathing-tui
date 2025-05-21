@@ -1,8 +1,6 @@
 use super::*;
 
-async fn init_test(
-    conn: &SqlitePool,
-) -> Result<Vec<StoreReceipt>, Box<dyn Error>> {
+async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreReceipt>> {
     let mut rows = vec![];
 
     for (name, price, qty) in TEST_ITEMS.into_iter() {
@@ -16,7 +14,7 @@ async fn init_test(
 }
 
 #[sqlx::test]
-async fn test_add_receipts(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_add_receipts(conn: SqlitePool) -> Result<()> {
     assert!(
         init_test(&conn).await.is_ok(),
         "Test if receipts are added."
@@ -25,7 +23,7 @@ async fn test_add_receipts(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_get_receipts(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_get_receipts(conn: SqlitePool) -> Result<()> {
     let want = init_test(&conn).await?;
     let got = get_store_receipts(&conn, 0).await?;
 
@@ -46,7 +44,7 @@ async fn test_get_receipts(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_cascade_del(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_cascade_del(conn: SqlitePool) -> Result<()> {
     let init = init_test(&conn).await?;
 
     delete_store_item(&conn, 1).await?;
@@ -61,11 +59,9 @@ async fn test_cascade_del(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_get_single_receipt(
-    conn: SqlitePool,
-) -> Result<(), Box<dyn Error>> {
+async fn test_get_single_receipt(conn: SqlitePool) -> Result<()> {
     try_join_all(init_test(&conn).await?.into_iter().map(async |want| {
-        Ok::<(), Box<dyn Error>>({
+        Ok::<(), Error>({
             let got = get_store_receipt_single(&conn, want.id).await?;
             assert_eq!(want, got, "Test if id matches expected receipt");
         })
@@ -76,14 +72,14 @@ async fn test_get_single_receipt(
 }
 
 #[sqlx::test]
-async fn test_delete_receipt(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_delete_receipt(conn: SqlitePool) -> Result<()> {
     let receipts = init_test(&conn).await?;
     delete_store_receipt_single(&conn, receipts[0].id).await?;
 
     let got =
         try_join_all(get_store_receipts(&conn, 0).await?.into_iter().map(
             async |r| {
-                Ok::<String, Box<dyn Error>>({
+                Ok::<String, Error>({
                     get_store_item_single(&conn, r.item_id).await?.name
                 })
             },
@@ -104,9 +100,7 @@ async fn test_delete_receipt(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_delete_store_receipts(
-    conn: SqlitePool,
-) -> Result<(), Box<dyn Error>> {
+async fn test_delete_store_receipts(conn: SqlitePool) -> Result<()> {
     init_test(&conn).await?;
     delete_store_receipts(&conn).await?;
 
@@ -120,13 +114,13 @@ async fn test_delete_store_receipts(
 }
 
 #[sqlx::test]
-async fn test_update_receipt(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_update_receipt(conn: SqlitePool) -> Result<()> {
     let update_params =
         [(Some(10 as i64), "Change qty"), (None, "Change nothing")];
 
     try_join_all(init_test(&conn).await?.into_iter().zip(update_params).map(
         async |(receipt, (qty, desc))| {
-            Ok::<(), Box<dyn Error>>({
+            Ok::<(), Error>({
                 sleep_until(Instant::now() + Duration::from_secs(1)).await;
                 update_store_receipt(&conn, receipt.id, qty).await?;
                 let updated_receipt =

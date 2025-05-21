@@ -1,6 +1,6 @@
 use super::*;
 
-pub async fn init_test(conn: &SqlitePool) -> Result<(), Box<dyn Error>> {
+pub async fn init_test(conn: &SqlitePool) -> Result<()> {
     let mut r_ids = vec![];
 
     for ((name, price, qty), user) in TEST_ITEMS.into_iter().zip(TEST_USERS) {
@@ -13,15 +13,15 @@ pub async fn init_test(conn: &SqlitePool) -> Result<(), Box<dyn Error>> {
     let err = "Wrong id/user match; check how you add users into db.";
     let noodle = get_store_user_single(conn, 2).await?;
     if noodle.name != TEST_USERS[1] {
-        return Err(err.into());
+        panic!("{err}")
     }
     let jon = get_store_user_single(conn, 3).await?;
     if jon.name != TEST_USERS[2] {
-        return Err(err.into());
+        panic!("{err}")
     }
 
     try_join_all(r_ids.into_iter().map(async |r_id| {
-        Ok::<(), Box<dyn Error>>({
+        Ok::<(), Error>({
             let uids = match r_id {
                 1 => vec![jon.id],
                 2 => vec![noodle.id],
@@ -29,7 +29,7 @@ pub async fn init_test(conn: &SqlitePool) -> Result<(), Box<dyn Error>> {
                 _ => vec![],
             };
             try_join_all(uids.into_iter().map(async |u_id| {
-                Ok::<(), Box<dyn Error>>({
+                Ok::<(), Error>({
                     add_store_receipts_users(conn, r_id, u_id).await?
                 })
             }))

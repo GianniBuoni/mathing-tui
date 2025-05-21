@@ -1,13 +1,9 @@
 use super::*;
 
-async fn init_test(
-    conn: &SqlitePool,
-) -> Result<Vec<StoreItem>, Box<dyn Error>> {
+async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreItem>> {
     let rows =
         try_join_all(TEST_ITEMS.into_iter().map(async |(name, price, _)| {
-            Ok::<StoreItem, Box<dyn Error>>(
-                add_store_item(conn, name, price).await?,
-            )
+            Ok::<StoreItem, Error>(add_store_item(conn, name, price).await?)
         }))
         .await?;
 
@@ -15,7 +11,7 @@ async fn init_test(
 }
 
 #[sqlx::test]
-async fn test_add_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_add_items(conn: SqlitePool) -> Result<()> {
     assert!(
         init_test(&conn).await.is_ok(),
         "Test if items were added to db"
@@ -24,7 +20,7 @@ async fn test_add_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_get_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_get_items(conn: SqlitePool) -> Result<()> {
     let unordered = init_test(&conn).await?;
     let ordered = get_store_items(&conn).await?;
 
@@ -42,9 +38,9 @@ async fn test_get_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_get_item_single(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_get_item_single(conn: SqlitePool) -> Result<()> {
     try_join_all(init_test(&conn).await?.into_iter().map(async |want| {
-        Ok::<(), Box<dyn Error>>({
+        Ok::<(), Error>({
             let got = get_store_item_single(&conn, want.id).await?;
             assert_eq!(want, got, "Teet if id returns expected item");
         })
@@ -55,7 +51,7 @@ async fn test_get_item_single(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_delete_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_delete_items(conn: SqlitePool) -> Result<()> {
     let added_items = init_test(&conn).await?;
     delete_store_item(&conn, added_items[0].id).await?;
 
@@ -72,7 +68,7 @@ async fn test_delete_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_update_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_update_items(conn: SqlitePool) -> Result<()> {
     let update_params = [
         (Some("Pretzel"), Some(6.99)),
         (Some("Salmon"), None),
@@ -89,7 +85,7 @@ async fn test_update_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
                 StoreItem,
                 (Option<&str>, Option<f64>),
             )| {
-                Ok::<StoreItem, Box<dyn Error>>({
+                Ok::<StoreItem, Error>({
                     sleep_until(Instant::now() + Duration::from_secs(1)).await;
                     update_store_item(&conn, item.id, name, price).await?;
                     get_store_item_single(&conn, item.id).await?
@@ -114,9 +110,7 @@ async fn test_update_items(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_blank_item_update(
-    conn: SqlitePool,
-) -> Result<(), Box<dyn Error>> {
+async fn test_blank_item_update(conn: SqlitePool) -> Result<()> {
     for (name, price, _) in TEST_ITEMS {
         let new_item = add_store_item(&conn, name, price).await?;
 

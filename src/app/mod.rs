@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use crate::prelude::*;
 
 pub mod prelude {
@@ -19,7 +17,7 @@ pub struct App<'a> {
 }
 
 impl App<'_> {
-    pub async fn run(&mut self, mut tui: Tui) -> Result<(), Box<dyn Error>> {
+    pub async fn run(&mut self, mut tui: Tui) -> Result<()> {
         while !self.should_exit {
             let event = tui.next_event().await;
             let action = self.handle_events(event);
