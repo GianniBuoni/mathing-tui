@@ -1,10 +1,8 @@
 use super::*;
 
-async fn init_test(
-    conn: &SqlitePool,
-) -> Result<Vec<StoreUser>, Box<dyn Error>> {
+async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreUser>> {
     let users = try_join_all(TEST_USERS.into_iter().map(async |name| {
-        Ok::<StoreUser, Box<dyn Error>>(add_store_user(conn, name).await?)
+        Ok::<StoreUser, anyhow::Error>(add_store_user(conn, name).await?)
     }))
     .await?;
 
@@ -12,7 +10,7 @@ async fn init_test(
 }
 
 #[sqlx::test]
-async fn test_add_user(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_add_user(conn: SqlitePool) -> Result<()> {
     assert!(
         init_test(&conn).await.is_ok(),
         "Test if users were added to db"
@@ -22,9 +20,9 @@ async fn test_add_user(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_get_user_single(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_get_user_single(conn: SqlitePool) -> Result<()> {
     try_join_all(init_test(&conn).await?.into_iter().map(async |want| {
-        Ok::<(), Box<dyn Error>>({
+        Ok::<(), Error>({
             let got = get_store_user_single(&conn, want.id).await?;
             assert_eq!(want, got, "Test if id returns expected user.");
         })
@@ -35,7 +33,7 @@ async fn test_get_user_single(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_get_users(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_get_users(conn: SqlitePool) -> Result<()> {
     let unordered = init_test(&conn).await?;
     let ordered = get_store_users(&conn).await?;
 
@@ -54,7 +52,7 @@ async fn test_get_users(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_delete_user(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_delete_user(conn: SqlitePool) -> Result<()> {
     let added_users = init_test(&conn).await?;
     delete_store_user(&conn, added_users[0].id).await?;
 
@@ -74,12 +72,12 @@ async fn test_delete_user(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_update_user(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_update_user(conn: SqlitePool) -> Result<()> {
     let update_params = [Some("Doodle"), None, None];
 
     try_join_all(init_test(&conn).await?.into_iter().zip(update_params).map(
         async |(user, name): (StoreUser, Option<&str>)| {
-            Ok::<(), Box<dyn Error>>({
+            Ok::<(), Error>({
                 sleep_until(Instant::now() + Duration::from_secs(1)).await;
                 update_store_user(&conn, user.id, name).await?;
 

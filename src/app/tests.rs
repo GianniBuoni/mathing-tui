@@ -16,7 +16,7 @@ fn test_input_propogation() {
         (
             KeyEvent::new(KeyCode::Tab, none),
             Action::SwitchPane,
-            "Test default spane switch.",
+            "Test default pane switch.",
         ),
         (
             KeyEvent::new(KeyCode::Char('i'), none),

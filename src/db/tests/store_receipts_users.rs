@@ -3,17 +3,13 @@ use super::*;
 use store_receits_users_init::init_test;
 
 #[sqlx::test]
-async fn test_add_receipts_users(
-    conn: SqlitePool,
-) -> Result<(), Box<dyn Error>> {
+async fn test_add_receipts_users(conn: SqlitePool) -> Result<()> {
     assert!(init_test(&conn).await.is_ok(), "Test if as");
     Ok(())
 }
 
 #[sqlx::test]
-async fn test_get_reciepts_users_raw(
-    conn: SqlitePool,
-) -> Result<(), Box<dyn Error>> {
+async fn test_get_reciepts_users_raw(conn: SqlitePool) -> Result<()> {
     init_test(&conn).await?;
     let raw_rows = get_store_joined_raw(&conn, 0).await?;
 
@@ -28,9 +24,7 @@ async fn test_get_reciepts_users_raw(
 }
 
 #[sqlx::test]
-async fn test_get_receipts_joined(
-    conn: SqlitePool,
-) -> Result<(), Box<dyn Error>> {
+async fn test_get_receipts_joined(conn: SqlitePool) -> Result<()> {
     init_test(&conn).await?;
     let users = get_store_users(&conn).await?;
 
@@ -45,7 +39,7 @@ async fn test_get_receipts_joined(
 }
 
 #[sqlx::test]
-async fn test_delete_cascade(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_delete_cascade(conn: SqlitePool) -> Result<()> {
     init_test(&conn).await?;
     let users = get_store_users(&conn).await?;
     let want = &expected_joined_rows(&users)[0];
@@ -82,7 +76,7 @@ async fn test_delete_cascade(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_reset_cascades(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_reset_cascades(conn: SqlitePool) -> Result<()> {
     init_test(&conn).await?;
     let rows = get_store_joined_rows(&conn, 0).await?;
     assert_eq!(rows.len(), TEST_ITEMS.len(), "Confirm test cases exist.");
@@ -99,7 +93,7 @@ async fn test_reset_cascades(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_offset(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_offset(conn: SqlitePool) -> Result<()> {
     init_test(&conn).await?;
     let rows = get_store_joined_rows(&conn, 1).await?;
     assert_eq!(rows.len(), 2, "Test if offset by 1 affects returned rows.");
@@ -108,9 +102,7 @@ async fn test_offset(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
 }
 
 #[sqlx::test]
-async fn test_delete_receipts_users(
-    conn: SqlitePool,
-) -> Result<(), Box<dyn Error>> {
+async fn test_delete_receipts_users(conn: SqlitePool) -> Result<()> {
     init_test(&conn).await?;
     // remove Noodle from third test case
     delete_store_receipts_users(&conn, 3, 2).await?;
@@ -139,7 +131,7 @@ async fn test_delete_receipts_users(
 }
 
 #[sqlx::test]
-async fn test_get_totals(conn: SqlitePool) -> Result<(), Box<dyn Error>> {
+async fn test_get_totals(conn: SqlitePool) -> Result<()> {
     init_test(&conn).await?;
     let want = expected_totals();
     let mut got = StoreTotal::default();

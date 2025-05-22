@@ -1,9 +1,7 @@
-use std::error::Error;
-
 use mathing_tui::prelude::*;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> Result<()> {
     let tui = Tui::new().start();
     let mut app = App::default();
 

@@ -19,16 +19,6 @@ impl<T> Component for TableData<'_, T>
 where
     T: TableDisplay,
 {
-    fn handle_key_events(&mut self, key: KeyEvent) -> Option<Action> {
-        match key.code {
-            KeyCode::Char('j') | KeyCode::Down => {
-                Some(Action::TableNavigateDown)
-            }
-            KeyCode::Char('k') | KeyCode::Up => Some(Action::TableNavigateUp),
-            _ => None,
-        }
-    }
-
     fn update(&mut self, action: Option<Action>) {
         match action {
             Some(Action::SwitchPane) => {

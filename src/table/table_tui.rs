@@ -8,20 +8,6 @@ impl Component for TableTui<'_> {
         }
     }
 
-    fn handle_events(&mut self, event: Option<Event>) -> Option<Action> {
-        match self {
-            TableTui::Items(i) => i.handle_events(event),
-            TableTui::Receipt(r) => r.handle_events(event),
-        }
-    }
-
-    fn handle_key_events(&mut self, key: KeyEvent) -> Option<Action> {
-        match self {
-            TableTui::Items(i) => i.handle_key_events(key),
-            TableTui::Receipt(r) => r.handle_key_events(key),
-        }
-    }
-
     fn update(&mut self, action: Option<Action>) {
         match self {
             TableTui::Items(i) => i.update(action),

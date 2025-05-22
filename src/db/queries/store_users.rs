@@ -5,7 +5,7 @@ use super::*;
 pub async fn add_store_user(
     conn: &SqlitePool,
     name: &str,
-) -> Result<StoreUser, Box<dyn Error>> {
+) -> Result<StoreUser> {
     let now = get_time()?;
 
     let row = sqlx::query_as!(
@@ -30,7 +30,7 @@ pub async fn add_store_user(
 pub async fn get_store_user_single(
     conn: impl SqliteExecutor<'_>,
     id: i64,
-) -> Result<StoreUser, Box<dyn Error>> {
+) -> Result<StoreUser> {
     let row = sqlx::query_as!(StoreUser, "SELECT * FROM users WHERE id=?1", id)
         .fetch_one(conn)
         .await?;
@@ -38,19 +38,14 @@ pub async fn get_store_user_single(
     Ok(row)
 }
 
-pub async fn get_store_users(
-    conn: &SqlitePool,
-) -> Result<Vec<StoreUser>, Box<dyn Error>> {
+pub async fn get_store_users(conn: &SqlitePool) -> Result<Vec<StoreUser>> {
     let rows = sqlx::query_as!(StoreUser, "SELECT * FROM users ORDER BY name")
         .fetch_all(conn)
         .await?;
     Ok(rows)
 }
 
-pub async fn delete_store_user(
-    conn: &SqlitePool,
-    id: i64,
-) -> Result<(), Box<dyn Error>> {
+pub async fn delete_store_user(conn: &SqlitePool, id: i64) -> Result<()> {
     sqlx::query!("DELETE FROM users WHERE id=?1", id)
         .execute(conn)
         .await?;
@@ -62,7 +57,7 @@ pub async fn update_store_user(
     conn: &SqlitePool,
     id: i64,
     name: Option<&str>,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<()> {
     if let Some(name) = name {
         let now = get_time()?;
         sqlx::query!(

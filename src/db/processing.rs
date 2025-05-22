@@ -1,12 +1,9 @@
 use super::*;
 
 impl StoreJoinRaw {
-    pub async fn as_join_row(
-        &self,
-        conn: &SqlitePool,
-    ) -> Result<StoreJoinRow, Box<dyn Error>> {
+    pub async fn as_join_row(&self, conn: &SqlitePool) -> Result<StoreJoinRow> {
         let users = try_join_all(self.user_ids.split(",").map(async |s| {
-            Ok::<StoreUser, Box<dyn Error>>({
+            Ok::<StoreUser, Error>({
                 let id = s.parse::<i64>()?;
                 get_store_user_single(conn, id).await?
             })

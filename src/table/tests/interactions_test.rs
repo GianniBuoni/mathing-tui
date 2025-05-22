@@ -46,17 +46,21 @@ fn test_row_decrement() {
 }
 
 #[test]
-fn test_down_navigation_input() {
+fn test_up_down_navigation_input() {
     let key_codes = [
-        (KeyCode::Char('j'), "Test j char input"),
-        (KeyCode::Down, "Test down key input"),
+        (KeyCode::Char('j'), 1, "Test j char input"),
+        (KeyCode::Down, 1, "Test down key input"),
+        (KeyCode::Char('k'), 2, "Test k char input"),
+        (KeyCode::Up, 2, "Test up key input"),
     ];
 
-    key_codes.into_iter().for_each(|(key, desc)| {
+    let home = test_home();
+
+    key_codes.into_iter().for_each(|(key, want, desc)| {
         let mut items = mock_items();
-        let action = items.handle_events(Some(Event::Key(KeyEvent::from(key))));
+        let action = home.handle_key_events(KeyEvent::from(key));
         items.update(action);
 
-        assert_eq!(items.table_index.clone(), 1, "{desc}");
+        assert_eq!(want, items.table_index.clone(), "{desc}");
     });
 }
