@@ -24,3 +24,33 @@ fn test_config_dir() -> Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn test_parse_key_event() -> Result<(), String> {
+    let test_cases = [
+        (
+            "ctrl-c",
+            KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL),
+            "Test lowercase string",
+        ),
+        (
+            "CTRL-C",
+            KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL),
+            "Test all caps string",
+        ),
+        (
+            "Ctrl-C",
+            KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL),
+            "Test variable capitalization",
+        ),
+    ];
+
+    test_cases.iter().try_for_each(|(raw, want, desc)| {
+        Ok::<(), String>({
+            let got = parse_key_event(raw)?;
+            assert_eq!(*want, got, "{desc}");
+        })
+    })?;
+
+    Ok(())
+}
