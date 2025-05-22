@@ -89,9 +89,6 @@ impl Component for Home<'_> {
                     .iter_mut()
                     .for_each(|component| component.update(action));
             }
-            Some(Action::Query(_q_params)) => {
-                todo!()
-            }
             Some(_) => {}
             None => {}
         }

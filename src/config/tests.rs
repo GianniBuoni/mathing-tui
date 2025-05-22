@@ -54,3 +54,44 @@ fn test_parse_key_event() -> Result<(), String> {
 
     Ok(())
 }
+
+#[test]
+fn test_config_builder() -> Result<()> {
+    // TODO change this test to check the default config when its made.
+    // In its current state it will fail CI.
+    let test_cases = [
+        (
+            KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL),
+            Action::Quit,
+            "c",
+        ),
+        (KeyEvent::from(KeyCode::Tab), Action::SwitchPane, "tab"),
+        (KeyEvent::from(KeyCode::Esc), Action::EnterNormal, "esc"),
+        (KeyEvent::from(KeyCode::Char('i')), Action::EnterInsert, "i"),
+        (
+            KeyEvent::from(KeyCode::Char('j')),
+            Action::TableNavigateDown,
+            "j",
+        ),
+        (
+            KeyEvent::from(KeyCode::Down),
+            Action::TableNavigateDown,
+            "down",
+        ),
+        (
+            KeyEvent::from(KeyCode::Char('k')),
+            Action::TableNavigateUp,
+            "k",
+        ),
+        (KeyEvent::from(KeyCode::Up), Action::TableNavigateUp, "up"),
+    ];
+
+    let config = Config::new()?;
+
+    test_cases.iter().for_each(|(event, want, string)| {
+        let got = config.keymap.0.get(event).unwrap();
+        assert_eq!(want, got, "Testing default config for {string}");
+    });
+
+    Ok(())
+}
