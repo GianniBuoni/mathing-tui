@@ -26,4 +26,4 @@ pub struct Config {
 
 #[derive(Default, Debug)]
 #[allow(dead_code)]
-pub struct KeyMap(HashMap<KeyEvent, Action>);
+pub struct KeyMap(pub HashMap<KeyEvent, Action>);

@@ -1,4 +1,5 @@
 pub mod prelude {
+    pub(crate) use crate::actions::Action;
     pub use crate::app::prelude::*;
     pub use crate::component::prelude::*;
     pub use crate::config::prelude::*;
@@ -14,6 +15,7 @@ pub mod prelude {
     pub(crate) use ratatui::{prelude::*, widgets::*};
 }
 
+mod actions;
 mod app;
 mod component;
 mod config;

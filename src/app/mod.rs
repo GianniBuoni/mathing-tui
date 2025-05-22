@@ -2,10 +2,8 @@ use crate::prelude::*;
 
 pub mod prelude {
     pub use super::App;
-    pub(crate) use super::actions::Action;
 }
 
-mod actions;
 mod builder;
 #[cfg(test)]
 mod tests;

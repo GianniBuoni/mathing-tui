@@ -1,7 +1,8 @@
-use std::{cell::RefCell, ops::Deref, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, ops::Deref, rc::Rc};
 
 use crate::prelude::*;
 
+mod builder;
 #[cfg(test)]
 mod test_cases;
 #[cfg(test)]
@@ -24,6 +25,7 @@ pub enum Mode {
 pub struct Home<'a> {
     components: Vec<TableTui<'a>>,
     component_tracker: Rc<RefCell<usize>>,
+    keymap: HashMap<KeyEvent, Action>,
     mode: Mode,
 }
 
@@ -31,6 +33,7 @@ pub struct Home<'a> {
 pub struct HomeBuilder<'a> {
     components: Vec<TableTui<'a>>,
     component_tracker: Rc<RefCell<usize>>,
+    keymap: HashMap<KeyEvent, Action>,
 }
 
 impl<'a> Home<'a> {
@@ -53,44 +56,35 @@ impl<'a> Home<'a> {
 }
 
 impl Component for Home<'_> {
-    fn handle_key_events(&mut self, key: KeyEvent) -> Option<Action> {
-        let action = match self.mode {
-            Mode::Normal => match key.code {
-                KeyCode::Tab => Action::SwitchPane,
-                KeyCode::Char('i') => Action::EnterInsert,
-                _ => {
-                    let current = self.component_tracker.borrow();
-                    if let Some(component) =
-                        self.components.get_mut(*current.deref())
-                    {
-                        return component.handle_events(Some(Event::Key(key)));
-                    } else {
-                        return None;
-                    };
-                }
-            },
-            Mode::Insert => match key.code {
-                KeyCode::Esc => Action::EnterNormal,
-                _ => {
-                    return None;
-                }
-            },
-        };
-        Some(action)
+    fn handle_key_events(&self, key: KeyEvent) -> Option<Action> {
+        match self.keymap.get(&key) {
+            Some(a) => Some(*a),
+            None => None,
+        }
     }
 
     fn update(&mut self, action: Option<Action>) {
-        match action {
-            Some(Action::EnterInsert) => self.mode = Mode::Insert,
-            Some(Action::EnterNormal) => self.mode = Mode::Normal,
-            Some(Action::SwitchPane) => {
-                self.cycle_view();
-                self.components
-                    .iter_mut()
-                    .for_each(|component| component.update(action));
-            }
-            Some(_) => {}
-            None => {}
+        match self.mode {
+            Mode::Insert => match action {
+                Some(Action::EnterNormal) => self.mode = Mode::Normal,
+                Some(_) => {}
+                None => {}
+            },
+            Mode::Normal => match action {
+                Some(Action::EnterInsert) => self.mode = Mode::Insert,
+                Some(Action::SwitchPane) => {
+                    self.cycle_view();
+                    self.components
+                        .iter_mut()
+                        .for_each(|component| component.update(action));
+                }
+                Some(_) => {
+                    self.components.iter_mut().for_each(|component| {
+                        component.update(action);
+                    });
+                }
+                None => {}
+            },
         }
     }
 
@@ -120,26 +114,5 @@ impl Component for Home<'_> {
                 component.draw(frame, chunk);
             },
         );
-    }
-}
-
-impl<'a> HomeBuilder<'a> {
-    pub fn add_component(mut self, component: TableTui<'a>) -> HomeBuilder<'a> {
-        self.components.push(component);
-        self
-    }
-}
-
-impl<'a> ComponentBuilder<Home<'a>> for HomeBuilder<'a> {
-    fn build(mut self) -> Home<'a> {
-        self.components.iter_mut().for_each(|component| {
-            component.add_tracker(self.component_tracker.clone());
-            component.init();
-        });
-        Home {
-            components: self.components,
-            component_tracker: self.component_tracker,
-            ..Default::default()
-        }
     }
 }
