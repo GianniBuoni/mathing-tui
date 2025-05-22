@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Once};
 
 use serde::Deserialize;
 
@@ -27,6 +27,8 @@ const DEFAULT_CONFIG: &[u8; 193] = b"[keymap]
 \"DOWN\" = \"TableNavigateDown\"
 \"k\" = \"TableNavigateUp\"
 \"UP\" = \"TableNavigateUp\"";
+
+static CONFIG_CHECK: Once = Once::new();
 
 #[derive(Default, Debug, Deserialize)]
 pub struct Config {

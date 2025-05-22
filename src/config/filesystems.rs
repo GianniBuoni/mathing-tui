@@ -3,22 +3,24 @@ use std::{
     fs::{File, create_dir_all},
     io::{Error, ErrorKind, Write},
     path::PathBuf,
-    sync::Once,
 };
 
 use super::*;
 
-static CONFIG_CHECK: Once = Once::new();
-
 pub fn config_dir() -> Result<PathBuf> {
-    let mut path = match env::var("PLATFORM")?.as_ref() {
-        "development" => PathBuf::from(env::var("PWD")?).join(".config"),
-        _ => dirs::config_dir().ok_or_else(|| {
-            Error::new(
-                ErrorKind::InvalidFilename,
-                "Could not parse config filepath for this platform.",
-            )
-        })?,
+    let notfound_error = Error::new(
+        ErrorKind::NotFound,
+        "Could not parse config filepath for this platform.",
+    );
+
+    let mut path = match env::var("PLATFORM") {
+        Ok(str) => match str {
+            str if str == "development" => {
+                PathBuf::from(env::var("PWD")?).join(".config")
+            }
+            _ => dirs::config_dir().ok_or(notfound_error)?,
+        },
+        Err(_) => dirs::config_dir().ok_or(notfound_error)?,
     };
 
     match env::var("MATHING_CONFIG") {
@@ -33,12 +35,10 @@ pub fn config_dir() -> Result<PathBuf> {
     Ok(path)
 }
 
-pub fn config_exists() -> Result<bool> {
-    Ok(config_dir()?.exists() && config_dir()?.is_file())
-}
-
 fn config_check() -> Result<()> {
-    if !config_exists()? {
+    let config_exists = config_dir()?.exists() && config_dir()?.is_file();
+
+    if !config_exists {
         let path = config_dir()?;
 
         create_dir_all(path.parent().ok_or_else(|| {
