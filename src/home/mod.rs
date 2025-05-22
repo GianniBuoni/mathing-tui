@@ -57,10 +57,7 @@ impl<'a> Home<'a> {
 
 impl Component for Home<'_> {
     fn handle_key_events(&self, key: KeyEvent) -> Option<Action> {
-        match self.keymap.get(&key) {
-            Some(a) => Some(*a),
-            None => None,
-        }
+        self.keymap.get(&key).copied()
     }
 
     fn update(&mut self, action: Option<Action>) {

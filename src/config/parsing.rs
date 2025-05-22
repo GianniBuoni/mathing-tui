@@ -13,7 +13,7 @@ fn parse_key_modifiers(raw: &str) -> (&str, KeyModifiers) {
         str if str.starts_with("alt-") => KeyModifiers::ALT,
         _ => KeyModifiers::NONE,
     };
-    let remaining = raw.split("-").last().unwrap_or_else(|| raw);
+    let remaining = raw.split("-").last().unwrap_or(raw);
 
     (remaining, modifier)
 }
@@ -35,9 +35,7 @@ fn parse_key_code_add_modifier(
         "up" => KeyCode::Up,
         "right" => KeyCode::Down,
         s if s.len() == 1 => {
-            let c = s.chars().next().ok_or_else(|| {
-                return err_msg;
-            })?;
+            let c = s.chars().next().ok_or(err_msg)?;
             KeyCode::Char(c)
         }
         _ => {

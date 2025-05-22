@@ -48,8 +48,8 @@ impl<'de> Deserialize<'de> for KeyMap {
                 while let Some((key_str, action)) =
                     map.next_entry::<String, Action>()?
                 {
-                    let key_event = parse_key_event(&key_str)
-                        .map_err(|e| de::Error::custom(e))?;
+                    let key_event =
+                        parse_key_event(&key_str).map_err(de::Error::custom)?;
                     keymap.insert(key_event, action);
                 }
                 Ok(KeyMap(keymap))
