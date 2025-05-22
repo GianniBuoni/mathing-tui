@@ -4,9 +4,8 @@ use super::*;
 
 impl Config {
     pub fn new() -> Result<Self> {
-        config_check()?;
+        config_check_once()?;
 
-        // TODO merge a default config with any kv's (if any) from a config file.
         let config = config::Config::builder()
             .add_source(
                 config::File::from(config_dir()?)

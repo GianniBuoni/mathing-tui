@@ -16,7 +16,7 @@ fn test_config_dir() -> Result<()> {
             assert!(
                 got.to_string_lossy()
                     .contains("/.config/mathing/config.toml"),
-                "Testing {}; assumes using POSIX file format",
+                "Testing {}; assumes using POSIX file path",
                 got.to_string_lossy()
             );
         },
@@ -57,8 +57,6 @@ fn test_parse_key_event() -> Result<(), String> {
 
 #[test]
 fn test_config_builder() -> Result<()> {
-    // TODO change this test to check the default config when its made.
-    // In its current state it will fail CI.
     let test_cases = [
         (
             KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL),
