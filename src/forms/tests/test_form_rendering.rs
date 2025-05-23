@@ -1,3 +1,5 @@
+use ratatui::{TerminalOptions, Viewport};
+
 use super::*;
 
 #[test]
@@ -86,10 +88,21 @@ fn test_input_render_active_block() {
     assert_eq!(want, got, "Test active input rendering.")
 }
 
-fn test_form_render() {
-    let _form = test_full_form();
+#[test]
+fn test_form_render() -> Result<()> {
+    let mut form = test_full_form();
 
-    let _want = Buffer::with_lines(vec![
+    // set up terminal
+    let viewport = Viewport::Fixed(test_big_rect());
+    let backend = CrosstermBackend::new(std::io::stdout());
+    let mut term =
+        Terminal::with_options(backend, TerminalOptions { viewport })?;
+    let mut frame = term.get_frame();
+
+    form.draw(&mut frame, test_big_rect());
+    let got = frame.buffer_mut().clone();
+
+    let mut want = Buffer::with_lines(vec![
         "                                                        ",
         "    Add New Item                                        ",
         "   ╭────────────────────────────────────────────────╮   ",
@@ -103,5 +116,18 @@ fn test_form_render() {
         "                                                        ",
     ]);
 
-    todo!();
+    let active_input = Style::new()
+        .fg(Color::Magenta)
+        .add_modifier(Modifier::RAPID_BLINK);
+    let inactive_block = Style::new().fg(Color::DarkGray);
+
+    want.set_style(Rect::new(5, 4, 46, 1), active_input);
+    want.set_style(Rect::new(4, 6, 48, 3), inactive_block);
+    want.set_style(
+        Rect::new(5, 7, 46, 1),
+        inactive_block.add_modifier(Modifier::RAPID_BLINK),
+    );
+
+    assert_eq!(want, got, "Test form draw method.");
+    Ok(())
 }
