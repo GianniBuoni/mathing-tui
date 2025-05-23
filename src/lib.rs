@@ -5,6 +5,7 @@ pub mod prelude {
     pub use crate::component::prelude::*;
     pub use crate::config::prelude::*;
     pub use crate::db::prelude::*;
+    #[allow(unused_imports)]
     pub(crate) use crate::forms::prelude::*;
     pub(crate) use crate::home::prelude::*;
     pub(crate) use crate::styles::prelude::*;

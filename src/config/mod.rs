@@ -37,5 +37,4 @@ pub struct Config {
 }
 
 #[derive(Default, Debug)]
-#[allow(dead_code)]
 pub struct KeyMap(pub HashMap<KeyEvent, Action>);
