@@ -3,7 +3,7 @@ use super::*;
 mod test_form_rendering;
 
 fn test_big_rect() -> Rect {
-    Rect::new(0, 0, 56, 10)
+    Rect::new(0, 0, 56, 11)
 }
 
 fn test_input_rect() -> Rect {
@@ -13,7 +13,7 @@ fn test_input_rect() -> Rect {
 fn test_form<'a>() -> Form<'a> {
     Form::new_builder()
         .add_title("Add New Item")
-        .add_rect(Rect::new(0, 0, 50, 8))
+        .add_rect(Rect::new(0, 0, 50, 9))
         .build()
 }
 
@@ -27,7 +27,7 @@ fn test_full_form<'a>() -> Form<'a> {
 
     Form::new_builder()
         .add_title("Add New Item")
-        .add_rect(Rect::new(0, 0, 50, 8))
+        .add_rect(Rect::new(0, 0, 50, 9))
         .add_field(name_field)
         .add_field(price_field)
         .build()
