@@ -7,7 +7,7 @@ impl<'a> Form<'a> {
 }
 
 impl<'a> FormField<'a> {
-    fn new(title: &'a str) -> Self {
+    pub fn new(title: &'a str) -> Self {
         Self {
             title: Cow::Borrowed(title),
             ..Default::default()

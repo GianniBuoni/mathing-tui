@@ -1,6 +1,6 @@
 use super::*;
 
-mod test_form_popup;
+mod test_form_rendering;
 
 fn test_big_rect() -> Rect {
     Rect::new(0, 0, 56, 10)
@@ -15,4 +15,8 @@ fn test_form<'a>() -> Form<'a> {
         .add_title("Add New Item")
         .add_rect(Rect::new(0, 0, 50, 8))
         .build()
+}
+
+fn test_input<'a>() -> FormField<'a> {
+    FormField::new("Item Name")
 }
