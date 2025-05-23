@@ -20,7 +20,7 @@ impl Form<'_> {
 
     pub fn render_feild_areas(&self, area: Rect) -> Rc<[Rect]> {
         let divisions = self.fields.len();
-        Layout::vertical(Constraint::from_lengths(vec![1; divisions]))
+        Layout::vertical(Constraint::from_lengths(vec![3; divisions]))
             .split(area)
     }
 }

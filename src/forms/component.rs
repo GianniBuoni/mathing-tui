@@ -14,13 +14,16 @@ impl Component for Form<'_> {
             block.render(*area, frame.buffer_mut());
         });
 
-        // render feilds
-        let field_areas = self.render_feild_areas(*areas.last().unwrap());
-        self.fields.iter_mut().zip(field_areas.iter()).for_each(
-            |(field, area)| {
-                field.draw(frame, *area);
-            },
-        );
+        if let (Some(block), Some(area)) = (blocks.last(), areas.last()) {
+            let field_areas = self.render_feild_areas(block.inner(*area));
+
+            // render feilds
+            self.fields.iter_mut().zip(field_areas.iter()).for_each(
+                |(field, area)| {
+                    field.draw(frame, *area);
+                },
+            );
+        }
     }
 
     fn update(&mut self, _action: Option<Action>) {
@@ -29,9 +32,7 @@ impl Component for Form<'_> {
 }
 
 impl Component for FormField<'_> {
-    fn init(&mut self) {
-        todo!()
-    }
+    fn init(&mut self) {}
 
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
         let style = Into::<AppStyles>::into(AppColors::get(self.active));
