@@ -32,7 +32,9 @@ impl Component for Form<'_> {
 }
 
 impl Component for FormField<'_> {
-    fn init(&mut self) {
+    fn init(&mut self, index: usize, tracker: Rc<RefCell<usize>>) {
+        self.index = index;
+        self.active_field = tracker;
         self.check_active();
     }
 

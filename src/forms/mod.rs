@@ -46,5 +46,6 @@ pub struct Form<'a> {
 pub struct FormBuilder<'a> {
     title: Cow<'a, str>,
     fields: Vec<FormField<'a>>,
+    active_field: Rc<RefCell<usize>>,
     rect: Rect,
 }

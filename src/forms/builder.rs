@@ -38,13 +38,13 @@ impl<'a> ComponentBuilder<Form<'a>> for FormBuilder<'a> {
             .iter_mut()
             .enumerate()
             .for_each(|(index, field)| {
-                field.assign_index(index);
-                field.init();
+                field.init(index, self.active_field.clone());
             });
         Form {
             title: self.title,
             fields: self.fields,
             rect: self.rect,
+            active_field: self.active_field,
             ..Default::default()
         }
     }

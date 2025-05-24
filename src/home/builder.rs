@@ -9,10 +9,11 @@ impl<'a> HomeBuilder<'a> {
 
 impl<'a> ComponentBuilder<Home<'a>> for HomeBuilder<'a> {
     fn build(mut self) -> Home<'a> {
-        self.components.iter_mut().for_each(|component| {
-            component.add_tracker(self.component_tracker.clone());
-            component.init();
-        });
+        self.components.iter_mut().enumerate().for_each(
+            |(index, component)| {
+                component.init(index, self.component_tracker.clone());
+            },
+        );
         Home {
             components: self.components,
             component_tracker: self.component_tracker,

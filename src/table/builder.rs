@@ -8,7 +8,6 @@ where
     title: Cow<'a, str>,
     headings: Vec<Cow<'a, str>>,
     items: Vec<T>,
-    app_index: usize,
     tracker: Rc<RefCell<usize>>,
 }
 
@@ -28,10 +27,6 @@ where
         self.items.push(item);
         self
     }
-    pub fn add_index(mut self, index: usize) -> Self {
-        self.app_index = index;
-        self
-    }
 }
 
 impl<'a, T> ComponentBuilder<TableData<'a, T>> for TableBuilder<'a, T>
@@ -43,7 +38,6 @@ where
             title: self.title,
             headings: self.headings.into(),
             items: self.items,
-            app_index: self.app_index,
             tracker: self.tracker,
             ..Default::default()
         }

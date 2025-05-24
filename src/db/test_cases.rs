@@ -23,7 +23,6 @@ pub fn mock_items<'a>() -> TableData<'a, StoreItem> {
     };
 
     TableData::new_builder()
-        .add_index(0)
         .add_title("Grocery Items")
         .add_heading("Items")
         .add_heading("Price")
@@ -61,7 +60,6 @@ pub fn mock_receipts<'a>() -> TableData<'a, StoreJoinRow> {
     };
 
     TableData::new_builder()
-        .add_index(1)
         .add_title("Receipt Items")
         .add_heading("Item Name")
         .add_heading("Item Price")

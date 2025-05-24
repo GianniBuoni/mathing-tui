@@ -56,7 +56,9 @@ where
         block.render(rect, frame.buffer_mut())
     }
 
-    fn init(&mut self) {
+    fn init(&mut self, index: usize, tracker: Rc<RefCell<usize>>) {
+        self.app_index = index;
+        self.tracker = tracker;
         self.check_active();
     }
 }

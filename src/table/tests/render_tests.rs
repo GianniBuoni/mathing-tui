@@ -11,7 +11,7 @@ fn test_render_block() {
         .render(buf.area, &mut buf);
 
     let mut want = Buffer::with_lines(vec![
-        "╭ [1] Receipt Items ─────────────────────────────╮",
+        "╭ [0] Receipt Items ─────────────────────────────╮",
         "│                                                │",
         "│                                                │",
         "│                                                │",

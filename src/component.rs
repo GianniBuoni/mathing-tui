@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use std::{collections::HashMap, fmt::Debug};
+use std::{cell::RefCell, collections::HashMap, fmt::Debug, rc::Rc};
 
 pub mod prelude {
     pub use super::{Component, ComponentBuilder};
@@ -31,5 +31,5 @@ pub trait Component: Debug {
         }
     }
 
-    fn init(&mut self) {}
+    fn init(&mut self, _index: usize, _tracker: Rc<RefCell<usize>>) {}
 }
