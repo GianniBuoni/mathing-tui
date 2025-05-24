@@ -36,17 +36,17 @@ where
     }
 
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
-        let colors = AppColors::get(self.active);
+        let styles = Into::<AppStyles>::into(AppColors::get(self.active));
 
         let block = self
-            .render_block(&colors.border_fg)
+            .render_block(styles.block_style)
             .padding(Padding::uniform(1));
 
         {
             use ratatui::widgets::StatefulWidget;
             let mut state = TableState::new().with_selected(self.table_index);
             StatefulWidget::render(
-                self.render_table(&colors.into()),
+                self.render_table(&styles),
                 block.inner(rect),
                 frame.buffer_mut(),
                 &mut state,

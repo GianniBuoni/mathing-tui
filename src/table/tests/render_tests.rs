@@ -4,12 +4,12 @@ use super::*;
 
 #[test]
 fn test_render_block() {
-    let colors = AppColors::ACTIVE;
+    let colors = Into::<AppStyles>::into(AppColors::ACTIVE);
     let items = mock_receipts();
     let mut buf = Buffer::empty(test_rect());
 
     items
-        .render_block(&colors.border_fg)
+        .render_block(colors.block_style)
         .render(buf.area, &mut buf);
 
     let mut want = Buffer::with_lines(vec![
@@ -30,7 +30,8 @@ fn test_render_block() {
 #[test]
 fn test_render_rows() {
     let items = mock_items();
-    let got = items.render_rows(&AppColors::ACTIVE.into());
+    let styles: AppStyles = AppColors::ACTIVE.into();
+    let got = items.render_rows(styles.row_style);
 
     // NOTE: On its own, the first row does not have the highlght styles set
     // its up to the [`render_table`] function to correctly set the highlght.

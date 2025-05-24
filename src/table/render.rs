@@ -4,14 +4,14 @@ impl<T> TableData<'_, T>
 where
     T: TableDisplay,
 {
-    pub(super) fn render_block<'a>(&'a self, fg: &Color) -> Block<'a> {
+    pub(super) fn render_block<'a>(&'a self, style: Style) -> Block<'a> {
         Block::bordered()
-            .border_style(Style::default().fg(*fg))
+            .border_style(style)
             .border_type(BorderType::Rounded)
             .title(self.title())
     }
 
-    pub(super) fn render_rows(&self, styles: &AppStyles) -> Vec<Row> {
+    pub(super) fn render_rows(&self, style: Style) -> Vec<Row> {
         self.items
             .iter()
             .map(|data| {
@@ -19,7 +19,7 @@ where
                     .into_iter()
                     .map(Cell::from)
                     .collect::<Row>()
-                    .style(styles.row_style)
+                    .style(style)
             })
             .collect()
     }
@@ -35,7 +35,7 @@ where
 
     pub(super) fn render_table(&self, styles: &AppStyles) -> Table {
         Table::new(
-            self.render_rows(styles),
+            self.render_rows(styles.row_style),
             Constraint::from_fills(vec![1; self.headings.len()]),
         )
         .header(self.render_heading(styles))

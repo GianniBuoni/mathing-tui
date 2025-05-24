@@ -37,7 +37,7 @@ fn test_input_render_block() {
     let input = test_input();
     let mut got = Buffer::empty(test_input_rect());
 
-    let style = Into::<AppStyles>::into(AppColors::get(false));
+    let style = Into::<AppStyles>::into(AppColors::INACTIVE);
     let block = input.render_block(style.block_style);
 
     block.render_ref(got.area, &mut got);
@@ -66,7 +66,7 @@ fn test_input_render_active_block() {
     let input = test_input();
     let mut got = Buffer::empty(test_input_rect());
 
-    let style = Into::<AppStyles>::into(AppColors::get(true));
+    let style = Into::<AppStyles>::into(AppColors::ACTIVE);
     let block = input.render_block(style.block_style);
 
     block.render_ref(got.area, &mut got);
