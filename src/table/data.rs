@@ -40,7 +40,7 @@ where
 
         let block = self
             .render_block(&colors.border_fg)
-            .padding(Padding::proportional(1));
+            .padding(Padding::uniform(1));
 
         {
             use ratatui::widgets::StatefulWidget;
