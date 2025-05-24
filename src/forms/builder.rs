@@ -34,7 +34,13 @@ impl<'a> FormBuilder<'a> {
 
 impl<'a> ComponentBuilder<Form<'a>> for FormBuilder<'a> {
     fn build(mut self) -> Form<'a> {
-        self.fields.iter_mut().for_each(|field| field.init());
+        self.fields
+            .iter_mut()
+            .enumerate()
+            .for_each(|(index, field)| {
+                field.assign_index(index);
+                field.init();
+            });
         Form {
             title: self.title,
             fields: self.fields,

@@ -32,7 +32,9 @@ impl Component for Form<'_> {
 }
 
 impl Component for FormField<'_> {
-    fn init(&mut self) {}
+    fn init(&mut self) {
+        self.check_active();
+    }
 
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
         let style = Into::<AppStyles>::into(AppColors::get(self.active));

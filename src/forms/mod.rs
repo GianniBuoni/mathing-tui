@@ -5,6 +5,7 @@ use tui_input::Input;
 
 use crate::prelude::*;
 
+mod actions;
 mod builder;
 mod component;
 mod render;
@@ -25,6 +26,7 @@ pub enum FormTui<'a> {
 #[derive(Default, Debug)]
 pub struct FormField<'a> {
     title: Cow<'a, str>,
+    index: usize,
     input: Input,
     active_field: Rc<RefCell<usize>>,
     active: bool,
