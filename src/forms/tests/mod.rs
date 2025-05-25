@@ -1,5 +1,6 @@
 use super::*;
 
+mod outputs;
 mod test_form_rendering;
 
 fn test_big_rect() -> Rect {
