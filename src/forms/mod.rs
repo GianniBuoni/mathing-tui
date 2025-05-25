@@ -5,9 +5,11 @@ use tui_input::Input;
 
 use crate::prelude::*;
 
-mod actions;
 mod builder;
-mod component;
+mod form_data;
+mod form_field;
+mod form_tui;
+mod form_value;
 mod render;
 #[cfg(test)]
 mod tests;
@@ -23,6 +25,13 @@ pub enum FormTui<'a> {
     ReceiptForm(Form<'a>),
 }
 
+#[derive(Debug)]
+pub enum FormValue<'a> {
+    String(Cow<'a, str>),
+    Decimal(f64),
+    Integer(i64),
+}
+
 #[derive(Default, Debug)]
 pub struct FormField<'a> {
     title: Cow<'a, str>,
@@ -30,6 +39,7 @@ pub struct FormField<'a> {
     input: Input,
     active_field: Rc<RefCell<usize>>,
     active: bool,
+    output: FormValue<'a>,
 }
 
 #[derive(Default, Debug)]
