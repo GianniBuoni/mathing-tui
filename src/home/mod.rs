@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::HashMap, ops::Deref, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::prelude::*;
 
@@ -40,18 +40,19 @@ impl<'a> Home<'a> {
     pub fn new_builder() -> HomeBuilder<'a> {
         HomeBuilder::default()
     }
-    fn cycle_view(&mut self) {
+    fn cycle_active(&mut self, add: i32) {
         if self.components.is_empty() {
             return;
         }
 
+        let max = self.components.len() - 1;
         let mut current = self.component_tracker.borrow_mut();
 
-        *current = if *current.deref() < self.components.len() - 1 {
-            current.deref() + 1
-        } else {
-            0
-        };
+        match *current as i32 + add {
+            int if int > max as i32 => *current = 0,
+            int if int < 0 => *current = max,
+            _ => *current = (*current as i32 + add) as usize,
+        }
     }
 }
 
@@ -70,15 +71,16 @@ impl Component for Home<'_> {
             Mode::Normal => match action {
                 Some(Action::EnterInsert) => self.mode = Mode::Insert,
                 Some(Action::SelectForward) => {
-                    self.cycle_view();
-                    self.components
-                        .iter_mut()
-                        .for_each(|component| component.update(action));
+                    self.cycle_active(1);
+                    self.components.iter_mut().for_each(|c| c.update(action));
                 }
-                //TODO: add cycle backwards
+                Some(Action::SelectBackward) => {
+                    self.cycle_active(-1);
+                    self.components.iter_mut().for_each(|c| c.update(action));
+                }
                 Some(_) => {
-                    self.components.iter_mut().for_each(|component| {
-                        component.update(action);
+                    self.components.iter_mut().for_each(|c| {
+                        c.update(action);
                     });
                 }
                 None => {}

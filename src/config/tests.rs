@@ -43,6 +43,11 @@ fn test_parse_key_event() -> Result<(), String> {
             KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL),
             "Test variable capitalization",
         ),
+        (
+            "Shift-tab",
+            KeyEvent::new(KeyCode::Tab, KeyModifiers::SHIFT),
+            "Test shift modifier and non-char keycode",
+        ),
     ];
 
     test_cases.iter().try_for_each(|(raw, want, desc)| {

@@ -18,7 +18,11 @@ fn test_input_propogation() {
             Action::SelectForward,
             "Test default pane switch.",
         ),
-        // TODO: add test for Select Backwards
+        (
+            KeyEvent::new(KeyCode::Tab, KeyModifiers::SHIFT),
+            Action::SelectBackward,
+            "Test pane switch backwards",
+        ),
         (
             KeyEvent::new(KeyCode::Char('i'), none),
             Action::EnterInsert,
