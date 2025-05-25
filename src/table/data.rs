@@ -21,7 +21,7 @@ where
 {
     fn update(&mut self, action: Option<Action>) {
         match action {
-            Some(Action::SwitchPane) => {
+            Some(Action::SelectForward) | Some(Action::SelectBackward) => {
                 self.check_active();
             }
             Some(Action::TableNavigateDown) => {

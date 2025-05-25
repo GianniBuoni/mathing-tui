@@ -63,7 +63,7 @@ fn test_config_builder() -> Result<()> {
             Action::Quit,
             "c",
         ),
-        (KeyEvent::from(KeyCode::Tab), Action::SwitchPane, "tab"),
+        (KeyEvent::from(KeyCode::Tab), Action::SelectForward, "tab"),
         (KeyEvent::from(KeyCode::Esc), Action::EnterNormal, "esc"),
         (KeyEvent::from(KeyCode::Char('i')), Action::EnterInsert, "i"),
         (

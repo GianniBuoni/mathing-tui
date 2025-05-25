@@ -18,15 +18,16 @@ mod tests;
 
 const DEFAULT_CONFIG_PATH: [&str; 2] = ["mathing", "config.toml"];
 
-const DEFAULT_CONFIG: &[u8; 193] = b"[keymap]
+const DEFAULT_CONFIG: &[u8; 227] = b"[keymap]
 \"CTRL-c\" = \"Quit\"
-\"TAB\" = \"SwitchPane\"
+\"tab\" = \"SelectForward\"
+\"SHIFT-tab\" = \"SelectBackward\"
 \"ESC\" = \"EnterNormal\"
 \"i\" = \"EnterInsert\"
 \"j\" = \"TableNavigateDown\"
-\"DOWN\" = \"TableNavigateDown\"
+\"down\" = \"TableNavigateDown\"
 \"k\" = \"TableNavigateUp\"
-\"UP\" = \"TableNavigateUp\"";
+\"up\" = \"TableNavigateUp\"";
 
 static CONFIG_CHECK: Once = Once::new();
 

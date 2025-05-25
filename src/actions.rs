@@ -7,7 +7,8 @@ pub struct QueryRequest;
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub enum Action {
     Quit,
-    SwitchPane,
+    SelectForward,
+    SelectBackward,
     EnterNormal,
     EnterInsert,
     TableNavigateDown,

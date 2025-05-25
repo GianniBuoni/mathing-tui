@@ -2,7 +2,8 @@ use super::*;
 
 #[test]
 fn test_handle_events() {
-    let key_events = [(KeyEvent::from(KeyCode::Tab), Some(Action::SwitchPane))];
+    let key_events =
+        [(KeyEvent::from(KeyCode::Tab), Some(Action::SelectForward))];
 
     for (event, want) in key_events {
         let mut home = test_home();

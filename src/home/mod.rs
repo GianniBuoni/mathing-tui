@@ -69,12 +69,13 @@ impl Component for Home<'_> {
             },
             Mode::Normal => match action {
                 Some(Action::EnterInsert) => self.mode = Mode::Insert,
-                Some(Action::SwitchPane) => {
+                Some(Action::SelectForward) => {
                     self.cycle_view();
                     self.components
                         .iter_mut()
                         .for_each(|component| component.update(action));
                 }
+                //TODO: add cycle backwards
                 Some(_) => {
                     self.components.iter_mut().for_each(|component| {
                         component.update(action);
