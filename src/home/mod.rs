@@ -59,19 +59,21 @@ impl<'a> Home<'a> {
 
 impl Component for Home<'_> {
     fn handle_key_events(&self, key: KeyEvent) -> Option<Action> {
-        if self.keymap.contains_key(&key) {
-            self.keymap.get(&key).copied()
-        } else if let Some(form) = &self.form {
-            form.handle_key_events(key)
-        } else {
-            None
+        match key.code {
+            KeyCode::Char(_) if self.form.is_some() => {
+                Some(Action::HandleInput(key))
+            }
+            _ => self.keymap.get(&key).copied(),
         }
     }
 
     fn update(&mut self, action: Option<Action>) {
         match self.mode {
             Mode::Insert => match action {
-                Some(Action::EnterNormal) => self.mode = Mode::Normal,
+                Some(Action::EnterNormal) => {
+                    self.mode = Mode::Normal;
+                    self.form = None
+                }
                 Some(_) => {
                     if let Some(form) = &mut self.form {
                         form.update(action);
@@ -80,7 +82,11 @@ impl Component for Home<'_> {
                 None => {}
             },
             Mode::Normal => match action {
-                Some(Action::EnterInsert) => self.mode = Mode::Insert,
+                Some(Action::EnterInsert) => {
+                    self.mode = Mode::Insert;
+                    // TODO: replace with appropriate form builder
+                    self.form = Some(FormTui::ItemForm(Form::default()))
+                }
                 Some(Action::SelectForward) => {
                     self.cycle_active(1);
                     self.components.iter_mut().for_each(|c| c.update(action));

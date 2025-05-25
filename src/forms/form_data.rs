@@ -1,3 +1,5 @@
+use tui_input::backend::crossterm::EventHandler;
+
 use super::*;
 
 impl Component for Form<'_> {
@@ -35,6 +37,15 @@ impl Component for Form<'_> {
             Some(Action::SelectBackward) => {
                 self.cycle_active(-1);
                 self.fields.iter_mut().for_each(|f| f.update(action));
+            }
+            Some(Action::HandleInput(key)) => {
+                if let Some(active) =
+                    self.fields.get_mut(*self.active_field.borrow())
+                {
+                    active
+                        .input
+                        .handle_event(&crossterm::event::Event::Key(key));
+                }
             }
             Some(_) => {
                 if let Some(active) =

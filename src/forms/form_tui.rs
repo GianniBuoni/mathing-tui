@@ -28,14 +28,14 @@ impl<'a> FormTui<'a> {
                 if let Some(name) = values.next() {
                     match name {
                         FormValue::String(_) => {}
-                        _ => return Err(Error::msg("")),
+                        _ => return Err(Error::msg("Not a string")),
                     }
                 };
 
                 if let Some(price) = values.next() {
                     match price {
                         FormValue::Decimal(_) => {}
-                        _ => return Err(Error::msg("")),
+                        _ => return Err(Error::msg("Not a float")),
                     }
                 };
 

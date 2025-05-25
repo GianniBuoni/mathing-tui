@@ -13,4 +13,5 @@ pub enum Action {
     EnterInsert,
     TableNavigateDown,
     TableNavigateUp,
+    HandleInput(crossterm::event::KeyEvent),
 }
