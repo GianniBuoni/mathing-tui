@@ -1,7 +1,7 @@
 use super::*;
 
 impl<'a> HomeBuilder<'a> {
-    pub fn add_component(mut self, component: TableTui<'a>) -> HomeBuilder<'a> {
+    pub fn add_component(mut self, component: TableTui<'a>) -> Self {
         self.components.push(component);
         self
     }

@@ -25,6 +25,7 @@ pub enum Mode {
 pub struct Home<'a> {
     components: Vec<TableTui<'a>>,
     component_tracker: Rc<RefCell<usize>>,
+    form: Option<FormTui<'a>>,
     keymap: HashMap<KeyEvent, Action>,
     mode: Mode,
 }
@@ -58,14 +59,24 @@ impl<'a> Home<'a> {
 
 impl Component for Home<'_> {
     fn handle_key_events(&self, key: KeyEvent) -> Option<Action> {
-        self.keymap.get(&key).copied()
+        if self.keymap.contains_key(&key) {
+            self.keymap.get(&key).copied()
+        } else if let Some(form) = &self.form {
+            form.handle_key_events(key)
+        } else {
+            None
+        }
     }
 
     fn update(&mut self, action: Option<Action>) {
         match self.mode {
             Mode::Insert => match action {
                 Some(Action::EnterNormal) => self.mode = Mode::Normal,
-                Some(_) => {}
+                Some(_) => {
+                    if let Some(form) = &mut self.form {
+                        form.update(action);
+                    }
+                }
                 None => {}
             },
             Mode::Normal => match action {
