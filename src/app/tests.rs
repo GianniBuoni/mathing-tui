@@ -29,6 +29,14 @@ fn test_input_propogation() {
             "Test entering insert mode.",
         ),
         (
+            KeyEvent::new(KeyCode::Char('i'), KeyModifiers::SHIFT),
+            Action::HandleInput(KeyEvent::new(
+                KeyCode::Char('i'),
+                KeyModifiers::SHIFT,
+            )),
+            "Test entering input in insert mode.",
+        ),
+        (
             KeyEvent::new(KeyCode::Esc, none),
             Action::EnterNormal,
             "Test entering normal mode.",

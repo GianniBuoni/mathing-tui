@@ -1,21 +1,24 @@
 use super::*;
 
 #[test]
-fn test_form_validation() {
+fn test_form_validation() -> Result<()> {
     let key_events = [
-        KeyCode::Tab,
-        KeyCode::Char('1'),
-        KeyCode::Char('.'),
-        KeyCode::Char('9'),
-        KeyCode::Char('9'),
+        Action::HandleInput(KeyEvent::from(KeyCode::Char('a'))),
+        Action::SelectForward,
+        Action::HandleInput(KeyEvent::from(KeyCode::Char('1'))),
+        Action::HandleInput(KeyEvent::from(KeyCode::Char('.'))),
+        Action::HandleInput(KeyEvent::from(KeyCode::Char('9'))),
+        Action::HandleInput(KeyEvent::from(KeyCode::Char('9'))),
     ];
 
     let mut form = test_full_form();
 
-    key_events.iter().for_each(|key| {
-        form.handle_events(Some(Event::Key(KeyEvent::from(*key))));
+    key_events.into_iter().for_each(|key| {
+        let action = Some(key);
+        form.update(action);
     });
 
     let form = FormTui::ItemForm(form);
-    assert!(form.validate().is_ok());
+    form.validate()?;
+    Ok(())
 }
