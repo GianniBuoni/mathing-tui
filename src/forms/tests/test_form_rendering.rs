@@ -46,7 +46,7 @@ fn test_input_render_block() {
         .render(block.inner(got.area), &mut got);
 
     let mut want = Buffer::with_lines(vec![
-        "╭ Item Name ─────────────────────────────────────╮",
+        "╭ Item Price ────────────────────────────────────╮",
         "│                                                │",
         "╰────────────────────────────────────────────────╯",
     ]);
@@ -74,7 +74,7 @@ fn test_input_render_active_block() {
         .render_input(style.input_style)
         .render(block.inner(got.area), &mut got);
     let mut want = Buffer::with_lines(vec![
-        "╭ Item Name ─────────────────────────────────────╮",
+        "╭ Item Price ────────────────────────────────────╮",
         "│                                                │",
         "╰────────────────────────────────────────────────╯",
     ]);

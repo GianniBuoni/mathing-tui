@@ -18,13 +18,13 @@ fn test_form<'a>() -> Form<'a> {
         .build()
 }
 
-fn test_input<'a>() -> FormField<'a> {
-    FormField::new("Item Name")
+fn test_input<'a>() -> InputField<'a, f64> {
+    InputField::new("Item Price")
 }
 
 fn test_full_form<'a>() -> Form<'a> {
-    let name_field = FormField::new("Item Name");
-    let price_field = FormField::new("Item Price");
+    let name_field = InputField::<String>::new("Item Name");
+    let price_field = InputField::<f64>::new("Item Price");
 
     Form::new_builder()
         .add_title("Add New Item")
