@@ -2,7 +2,8 @@ use super::*;
 
 #[test]
 fn test_handle_events() {
-    let key_events = [(KeyEvent::from(KeyCode::Tab), Some(Action::SwitchPane))];
+    let key_events =
+        [(KeyEvent::from(KeyCode::Tab), Some(Action::SelectForward))];
 
     for (event, want) in key_events {
         let mut home = test_home();
@@ -15,12 +16,12 @@ fn test_handle_events() {
 }
 
 #[test]
-fn test_component_cycling() {
+fn test_component_cycling_forward() {
     let mut test_home = test_home();
     let key_event = KeyEvent::from(KeyCode::Tab);
 
     assert_eq!(
-        *test_home.component_tracker.borrow().deref(),
+        *test_home.component_tracker.borrow(),
         0,
         "Test if current model is properly initialized",
     );
@@ -32,7 +33,31 @@ fn test_component_cycling() {
         test_home.update(action);
         assert_eq!(
             want,
-            *test_home.component_tracker.borrow().deref(),
+            *test_home.component_tracker.borrow(),
+            "Test if current view changes with repeated input"
+        );
+    }
+}
+
+#[test]
+fn test_component_cycling_backwards() {
+    let mut test_home = test_home();
+    let key_event = KeyEvent::new(KeyCode::Tab, KeyModifiers::SHIFT);
+
+    assert_eq!(
+        *test_home.component_tracker.borrow(),
+        0,
+        "Test if current model is properly initialized",
+    );
+
+    for i in 0..100 {
+        let want = if i % 2 == 0 { 1 } else { 0 };
+
+        let action = test_home.handle_events(Some(Event::Key(key_event)));
+        test_home.update(action);
+        assert_eq!(
+            want,
+            *test_home.component_tracker.borrow(),
             "Test if current view changes with repeated input"
         );
     }

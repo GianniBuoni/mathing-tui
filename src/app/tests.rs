@@ -15,13 +15,26 @@ fn test_input_propogation() {
         ),
         (
             KeyEvent::new(KeyCode::Tab, none),
-            Action::SwitchPane,
+            Action::SelectForward,
             "Test default pane switch.",
+        ),
+        (
+            KeyEvent::new(KeyCode::Tab, KeyModifiers::SHIFT),
+            Action::SelectBackward,
+            "Test pane switch backwards",
         ),
         (
             KeyEvent::new(KeyCode::Char('i'), none),
             Action::EnterInsert,
             "Test entering insert mode.",
+        ),
+        (
+            KeyEvent::new(KeyCode::Char('i'), KeyModifiers::SHIFT),
+            Action::HandleInput(KeyEvent::new(
+                KeyCode::Char('i'),
+                KeyModifiers::SHIFT,
+            )),
+            "Test entering input in insert mode.",
         ),
         (
             KeyEvent::new(KeyCode::Esc, none),

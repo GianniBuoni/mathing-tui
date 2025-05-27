@@ -43,6 +43,11 @@ fn test_parse_key_event() -> Result<(), String> {
             KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL),
             "Test variable capitalization",
         ),
+        (
+            "Shift-tab",
+            KeyEvent::new(KeyCode::Tab, KeyModifiers::SHIFT),
+            "Test shift modifier and non-char keycode",
+        ),
     ];
 
     test_cases.iter().try_for_each(|(raw, want, desc)| {
@@ -57,13 +62,15 @@ fn test_parse_key_event() -> Result<(), String> {
 
 #[test]
 fn test_config_builder() -> Result<()> {
+    let config = Config::new()?;
+
     let test_cases = [
         (
             KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL),
             Action::Quit,
             "c",
         ),
-        (KeyEvent::from(KeyCode::Tab), Action::SwitchPane, "tab"),
+        (KeyEvent::from(KeyCode::Tab), Action::SelectForward, "tab"),
         (KeyEvent::from(KeyCode::Esc), Action::EnterNormal, "esc"),
         (KeyEvent::from(KeyCode::Char('i')), Action::EnterInsert, "i"),
         (
@@ -83,8 +90,6 @@ fn test_config_builder() -> Result<()> {
         ),
         (KeyEvent::from(KeyCode::Up), Action::TableNavigateUp, "up"),
     ];
-
-    let config = Config::new()?;
 
     test_cases.iter().for_each(|(event, want, string)| {
         let got = config.keymap.0.get(event).unwrap();

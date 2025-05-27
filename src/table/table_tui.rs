@@ -1,10 +1,10 @@
 use super::*;
 
 impl Component for TableTui<'_> {
-    fn init(&mut self) {
+    fn init(&mut self, index: usize, tracker: Rc<RefCell<usize>>) {
         match self {
-            TableTui::Items(i) => i.init(),
-            TableTui::Receipt(r) => r.init(),
+            TableTui::Items(i) => i.init(index, tracker),
+            TableTui::Receipt(r) => r.init(index, tracker),
         }
     }
 
@@ -24,16 +24,6 @@ impl Component for TableTui<'_> {
 }
 
 impl TableTui<'_> {
-    pub fn add_tracker(&mut self, tracker: Rc<RefCell<usize>>) {
-        match self {
-            TableTui::Items(i) => {
-                i.tracker = tracker;
-            }
-            TableTui::Receipt(r) => {
-                r.tracker = tracker;
-            }
-        }
-    }
     pub fn is_active(&self) -> bool {
         match self {
             TableTui::Items(i) => i.active,

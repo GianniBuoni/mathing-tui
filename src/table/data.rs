@@ -21,7 +21,7 @@ where
 {
     fn update(&mut self, action: Option<Action>) {
         match action {
-            Some(Action::SwitchPane) => {
+            Some(Action::SelectForward) | Some(Action::SelectBackward) => {
                 self.check_active();
             }
             Some(Action::TableNavigateDown) => {
@@ -36,17 +36,17 @@ where
     }
 
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
-        let colors = AppColors::get(self.active);
+        let styles = Into::<AppStyles>::into(AppColors::get(self.active));
 
         let block = self
-            .render_block(&colors.border_fg)
-            .padding(Padding::proportional(1));
+            .render_block(styles.block_style)
+            .padding(Padding::uniform(1));
 
         {
             use ratatui::widgets::StatefulWidget;
             let mut state = TableState::new().with_selected(self.table_index);
             StatefulWidget::render(
-                self.render_table(&colors.into()),
+                self.render_table(&styles),
                 block.inner(rect),
                 frame.buffer_mut(),
                 &mut state,
@@ -56,7 +56,9 @@ where
         block.render(rect, frame.buffer_mut())
     }
 
-    fn init(&mut self) {
+    fn init(&mut self, index: usize, tracker: Rc<RefCell<usize>>) {
+        self.app_index = index;
+        self.tracker = tracker;
         self.check_active();
     }
 }

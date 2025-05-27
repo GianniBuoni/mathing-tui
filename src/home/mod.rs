@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::HashMap, ops::Deref, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::prelude::*;
 
@@ -25,6 +25,7 @@ pub enum Mode {
 pub struct Home<'a> {
     components: Vec<TableTui<'a>>,
     component_tracker: Rc<RefCell<usize>>,
+    form: Option<FormTui<'a>>,
     keymap: HashMap<KeyEvent, Action>,
     mode: Mode,
 }
@@ -40,44 +41,63 @@ impl<'a> Home<'a> {
     pub fn new_builder() -> HomeBuilder<'a> {
         HomeBuilder::default()
     }
-    fn cycle_view(&mut self) {
+    fn cycle_active(&mut self, add: i32) {
         if self.components.is_empty() {
             return;
         }
 
+        let max = self.components.len() - 1;
         let mut current = self.component_tracker.borrow_mut();
 
-        *current = if *current.deref() < self.components.len() - 1 {
-            current.deref() + 1
-        } else {
-            0
-        };
+        match *current as i32 + add {
+            int if int > max as i32 => *current = 0,
+            int if int < 0 => *current = max,
+            _ => *current = (*current as i32 + add) as usize,
+        }
     }
 }
 
 impl Component for Home<'_> {
     fn handle_key_events(&self, key: KeyEvent) -> Option<Action> {
-        self.keymap.get(&key).copied()
+        match key.code {
+            KeyCode::Char(_) if self.form.is_some() => {
+                Some(Action::HandleInput(key))
+            }
+            _ => self.keymap.get(&key).copied(),
+        }
     }
 
     fn update(&mut self, action: Option<Action>) {
         match self.mode {
             Mode::Insert => match action {
-                Some(Action::EnterNormal) => self.mode = Mode::Normal,
-                Some(_) => {}
+                Some(Action::EnterNormal) => {
+                    self.mode = Mode::Normal;
+                    self.form = None
+                }
+                Some(_) => {
+                    if let Some(form) = &mut self.form {
+                        form.update(action);
+                    }
+                }
                 None => {}
             },
             Mode::Normal => match action {
-                Some(Action::EnterInsert) => self.mode = Mode::Insert,
-                Some(Action::SwitchPane) => {
-                    self.cycle_view();
-                    self.components
-                        .iter_mut()
-                        .for_each(|component| component.update(action));
+                Some(Action::EnterInsert) => {
+                    self.mode = Mode::Insert;
+                    // TODO: replace with appropriate form builder
+                    self.form = Some(FormTui::ItemForm(Form::default()))
+                }
+                Some(Action::SelectForward) => {
+                    self.cycle_active(1);
+                    self.components.iter_mut().for_each(|c| c.update(action));
+                }
+                Some(Action::SelectBackward) => {
+                    self.cycle_active(-1);
+                    self.components.iter_mut().for_each(|c| c.update(action));
                 }
                 Some(_) => {
-                    self.components.iter_mut().for_each(|component| {
-                        component.update(action);
+                    self.components.iter_mut().for_each(|c| {
+                        c.update(action);
                     });
                 }
                 None => {}

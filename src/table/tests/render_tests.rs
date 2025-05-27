@@ -1,17 +1,19 @@
+use ratatui::{TerminalOptions, Viewport};
+
 use super::*;
 
 #[test]
 fn test_render_block() {
-    let colors = AppColors::ACTIVE;
+    let colors = Into::<AppStyles>::into(AppColors::ACTIVE);
     let items = mock_receipts();
     let mut buf = Buffer::empty(test_rect());
 
     items
-        .render_block(&colors.border_fg)
+        .render_block(colors.block_style)
         .render(buf.area, &mut buf);
 
     let mut want = Buffer::with_lines(vec![
-        "╭ [1] Receipt Items ─────────────────────────────╮",
+        "╭ [0] Receipt Items ─────────────────────────────╮",
         "│                                                │",
         "│                                                │",
         "│                                                │",
@@ -28,7 +30,8 @@ fn test_render_block() {
 #[test]
 fn test_render_rows() {
     let items = mock_items();
-    let got = items.render_rows(&AppColors::ACTIVE.into());
+    let styles: AppStyles = AppColors::ACTIVE.into();
+    let got = items.render_rows(styles.row_style);
 
     // NOTE: On its own, the first row does not have the highlght styles set
     // its up to the [`render_table`] function to correctly set the highlght.
@@ -91,4 +94,40 @@ fn test_render_table() {
         want, got,
         "Test if table and table state renders correctly."
     )
+}
+
+#[test]
+fn test_render_complete_table() -> Result<()> {
+    let mut want = Buffer::with_lines(vec![
+        "╭ [0] Receipt Items ─────────────────────────────╮",
+        "│                                                │",
+        "│  Item Name   Item Price  Item Qty   Payees     │",
+        "│  Slamon      9.49        1          Jon, Noodl │",
+        "│  Blueberrie  5.59        4          Jon        │",
+        "│                                                │",
+        "│                                                │",
+        "╰────────────────────────────────────────────────╯",
+    ]);
+
+    let heading_style = Style::new().fg(Color::Black).bg(Color::Magenta).bold();
+    let highlight_style = Style::new().red();
+
+    want.set_style(Rect::new(2, 2, 46, 1), heading_style);
+    want.set_style(Rect::new(2, 3, 46, 1), highlight_style);
+
+    let viewport = Viewport::Fixed(test_rect());
+    let backend = CrosstermBackend::new(std::io::stdout());
+    let mut term =
+        Terminal::with_options(backend, TerminalOptions { viewport })?;
+    let mut frame = term.get_frame();
+
+    let mut test_r = mock_receipts();
+    test_r.active = true;
+    let area = &frame.area();
+    test_r.draw(&mut frame, *area);
+
+    let got = frame.buffer_mut().clone();
+    assert_eq!(want, got);
+
+    Ok(())
 }
