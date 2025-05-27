@@ -1,5 +1,3 @@
-use anyhow::Error;
-
 use super::*;
 
 impl Component for FormTui<'_> {
@@ -19,49 +17,10 @@ impl Component for FormTui<'_> {
 }
 
 impl<'a> FormTui<'a> {
-    pub fn validate(&self) -> Result<()> {
+    pub fn submit(&self) -> Result<()> {
         match self {
-            Self::ItemForm(form) => {
-                let values = form.submit()?;
-                let mut values = values.iter();
-
-                if let Some(name) = values.next() {
-                    match name {
-                        FormValue::String(_) => {}
-                        _ => return Err(Error::msg("Not a string")),
-                    }
-                };
-
-                if let Some(price) = values.next() {
-                    match price {
-                        FormValue::Decimal(_) => {}
-                        _ => return Err(Error::msg("Not a float")),
-                    }
-                };
-
-                Ok(())
-            }
-
-            Self::ReceiptForm(form) => {
-                let values = form.submit()?;
-                let mut values = values.iter();
-
-                if let Some(qty) = values.next() {
-                    match qty {
-                        FormValue::Integer(_) => {}
-                        _ => return Err(Error::msg("")),
-                    }
-                };
-
-                if let Some(payees) = values.next() {
-                    match payees {
-                        FormValue::String(_) => {}
-                        _ => return Err(Error::msg("")),
-                    }
-                }
-
-                Ok(())
-            }
+            Self::ItemForm(i) => i.submit(),
+            Self::ReceiptForm(r) => r.submit(),
         }
     }
 }

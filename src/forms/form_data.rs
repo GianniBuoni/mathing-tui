@@ -1,5 +1,3 @@
-use tui_input::backend::crossterm::EventHandler;
-
 use super::*;
 
 impl Component for Form<'_> {
@@ -38,15 +36,6 @@ impl Component for Form<'_> {
                 self.cycle_active(-1);
                 self.fields.iter_mut().for_each(|f| f.update(action));
             }
-            Some(Action::HandleInput(key)) => {
-                if let Some(active) =
-                    self.fields.get_mut(*self.active_field.borrow())
-                {
-                    active
-                        .input
-                        .handle_event(&crossterm::event::Event::Key(key));
-                }
-            }
             Some(_) => {
                 if let Some(active) =
                     self.fields.get_mut(*self.active_field.borrow())
@@ -60,11 +49,31 @@ impl Component for Form<'_> {
 }
 
 impl Form<'_> {
-    pub fn submit(&self) -> Result<Rc<[FormValue]>> {
-        self.fields
-            .iter()
-            .map(|input| TryInto::<FormValue>::try_into(&input.input))
-            .collect()
+    pub fn render_block(&self) -> Rc<[Block]> {
+        let popup_block = Block::new().title(format!(" {} ", self.title));
+        let bordered_block = Block::bordered().border_type(BorderType::Rounded);
+        [popup_block, bordered_block].into()
+    }
+
+    pub fn render_block_areas(&self, outer: &Block, area: Rect) -> Rc<[Rect]> {
+        let outer_area = center_widget(
+            area,
+            Constraint::Length(self.rect.width),
+            Constraint::Length(self.rect.height),
+        );
+
+        let inner_area = outer.inner(outer_area);
+        [outer_area, inner_area].into()
+    }
+
+    pub fn render_feild_areas(&self, area: Rect) -> Rc<[Rect]> {
+        let divisions = self.fields.len();
+        Layout::vertical(Constraint::from_lengths(vec![3; divisions]))
+            .split(area)
+    }
+
+    pub fn submit(&self) -> Result<()> {
+        self.fields.iter().try_for_each(|f| f.submit())
     }
 
     pub fn cycle_active(&mut self, add: i32) {
@@ -81,6 +90,4 @@ impl Form<'_> {
             _ => *current_index = (*current_index as i32 + add) as usize,
         }
     }
-
-    fn check_active(&mut self) {}
 }

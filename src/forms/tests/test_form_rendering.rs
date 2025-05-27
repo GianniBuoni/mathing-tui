@@ -91,7 +91,7 @@ fn test_input_render_active_block() {
 
 #[test]
 fn test_form_render() -> Result<()> {
-    let mut form = test_full_form();
+    let mut form = test_valid_form(&OutputStruct::default());
 
     // set up terminal
     let viewport = Viewport::Fixed(test_big_rect());

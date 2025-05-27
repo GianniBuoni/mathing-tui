@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use super::*;
 
 #[test]
@@ -53,31 +55,35 @@ fn test_form_validation() -> Result<()> {
         Action::HandleInput(KeyEvent::from(KeyCode::Char('9'))),
     ];
 
-    let mut form = test_full_form();
+    let mut form = test_valid_form(&OutputStruct::default());
     key_events.iter().for_each(|key| form.update(Some(*key)));
+    form.fields.iter().try_for_each(|field| field.validate())?;
 
-    let form = FormTui::ItemForm(form);
-    form.validate()?;
     Ok(())
 }
 
 #[test]
-fn test_invalid_data() {
+fn test_form_submit() -> Result<()> {
     let key_events = [
         Action::HandleInput(KeyEvent::from(KeyCode::Char('a'))),
         Action::SelectForward,
-        Action::HandleInput(KeyEvent::from(KeyCode::Char('a'))),
+        Action::HandleInput(KeyEvent::from(KeyCode::Char('1'))),
+        Action::HandleInput(KeyEvent::from(KeyCode::Char('.'))),
+        Action::HandleInput(KeyEvent::from(KeyCode::Char('9'))),
+        Action::HandleInput(KeyEvent::from(KeyCode::Char('9'))),
     ];
 
-    let mut form = test_full_form();
-    key_events.iter().for_each(|key| form.update(Some(*key)));
+    let want = ("a", 1.99 as f64);
 
-    let form = FormTui::ItemForm(form);
-    match form.validate() {
-        Ok(_) => panic!("expected an Error"),
-        Err(got) => {
-            let want = "Item price is not a float.";
-            assert_eq!(want, AsRef::<str>::as_ref(&got.to_string()))
-        }
-    }
+    let got = OutputStruct::default();
+    let mut form = test_valid_form(&got);
+    key_events.iter().for_each(|key| form.update(Some(*key)));
+    form.submit()?;
+
+    let name = got.name.borrow();
+    let got = (name.deref().deref(), *got.price.borrow());
+
+    assert_eq!(want, got);
+
+    Ok(())
 }

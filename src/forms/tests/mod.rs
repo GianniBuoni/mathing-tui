@@ -26,9 +26,17 @@ fn test_str_input<'a>() -> InputField<'a, String> {
     InputField::new("Item Name")
 }
 
-fn test_full_form<'a>() -> Form<'a> {
-    let name_field = InputField::<String>::new("Item Name");
-    let price_field = InputField::<f64>::new("Item Price");
+#[derive(Default)]
+struct OutputStruct {
+    name: Rc<RefCell<String>>,
+    price: Rc<RefCell<f64>>,
+}
+
+fn test_valid_form<'a>(source: &OutputStruct) -> Form<'a> {
+    let name_field =
+        InputField::<String>::new("Item Name").map_value(source.name.clone());
+    let price_field =
+        InputField::<f64>::new("Item Price").map_value(source.price.clone());
 
     Form::new_builder()
         .add_title("Add New Item")
@@ -37,3 +45,5 @@ fn test_full_form<'a>() -> Form<'a> {
         .add_field(price_field)
         .build()
 }
+
+fn test_invalid_form_no_fields() {}

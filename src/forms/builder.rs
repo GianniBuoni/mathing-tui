@@ -6,7 +6,11 @@ impl<'a> Form<'a> {
     }
 }
 
-impl<'a> FormField<'a> {
+impl<'a, T> InputField<'a, T>
+where
+    T: Debug + Default + FromStr,
+    <T as FromStr>::Err: Debug,
+{
     pub fn new(title: &'a str) -> Self {
         Self {
             title: Cow::Borrowed(title),
@@ -16,8 +20,8 @@ impl<'a> FormField<'a> {
 }
 
 impl<'a> FormBuilder<'a> {
-    pub fn add_field(mut self, field: FormField<'a>) -> Self {
-        self.fields.push(field);
+    pub fn add_field(mut self, field: impl Field + 'static) -> Self {
+        self.fields.push(Box::new(field) as Box<dyn Field>);
         self
     }
 
