@@ -53,7 +53,7 @@ pub struct Form<'a> {
     active_field: Rc<RefCell<usize>>,
     rect: Rect,
     cursor_pos: Position,
-    error: Cow<'a, str>,
+    error: Option<Cow<'a, str>>,
 }
 
 #[derive(Debug, Default)]

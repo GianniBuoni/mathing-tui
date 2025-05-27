@@ -73,6 +73,10 @@ impl Form<'_> {
     }
 
     pub fn submit(&self) -> Result<()> {
+        if self.fields.is_empty() {
+            return Err(anyhow::Error::msg("Malformed: form has no fields."));
+        }
+
         self.fields.iter().try_for_each(|f| f.submit())
     }
 

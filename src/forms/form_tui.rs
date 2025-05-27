@@ -17,10 +17,18 @@ impl Component for FormTui<'_> {
 }
 
 impl<'a> FormTui<'a> {
-    pub fn submit(&self) -> Result<()> {
+    pub fn submit(&mut self) {
         match self {
-            Self::ItemForm(i) => i.submit(),
-            Self::ReceiptForm(r) => r.submit(),
+            Self::ItemForm(i) => {
+                if let Err(e) = i.submit() {
+                    i.error = Some(Cow::Owned(e.to_string()))
+                }
+            }
+            Self::ReceiptForm(r) => {
+                if let Err(e) = r.submit() {
+                    r.error = Some(Cow::Owned(e.to_string()))
+                }
+            }
         }
     }
 }

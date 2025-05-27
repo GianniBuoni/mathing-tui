@@ -46,4 +46,9 @@ fn test_valid_form<'a>(source: &OutputStruct) -> Form<'a> {
         .build()
 }
 
-fn test_invalid_form_no_fields() {}
+fn test_invalid_form_no_fields<'a>() -> Form<'a> {
+    Form::new_builder()
+        .add_title("Add New Item")
+        .add_rect(Rect::new(0, 0, 50, 9))
+        .build()
+}
