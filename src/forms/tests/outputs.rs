@@ -2,31 +2,44 @@ use super::*;
 
 #[test]
 fn test_input_validation() {
-    let key_events = [
+    let mut key_events = [
         (
+            Box::new(test_f64_input()) as Box<dyn Field>,
             Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('1')))),
             "Ok",
-            "Test valid input.",
+            "Test valid float input.",
         ),
         (
+            Box::new(test_f64_input()) as Box<dyn Field>,
             Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('a')))),
             "Unable to parse \"a\" as f64.",
             "Test invalid input.",
         ),
-        (None, "Item Price is unset.", "Test unset data."),
+        (
+            Box::new(test_f64_input()) as Box<dyn Field>,
+            None,
+            "Item Price is unset.",
+            "Test unset data.",
+        ),
+        (
+            Box::new(test_str_input()) as Box<dyn Field>,
+            Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('a')))),
+            "Ok",
+            "Test valid str input.",
+        ),
     ];
 
-    key_events.iter().for_each(|(action, want, desc)| {
-        let mut float_input = test_input();
+    key_events
+        .iter_mut()
+        .for_each(|(input, action, want, desc)| {
+            input.update(*action);
+            let got = match input.validate() {
+                Ok(_) => "Ok".to_string(),
+                Err(e) => e.to_string(),
+            };
 
-        float_input.update(*action);
-        let got = match float_input.validate() {
-            Ok(_) => "Ok".to_string(),
-            Err(e) => e.to_string(),
-        };
-
-        assert_eq!(want.to_string(), got, "{desc}")
-    });
+            assert_eq!(want.to_string(), got, "{desc}")
+        });
 }
 
 #[test]

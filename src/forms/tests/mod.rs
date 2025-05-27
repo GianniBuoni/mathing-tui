@@ -18,8 +18,12 @@ fn test_form<'a>() -> Form<'a> {
         .build()
 }
 
-fn test_input<'a>() -> InputField<'a, f64> {
+fn test_f64_input<'a>() -> InputField<'a, f64> {
     InputField::new("Item Price")
+}
+
+fn test_str_input<'a>() -> InputField<'a, String> {
+    InputField::new("Item Name")
 }
 
 fn test_full_form<'a>() -> Form<'a> {

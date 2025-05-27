@@ -34,7 +34,7 @@ fn test_form_render_block() {
 
 #[test]
 fn test_input_render_block() {
-    let input = test_input();
+    let input = test_f64_input();
     let mut got = Buffer::empty(test_input_rect());
 
     let style = Into::<AppStyles>::into(AppColors::INACTIVE);
@@ -63,7 +63,7 @@ fn test_input_render_block() {
 
 #[test]
 fn test_input_render_active_block() {
-    let input = test_input();
+    let input = test_f64_input();
     let mut got = Buffer::empty(test_input_rect());
 
     let style = Into::<AppStyles>::into(AppColors::ACTIVE);
