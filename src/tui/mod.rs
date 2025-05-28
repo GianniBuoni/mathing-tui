@@ -59,11 +59,8 @@ pub struct Tui {
 }
 
 impl Tui {
-    pub fn next_event(&mut self) -> Option<Event> {
-        match self.event_rx.try_recv() {
-            Ok(event) => Some(event),
-            Err(_) => None,
-        }
+    pub async fn next_event(&mut self) -> Option<Event> {
+        self.event_rx.recv().await
     }
 
     pub fn next_response(&mut self) -> Option<DbResponse> {
