@@ -17,7 +17,7 @@ impl Tui {
         }
     }
 
-    pub fn start(mut self) -> Self {
+    pub fn build(mut self) -> Self {
         let event_loop = Self::event_loop(self.event_tx.clone());
         self.task = tokio::spawn(async {
             event_loop.await;
