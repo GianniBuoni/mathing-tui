@@ -10,6 +10,7 @@ use queries::prelude::*;
 
 mod connection;
 mod db_time;
+mod params;
 mod processing;
 mod queries;
 mod table_displays;
@@ -20,6 +21,7 @@ mod tests;
 
 pub mod prelude {
     pub use super::connection::get_db;
+    pub use super::params::prelude::*;
     pub use super::queries::prelude::*;
     #[cfg(test)]
     pub use super::test_cases::*;
