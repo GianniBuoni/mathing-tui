@@ -9,7 +9,7 @@ use tokio::{
 use crate::prelude::*;
 
 pub mod prelude {
-    pub use super::{DbRequest, Event, Tui};
+    pub use super::{Event, Tui};
 }
 
 mod builder;
@@ -19,32 +19,6 @@ pub enum Event {
     Quit,
     Error,
     Key(KeyEvent),
-}
-
-pub struct DbResponse {
-    req_type: RequestType,
-    payload: DbPayload,
-    error: Option<String>,
-}
-
-pub struct DbRequest {
-    req_type: RequestType,
-    payload: DbPayload,
-}
-
-pub enum DbPayload {
-    ItemParams(ItemParams),
-    ReceiptParamss(ReceiptParams),
-    Item(StoreItem),
-    Receipt(StoreJoinRow),
-}
-
-#[derive(Clone, Copy)]
-pub enum RequestType {
-    Get,
-    Post,
-    Update,
-    Delete,
 }
 
 pub struct Tui {
