@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use sqlx::SqliteConnection;
 
 use super::*;
@@ -11,6 +9,7 @@ pub mod prelude {
 
 mod errors;
 mod item_params;
+mod receipts_params;
 mod user_params;
 
 pub trait Request<T> {
