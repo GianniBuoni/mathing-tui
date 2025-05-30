@@ -10,6 +10,7 @@ pub mod prelude {
 mod errors;
 mod item_params;
 mod receipts_params;
+mod receipts_users_params;
 mod user_params;
 
 pub trait Request<T> {

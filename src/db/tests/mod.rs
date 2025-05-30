@@ -8,8 +8,7 @@ use tokio::time::{Instant, sleep_until};
 mod constants;
 mod item_params;
 mod receipts_params;
-mod store_receipts_users;
-mod store_receits_users_init;
+mod receipts_users_params;
 mod user_params;
 
 use constants::*;

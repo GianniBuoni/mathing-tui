@@ -26,9 +26,17 @@ pub mod prelude {
     #[cfg(test)]
     pub use super::test_cases::*;
     pub use super::{
-        ItemParams, ReceiptsUsersParams, StoreItem, StoreJoinRow, StoreTotal,
+        ItemParams, JoinedReceiptParams, StoreItem, StoreJoinRow, StoreTotal,
         StoreUser, UserParams,
     };
+}
+
+#[derive(Debug, Default, Clone, PartialEq)]
+pub struct StoreUser {
+    id: i64,
+    created_at: i64,
+    updated_at: i64,
+    name: String,
 }
 
 #[derive(Debug, Default, PartialEq)]
@@ -49,8 +57,16 @@ pub struct StoreReceipt {
     item_qty: i64,
 }
 
+#[derive(Debug, PartialEq, Eq)]
+struct StoreReceiptsUsers {
+    created_at: i64,
+    updated_at: i64,
+    receipt_id: i64,
+    user_id: i64,
+}
+
 #[derive(Debug, PartialEq)]
-pub struct StoreJoinRaw {
+struct StoreJoinRaw {
     item_name: String,
     user_ids: String,
     receipt_id: i64,
@@ -69,14 +85,6 @@ pub struct StoreJoinRow {
     item_price: f64,
     item_qty: i64,
     user_count: i64,
-}
-
-#[derive(Debug, Default, Clone, PartialEq)]
-pub struct StoreUser {
-    id: i64,
-    created_at: i64,
-    updated_at: i64,
-    name: String,
 }
 
 #[derive(Debug, Default)]
@@ -104,14 +112,14 @@ pub struct JoinedReceiptParams {
 }
 
 #[derive(Debug, Default)]
+struct ReceiptsUsersParams {
+    r_id: Option<i64>,
+    u_id: Option<i64>,
+}
+
+#[derive(Debug, Default)]
 struct ReceiptParams {
     r_id: Option<i64>,
     item_id: Option<i64>,
     item_qty: Option<i64>,
-}
-
-#[derive(Debug, Default)]
-pub struct ReceiptsUsersParams {
-    r_id: Option<i64>,
-    u_id: Option<i64>,
 }
