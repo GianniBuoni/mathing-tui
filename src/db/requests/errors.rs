@@ -1,17 +1,17 @@
 use std::fmt::Display;
 
 #[derive(Debug)]
-pub enum RequestErrors {
+pub enum RequestError {
     MissingParam(String),
 }
 
-impl RequestErrors {
+impl RequestError {
     pub fn missing_param(field: impl ToString) -> Self {
         Self::MissingParam(field.to_string())
     }
 }
 
-impl Display for RequestErrors {
+impl Display for RequestError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::MissingParam(field) => {
@@ -24,4 +24,4 @@ impl Display for RequestErrors {
     }
 }
 
-impl std::error::Error for RequestErrors {}
+impl std::error::Error for RequestError {}
