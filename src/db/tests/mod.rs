@@ -6,7 +6,7 @@ use std::time::Duration;
 use tokio::time::{Instant, sleep_until};
 
 mod constants;
-mod store_items;
+mod item_params;
 mod store_receipts;
 mod store_receipts_users;
 mod store_receits_users_init;
