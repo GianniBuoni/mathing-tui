@@ -105,12 +105,6 @@ impl Request<StoreReceipt> for ReceiptParams {
             .execute(&mut *conn)
             .await?;
 
-        Ok(sqlx::query_as!(
-            StoreReceipt,
-            "SELECT * FROM receipts WHERE id=?1",
-            id
-        )
-        .fetch_one(conn)
-        .await?)
+        self.get(conn).await
     }
 }

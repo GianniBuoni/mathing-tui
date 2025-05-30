@@ -90,7 +90,7 @@ impl Request<StoreItem> for ItemParams<'_> {
             .execute(&mut *conn)
             .await?;
 
-        Ok(self.get(conn).await?)
+        self.get(conn).await
     }
 
     async fn delete(&self, conn: &mut SqliteConnection) -> Result<u64> {

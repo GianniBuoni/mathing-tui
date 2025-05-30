@@ -80,6 +80,6 @@ impl Request<StoreUser> for UserParams<'_> {
         .execute(&mut *conn)
         .await?;
 
-        Ok(self.get(conn).await?)
+        self.get(conn).await
     }
 }
