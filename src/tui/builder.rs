@@ -3,10 +3,10 @@ use super::*;
 pub struct TuiBuilder {
     event_tx: UnboundedSender<Event>,
     event_rx: UnboundedReceiver<Event>,
-    res_tx: UnboundedSender<DbResponse>,
-    res_rx: UnboundedReceiver<DbResponse>,
-    req_tx: UnboundedSender<DbRequest>,
-    req_rx: UnboundedReceiver<DbRequest>,
+    res_tx: UnboundedSender<DbResponse<'static>>,
+    res_rx: UnboundedReceiver<DbResponse<'static>>,
+    req_tx: UnboundedSender<DbRequest<'static>>,
+    req_rx: UnboundedReceiver<DbRequest<'static>>,
 }
 
 impl Tui {
@@ -33,10 +33,10 @@ impl TuiBuilder {
 
         Tui {
             terminal: ratatui::init(),
-            event_task: tokio::spawn(async {
+            _event_task: tokio::spawn(async {
                 event_loop.await;
             }),
-            db_task: tokio::spawn(async {
+            _db_task: tokio::spawn(async {
                 db_loop.await;
             }),
             event_tx: self.event_tx,

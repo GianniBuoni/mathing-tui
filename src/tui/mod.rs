@@ -25,11 +25,11 @@ pub struct Tui {
     pub terminal: DefaultTerminal,
     event_rx: UnboundedReceiver<Event>,
     event_tx: UnboundedSender<Event>,
-    res_rx: UnboundedReceiver<DbResponse>,
-    res_tx: UnboundedSender<DbResponse>,
-    req_tx: UnboundedSender<DbRequest>,
-    event_task: JoinHandle<()>,
-    db_task: JoinHandle<()>,
+    res_rx: UnboundedReceiver<DbResponse<'static>>,
+    res_tx: UnboundedSender<DbResponse<'static>>,
+    req_tx: UnboundedSender<DbRequest<'static>>,
+    _event_task: JoinHandle<()>,
+    _db_task: JoinHandle<()>,
 }
 
 impl Tui {
@@ -70,8 +70,8 @@ impl Tui {
     }
 
     async fn db_loop(
-        mut req_rx: UnboundedReceiver<DbRequest>,
-        res_tx: UnboundedSender<DbResponse>,
+        mut req_rx: UnboundedReceiver<DbRequest<'static>>,
+        res_tx: UnboundedSender<DbResponse<'static>>,
     ) {
         // inital fetch should go here
 
