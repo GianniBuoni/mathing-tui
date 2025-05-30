@@ -8,12 +8,13 @@ pub mod prelude {
     pub use super::errors::RequestError;
     pub use super::{
         DbPayload, DbRequest, DbResponse, ItemParams, JoinedReceiptParams,
-        Request, RequestType,
+        Request, RequestType, UserParams,
     };
 }
 
 mod errors;
 mod item_params;
+mod user_params;
 
 pub trait Request<T> {
     fn check_id(&self) -> Result<i64>;
@@ -36,7 +37,7 @@ pub trait Request<T> {
     fn delete(
         &self,
         conn: &mut SqliteConnection,
-    ) -> impl Future<Output = Result<()>>;
+    ) -> impl Future<Output = Result<u64>>;
 }
 
 #[derive(Debug, Default)]

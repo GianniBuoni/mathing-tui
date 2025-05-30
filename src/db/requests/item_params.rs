@@ -93,13 +93,13 @@ impl Request<StoreItem> for ItemParams<'_> {
         Ok(self.get(conn).await?)
     }
 
-    async fn delete(&self, conn: &mut SqliteConnection) -> Result<()> {
+    async fn delete(&self, conn: &mut SqliteConnection) -> Result<u64> {
         let id = self.check_id()?;
 
-        sqlx::query!("DELETE FROM items WHERE id=?1", id)
+        let res = sqlx::query!("DELETE FROM items WHERE id=?1", id)
             .execute(conn)
             .await?;
 
-        Ok(())
+        Ok(res.rows_affected())
     }
 }
