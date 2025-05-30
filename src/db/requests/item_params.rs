@@ -18,7 +18,7 @@ impl<'db> ItemParams<'db> {
     }
 }
 
-impl<'db> Request<StoreItem> for ItemParams<'db> {
+impl Request<StoreItem> for ItemParams<'_> {
     fn check_id(&self) -> Result<i64> {
         Ok(self.item_id.ok_or(RequestError::missing_param("id"))?)
     }
