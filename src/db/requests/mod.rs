@@ -1,21 +1,42 @@
 use std::borrow::Cow;
 
+use sqlx::SqliteConnection;
+
 use super::*;
 
 pub mod prelude {
+    pub use super::errors::RequestError;
     pub use super::{
         DbPayload, DbRequest, DbResponse, ItemParams, JoinedReceiptParams,
-        RequestType,
+        Request, RequestType,
     };
 }
 
+mod errors;
 mod item_params;
 
 pub trait Request<T> {
-    async fn get(&self) -> Result<T>;
-    async fn post(&self) -> Result<T>;
-    async fn update(&self) -> Result<T>;
-    async fn delete(&self) -> Result<T>;
+    fn check_id(&self) -> Result<i64>;
+
+    fn get(
+        &self,
+        conn: &mut SqliteConnection,
+    ) -> impl Future<Output = Result<T>>;
+
+    fn post(
+        &self,
+        conn: &mut SqliteConnection,
+    ) -> impl Future<Output = Result<T>>;
+
+    fn update(
+        &self,
+        conn: &mut SqliteConnection,
+    ) -> impl Future<Output = Result<T>>;
+
+    fn delete(
+        &self,
+        conn: &mut SqliteConnection,
+    ) -> impl Future<Output = Result<()>>;
 }
 
 #[derive(Debug, Default)]
