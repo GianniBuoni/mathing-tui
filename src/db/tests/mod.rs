@@ -10,7 +10,7 @@ mod item_params;
 mod store_receipts;
 mod store_receipts_users;
 mod store_receits_users_init;
-mod store_users;
+mod user_params;
 
 use constants::*;
 
