@@ -6,10 +6,7 @@ use super::*;
 
 pub mod prelude {
     pub use super::errors::RequestError;
-    pub use super::{
-        DbPayload, DbRequest, DbResponse, ItemParams, JoinedReceiptParams,
-        Request, RequestType, UserParams,
-    };
+    pub use super::{DbPayload, DbRequest, DbResponse, Request, RequestType};
 }
 
 mod errors;
@@ -38,40 +35,6 @@ pub trait Request<T> {
         &self,
         conn: &mut SqliteConnection,
     ) -> impl Future<Output = Result<u64>>;
-}
-
-#[derive(Debug, Default)]
-pub struct UserParams<'db> {
-    u_id: Option<i64>,
-    name: Option<Cow<'db, str>>,
-}
-
-#[derive(Debug, Default)]
-pub struct ItemParams<'db> {
-    item_id: Option<i64>,
-    item_name: Option<Cow<'db, str>>,
-    item_price: Option<f64>,
-}
-
-#[derive(Debug, Default)]
-pub struct JoinedReceiptParams {
-    r_id: Option<i64>,
-    item_id: Option<i64>,
-    item_qty: Option<i64>,
-    users: Vec<i64>,
-}
-
-#[derive(Debug, Default)]
-struct ReceiptParams {
-    r_id: Option<i64>,
-    item_id: Option<i64>,
-    item_qty: Option<i64>,
-}
-
-#[derive(Debug, Default)]
-pub struct ReceiptsUsersParams {
-    r_id: Option<i64>,
-    u_id: Option<i64>,
 }
 
 pub struct DbResponse<'db> {

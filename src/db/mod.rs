@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{borrow::Cow, collections::HashMap};
 
 use anyhow::{Error, Result};
 use futures::future::try_join_all;
@@ -25,7 +25,10 @@ pub mod prelude {
     pub use super::requests::prelude::*;
     #[cfg(test)]
     pub use super::test_cases::*;
-    pub use super::{StoreItem, StoreJoinRow, StoreTotal, StoreUser};
+    pub use super::{
+        ItemParams, ReceiptsUsersParams, StoreItem, StoreJoinRow, StoreTotal,
+        StoreUser, UserParams,
+    };
 }
 
 #[derive(Debug, Default, PartialEq)]
@@ -78,3 +81,37 @@ pub struct StoreUser {
 
 #[derive(Debug, Default)]
 pub struct StoreTotal(HashMap<i64, Decimal>);
+
+#[derive(Debug, Default)]
+pub struct UserParams<'db> {
+    u_id: Option<i64>,
+    name: Option<Cow<'db, str>>,
+}
+
+#[derive(Debug, Default)]
+pub struct ItemParams<'db> {
+    item_id: Option<i64>,
+    item_name: Option<Cow<'db, str>>,
+    item_price: Option<f64>,
+}
+
+#[derive(Debug, Default)]
+pub struct JoinedReceiptParams {
+    r_id: Option<i64>,
+    item_id: Option<i64>,
+    item_qty: Option<i64>,
+    users: Vec<i64>,
+}
+
+#[derive(Debug, Default)]
+struct ReceiptParams {
+    r_id: Option<i64>,
+    item_id: Option<i64>,
+    item_qty: Option<i64>,
+}
+
+#[derive(Debug, Default)]
+pub struct ReceiptsUsersParams {
+    r_id: Option<i64>,
+    u_id: Option<i64>,
+}
