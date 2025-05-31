@@ -80,11 +80,11 @@ struct StoreJoinRaw {
 pub struct StoreJoinRow {
     users: Vec<StoreUser>,
     item_name: String,
+    user_count: i64,
     receipt_id: i64,
     item_id: i64,
     item_price: f64,
     item_qty: i64,
-    user_count: i64,
 }
 
 #[derive(Debug, Default)]
@@ -105,10 +105,11 @@ pub struct ItemParams<'db> {
 
 #[derive(Debug, Default)]
 pub struct JoinedReceiptParams {
+    users: Vec<i64>,
     r_id: Option<i64>,
     item_id: Option<i64>,
     item_qty: Option<i64>,
-    users: Vec<i64>,
+    offset: Option<i64>,
 }
 
 #[derive(Debug, Default)]
