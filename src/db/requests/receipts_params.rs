@@ -1,3 +1,5 @@
+use sqlx::SqliteConnection;
+
 use super::{errors::RequestError, *};
 
 impl ReceiptParams {
@@ -18,23 +20,28 @@ impl ReceiptParams {
     }
 }
 
-impl Request<StoreReceipt> for ReceiptParams {
+impl<'e> Request<'e> for ReceiptParams {
+    type Output = StoreReceipt;
+    type Connection = &'e mut SqliteConnection;
+
     fn check_id(&self) -> Result<i64> {
         Ok(self.r_id.ok_or(RequestError::missing_param("id"))?)
     }
 
-    async fn get(&self, conn: &mut SqliteConnection) -> Result<StoreReceipt> {
+    async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
         let id = self.check_id()?;
+
         Ok(sqlx::query_as!(
             StoreReceipt,
             "SELECT * FROM receipts WHERE id=?1",
             id
         )
         .fetch_one(conn)
-        .await?)
+        .await
+        .map_err(|_| RequestError::not_found(id, "receipts"))?)
     }
 
-    async fn post(&self, conn: &mut SqliteConnection) -> Result<StoreReceipt> {
+    async fn post(&self, conn: Self::Connection) -> Result<Self::Output> {
         let item_id =
             self.item_id.ok_or(RequestError::missing_param("item id"))?;
         let qty = self
@@ -60,7 +67,7 @@ impl Request<StoreReceipt> for ReceiptParams {
         .await?)
     }
 
-    async fn delete(&self, conn: &mut SqliteConnection) -> Result<u64> {
+    async fn delete(&self, conn: Self::Connection) -> Result<u64> {
         let id = self.check_id()?;
 
         Ok(sqlx::query!("DELETE FROM receipts WHERE id=?1", id)
@@ -69,10 +76,7 @@ impl Request<StoreReceipt> for ReceiptParams {
             .rows_affected())
     }
 
-    async fn update(
-        &self,
-        conn: &mut SqliteConnection,
-    ) -> Result<StoreReceipt> {
+    async fn update(&self, conn: Self::Connection) -> Result<Self::Output> {
         let id = self.check_id()?;
         if self.item_id.is_none() && self.item_qty.is_none() {
             return Err(

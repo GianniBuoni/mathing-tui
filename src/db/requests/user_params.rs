@@ -14,29 +14,34 @@ impl<'db> UserParams<'db> {
     }
 }
 
-impl Request<StoreUser> for UserParams<'_> {
+impl<'e> Request<'e> for UserParams<'_> {
+    type Output = StoreUser;
+    type Connection = &'e SqlitePool;
+
     fn check_id(&self) -> Result<i64> {
         Ok(self.u_id.ok_or(RequestError::missing_param("id"))?)
     }
 
-    async fn get(&self, conn: &mut SqliteConnection) -> Result<StoreUser> {
+    async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
         let id = self.check_id()?;
         Ok(
             sqlx::query_as!(StoreUser, "SELECT * FROM users WHERE id=?1", id)
                 .fetch_one(conn)
-                .await?,
+                .await
+                .map_err(|_| RequestError::not_found(id, "users"))?,
         )
     }
 
-    async fn post(&self, conn: &mut SqliteConnection) -> Result<StoreUser> {
+    async fn post(&self, conn: Self::Connection) -> Result<Self::Output> {
+        let mut tx = conn.begin().await?;
+        let now = get_time()?;
+
         let name = self
             .name
             .clone()
             .ok_or(RequestError::missing_param("name"))?;
 
-        let now = get_time()?;
-
-        Ok(sqlx::query_as!(
+        let user = sqlx::query_as!(
             StoreUser,
             "
         INSERT INTO users (
@@ -49,21 +54,28 @@ impl Request<StoreUser> for UserParams<'_> {
             now,
             name
         )
-        .fetch_one(conn)
-        .await?)
+        .fetch_one(&mut *tx)
+        .await?;
+
+        tx.commit().await?;
+        Ok(user)
     }
 
-    async fn delete(&self, conn: &mut SqliteConnection) -> Result<u64> {
+    async fn delete(&self, conn: Self::Connection) -> Result<u64> {
         let id = self.check_id()?;
+        let mut tx = conn.begin().await?;
 
         let res = sqlx::query!("DELETE FROM users WHERE id=?1", id)
-            .execute(conn)
+            .execute(&mut *tx)
             .await?;
 
+        tx.commit().await?;
         Ok(res.rows_affected())
     }
 
-    async fn update(&self, conn: &mut SqliteConnection) -> Result<StoreUser> {
+    async fn update(&self, conn: Self::Connection) -> Result<Self::Output> {
+        let mut tx = conn.begin().await?;
+
         let id = self.check_id()?;
         let now = get_time()?;
         let name = self
@@ -77,9 +89,10 @@ impl Request<StoreUser> for UserParams<'_> {
             name,
             id
         )
-        .execute(&mut *conn)
+        .execute(&mut *tx)
         .await?;
 
+        tx.commit().await?;
         self.get(conn).await
     }
 }

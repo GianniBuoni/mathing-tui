@@ -1,3 +1,5 @@
+use sqlx::SqliteConnection;
+
 use super::{errors::RequestError, *};
 
 impl ReceiptsUsersParams {
@@ -16,43 +18,35 @@ impl ReceiptsUsersParams {
     }
 }
 
-impl Request<StoreReceiptsUsers> for ReceiptsUsersParams {
+impl<'e> Request<'e> for ReceiptsUsersParams {
+    type Output = Vec<StoreReceiptsUsers>;
+    type Connection = &'e mut SqliteConnection;
+
     fn check_id(&self) -> Result<i64> {
         Ok(self.r_id.ok_or(RequestError::missing_param("receipt id"))?)
     }
 
-    async fn get(
-        &self,
-        conn: &mut SqliteConnection,
-    ) -> Result<StoreReceiptsUsers> {
-        let r_id = self.check_id()?;
-        let u_id = self.u_id.ok_or(RequestError::missing_param("user id"))?;
+    async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
+        let id = self.check_id()?;
 
         let res = sqlx::query_as!(
             StoreReceiptsUsers,
             "
-        SELECT * FROM receipts_users WHERE receipt_id=?1 AND user_id=?2
+        SELECT * FROM receipts_users WHERE receipt_id=?1
                 ",
-            r_id,
-            u_id
+            id,
         )
-        .fetch_one(conn)
-        .await;
+        .fetch_all(conn)
+        .await?;
 
-        let full_id = format!("receipt_id:{r_id}, user_id:{u_id}");
-
-        match res {
-            Ok(ru) => Ok(ru),
-            Err(_) => {
-                Err(RequestError::not_found(full_id, "receipts_users").into())
-            }
+        if res.is_empty() {
+            Err(RequestError::not_found(id, "receipts_users").into())
+        } else {
+            Ok(res)
         }
     }
 
-    async fn post(
-        &self,
-        conn: &mut SqliteConnection,
-    ) -> Result<StoreReceiptsUsers> {
+    async fn post(&self, conn: Self::Connection) -> Result<Self::Output> {
         let r_id = self.check_id()?;
         let u_id = self.u_id.ok_or(RequestError::missing_param("user id"))?;
         let now = get_time()?;
@@ -70,30 +64,28 @@ impl Request<StoreReceiptsUsers> for ReceiptsUsersParams {
             now,
             now,
         )
-        .fetch_one(conn)
+        .fetch_all(conn)
         .await?)
     }
 
-    async fn delete(&self, conn: &mut SqliteConnection) -> Result<u64> {
-        let r_id = self.check_id()?;
+    async fn delete(&self, conn: Self::Connection) -> Result<u64> {
+        let id = self.check_id()?;
         let u_id = self.u_id.ok_or(RequestError::missing_param("user id"))?;
 
         Ok(sqlx::query!(
             "
             DELETE FROM receipts_users WHERE receipt_id=?1 AND user_id=?2
             ",
-            r_id,
-            u_id
+            id,
+            u_id,
         )
         .execute(conn)
         .await?
         .rows_affected())
     }
 
-    async fn update(
-        &self,
-        _conn: &mut SqliteConnection,
-    ) -> Result<StoreReceiptsUsers> {
+    async fn update(&self, conn: Self::Connection) -> Result<Self::Output> {
+        let _ = conn;
         todo!()
     }
 }

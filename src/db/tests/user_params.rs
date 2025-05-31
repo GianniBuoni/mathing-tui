@@ -5,9 +5,7 @@ async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreUser>> {
     Ok(try_join_all(TEST_USERS.into_iter().map(async |user_name| {
         Ok::<StoreUser, Error>({
             let param = UserParams::new().user_name(user_name);
-            let mut tx = conn.begin().await?;
-            let user = param.post(&mut *tx).await?;
-            tx.commit().await?;
+            let user = param.post(conn).await?;
             user
         })
     }))
@@ -49,10 +47,8 @@ async fn test_get_users(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_get_user(conn: SqlitePool) -> Result<()> {
     try_join_all(init_test(&conn).await?.into_iter().map(async |want| {
-        Ok::<(), Error>({
-            let params = UserParams::new().user_id(want.id);
-            let mut tx = conn.begin().await?;
-            let got = params.get(&mut *tx).await?;
+        anyhow::Ok::<()>({
+            let got = UserParams::new().user_id(want.id).get(&conn).await?;
             assert_eq!(
                 want.name, got.name,
                 "Test getting user matches expected"
@@ -69,9 +65,7 @@ async fn test_delete_user(conn: SqlitePool) -> Result<()> {
     let original = init_test(&conn).await?;
     let params = UserParams::new().user_id(original.get(0).unwrap().id);
 
-    let mut tx = conn.begin().await?;
-    params.delete(&mut *tx).await?;
-    tx.commit().await?;
+    params.delete(&conn).await?;
 
     let finals = get_store_users(&conn)
         .await?
@@ -102,10 +96,7 @@ async fn test_update_user(conn: SqlitePool) -> Result<()> {
     let got = try_join_all(params.into_iter().map(async |param| {
         Ok::<StoreUser, Error>({
             sleep_until(Instant::now() + Duration::from_secs(1)).await;
-            let mut tx = conn.begin().await?;
-            let user = param.update(&mut *tx).await?;
-            tx.commit().await?;
-            user
+            param.update(&conn).await?
         })
     }))
     .await?
@@ -134,24 +125,23 @@ async fn test_update_user(conn: SqlitePool) -> Result<()> {
 async fn test_invalid_params(conn: SqlitePool) -> Result<()> {
     let no_id = UserParams::new();
     let no_name = UserParams::new().user_id(0);
-    let mut tx = conn.begin().await?;
 
-    match no_id.delete(&mut *tx).await {
+    match no_id.delete(&conn).await {
         Ok(_) => panic!("Test user delete suceeded, but expected an error."),
         Err(e) => {
             assert_eq!(
-                "Malformed params: required field \"id\" is missing.",
+                RequestError::missing_param("id").to_string(),
                 e.to_string(),
                 "Test if expected error matches."
             );
         }
     }
 
-    match no_name.update(&mut *tx).await {
+    match no_name.update(&conn).await {
         Ok(_) => panic!("Test user update suceeded, but expected an error."),
         Err(e) => {
             assert_eq!(
-                "Malformed params: required field \"name\" is missing.",
+                RequestError::missing_param("name").to_string(),
                 e.to_string(),
                 "Test if expected error matches."
             )

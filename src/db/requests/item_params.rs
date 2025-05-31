@@ -18,22 +18,26 @@ impl<'db> ItemParams<'db> {
     }
 }
 
-impl Request<StoreItem> for ItemParams<'_> {
+impl<'e> Request<'e> for ItemParams<'_> {
+    type Output = StoreItem;
+    type Connection = &'e SqlitePool;
+
     fn check_id(&self) -> Result<i64> {
         Ok(self.item_id.ok_or(RequestError::missing_param("id"))?)
     }
 
-    async fn get(&self, conn: &mut SqliteConnection) -> Result<StoreItem> {
+    async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
         let id = self.check_id()?;
 
         Ok(
             sqlx::query_as!(StoreItem, "SELECT * FROM items WHERE id=?1", id)
                 .fetch_one(conn)
-                .await?,
+                .await
+                .map_err(|_| RequestError::not_found(id, "items"))?,
         )
     }
 
-    async fn post(&self, conn: &mut SqliteConnection) -> Result<StoreItem> {
+    async fn post(&self, conn: Self::Connection) -> Result<Self::Output> {
         let name = self
             .item_name
             .clone()
@@ -63,7 +67,8 @@ impl Request<StoreItem> for ItemParams<'_> {
         .await?)
     }
 
-    async fn update(&self, conn: &mut SqliteConnection) -> Result<StoreItem> {
+    async fn update(&self, conn: Self::Connection) -> Result<Self::Output> {
+        let mut tx = conn.begin().await?;
         let id = self.check_id()?;
 
         if self.item_name.is_none() && self.item_price.is_none() {
@@ -76,30 +81,33 @@ impl Request<StoreItem> for ItemParams<'_> {
 
         if let Some(name) = self.item_name.clone() {
             sqlx::query!("UPDATE items SET name=?1 WHERE id=?2", name, id)
-                .execute(&mut *conn)
+                .execute(&mut *tx)
                 .await?;
         }
 
         if let Some(price) = self.item_price {
             sqlx::query!("UPDATE items SET price=?1 WHERE id=?2", price, id)
-                .execute(&mut *conn)
+                .execute(&mut *tx)
                 .await?;
         };
 
         sqlx::query!("UPDATE items SET updated_at=?1 WHERE id=?2", now, id)
-            .execute(&mut *conn)
+            .execute(&mut *tx)
             .await?;
 
+        tx.commit().await?;
         self.get(conn).await
     }
 
-    async fn delete(&self, conn: &mut SqliteConnection) -> Result<u64> {
+    async fn delete(&self, conn: Self::Connection) -> Result<u64> {
+        let mut tx = conn.begin().await?;
         let id = self.check_id()?;
 
         let res = sqlx::query!("DELETE FROM items WHERE id=?1", id)
-            .execute(conn)
+            .execute(&mut *tx)
             .await?;
 
+        tx.commit().await?;
         Ok(res.rows_affected())
     }
 }

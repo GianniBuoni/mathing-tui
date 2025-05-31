@@ -3,12 +3,8 @@ use crate::prelude::{Request, RequestError};
 
 async fn init_test(conn: &SqlitePool) -> Result<()> {
     let users = try_join_all(TEST_USERS.into_iter().map(async |name| {
-        Ok::<StoreUser, Error>({
-            let mut tx = conn.begin().await?;
-            let users =
-                UserParams::new().user_name(name).post(&mut *tx).await?;
-            tx.commit().await?;
-            users
+        anyhow::Ok::<StoreUser>({
+            UserParams::new().user_name(name).post(&conn).await?
         })
     }))
     .await?
@@ -17,14 +13,12 @@ async fn init_test(conn: &SqlitePool) -> Result<()> {
 
     let receipts =
         try_join_all(TEST_ITEMS.into_iter().map(async |(name, price, qty)| {
-            Ok::<StoreReceipt, Error>({
-                let mut tx = conn.begin().await?;
+            anyhow::Ok::<StoreReceipt>({
                 let item = ItemParams::new()
                     .item_name(name)
                     .item_price(price)
-                    .post(&mut *tx)
+                    .post(&conn)
                     .await?;
-                tx.commit().await?;
 
                 let mut tx = conn.begin().await?;
                 let receipts = ReceiptParams::new()
@@ -91,18 +85,16 @@ async fn test_add_receipts_users(conn: SqlitePool) -> Result<()> {
 async fn test_get_receipts_users(conn: SqlitePool) -> Result<()> {
     init_test(&conn).await?;
 
-    let params = [
-        ReceiptsUsersParams::new().r_id(3).u_id(2),
-        ReceiptsUsersParams::new().r_id(3).u_id(3),
-    ];
+    let got = ReceiptsUsersParams::new()
+        .r_id(3)
+        .get(&mut *conn.acquire().await?)
+        .await?;
 
-    try_join_all(params.into_iter().map(async |param| {
-        Ok::<(), Error>({
-            let mut tx = conn.begin().await?;
-            param.get(&mut *tx).await?;
-        })
-    }))
-    .await?;
+    assert_eq!(
+        2,
+        got.len(),
+        "Test if getting receipts_users returnt righ amount of rows."
+    );
 
     Ok(())
 }
@@ -128,29 +120,20 @@ async fn test_del_cascade(conn: SqlitePool) -> Result<()> {
     ReceiptParams::new().r_id(3).delete(&mut *tx).await?;
     tx.commit().await?;
 
-    let params = [
-        ReceiptsUsersParams::new().r_id(3).u_id(2),
-        ReceiptsUsersParams::new().r_id(3).u_id(3),
-    ];
+    //TODO get accurate amount of rows deleted when a receipt is deleted;
 
-    for param in params.into_iter() {
-        let mut tx = conn.begin().await?;
-        let got = param.get(&mut *tx).await;
-
-        let id = format!(
-            "receipt_id:{}, user_id:{}",
-            param.r_id.unwrap(),
-            param.u_id.unwrap()
-        );
-
-        match got {
-            Ok(_) => panic!("Test expeceted an error, delete cascade failed."),
-            Err(e) => assert_eq!(
-                RequestError::not_found(id, "receipts_users").to_string(),
-                e.to_string()
-            ),
+    match ReceiptsUsersParams::new()
+        .r_id(3)
+        .get(&mut *conn.acquire().await?)
+        .await
+    {
+        Ok(e) => {
+            panic!("Test expeceted an error, delete cascade failed. Got: {e:?}")
         }
+        Err(e) => assert_eq!(
+            RequestError::not_found(3, "receipts_users").to_string(),
+            e.to_string()
+        ),
     }
-
     Ok(())
 }

@@ -4,15 +4,12 @@ use crate::prelude::*;
 async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreReceipt>> {
     let items =
         try_join_all(TEST_ITEMS.into_iter().map(async |(name, price, _)| {
-            Ok::<StoreItem, Error>({
-                let mut tx = conn.begin().await?;
-                let item = ItemParams::new()
+            anyhow::Ok::<StoreItem>({
+                ItemParams::new()
                     .item_name(name)
                     .item_price(price)
-                    .post(&mut *tx)
-                    .await?;
-                tx.commit().await?;
-                item
+                    .post(&conn)
+                    .await?
             })
         }))
         .await?;
@@ -84,14 +81,12 @@ async fn test_get_receipt(conn: SqlitePool) -> Result<()> {
 async fn test_cascade_del(conn: SqlitePool) -> Result<()> {
     let cmp = init_test(&conn).await?;
 
-    let mut tx = conn.begin().await?;
-    let affected_rows = ItemParams::new()
+    if ItemParams::new()
         .item_id(cmp.get(0).unwrap().item_id)
-        .delete(&mut *tx)
-        .await?;
-    tx.commit().await?;
-
-    if affected_rows.is_zero() {
+        .delete(&conn)
+        .await?
+        .is_zero()
+    {
         panic!("Test failed prematurely, no items deleted.")
     }
 
@@ -139,7 +134,7 @@ async fn test_update_receipt(conn: SqlitePool) -> Result<()> {
     sleep_until(Instant::now() + Duration::from_secs(1)).await;
 
     Ok(try_join_all(init.into_iter().map(async |r| {
-        Ok::<(), Error>({
+        anyhow::Ok::<()>({
             let mut tx = conn.begin().await?;
             let got = ReceiptParams::new()
                 .r_id(r.id)

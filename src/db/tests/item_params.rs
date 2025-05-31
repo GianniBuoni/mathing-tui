@@ -1,3 +1,5 @@
+use anyhow::Ok;
+
 use std::rc::Rc;
 
 use super::*;
@@ -13,14 +15,11 @@ fn test_items<'db>() -> Rc<[ItemParams<'db>]> {
 }
 
 async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreItem>> {
-    try_join_all(test_items().iter().map(async |params| {
-        Ok::<StoreItem, Error>({
-            let mut conn = conn.begin().await?;
-            let items = params.post(&mut *conn).await?;
-            conn.commit().await?;
-            items
-        })
-    }))
+    try_join_all(
+        test_items()
+            .iter()
+            .map(async |params| Ok::<StoreItem>(params.post(conn).await?)),
+    )
     .await
 }
 
@@ -46,10 +45,8 @@ async fn test_get_items(conn: SqlitePool) -> Result<()> {
 async fn test_add_items(conn: SqlitePool) -> Result<()> {
     try_join_all(test_items().into_iter().zip(TEST_ITEMS.into_iter()).map(
         async |(params, (want_name, want_price, _))| {
-            Ok::<(), Error>({
-                let mut conn = conn.begin().await?;
-                let got = params.post(&mut *conn).await?;
-                conn.commit().await?;
+            Ok::<()>({
+                let got = params.post(&conn).await?;
 
                 assert_eq!(
                     want_name.to_string(),
@@ -72,11 +69,9 @@ async fn test_add_items(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_get_item_single(conn: SqlitePool) -> Result<()> {
     try_join_all(init_test(&conn).await?.into_iter().map(async |want| {
-        Ok::<(), Error>({
+        Ok::<()>({
             let param = ItemParams::new().item_id(want.id);
-            let mut conn = conn.begin().await?;
-            let got = param.get(&mut *conn).await?;
-            conn.commit().await?;
+            let got = param.get(&conn).await?;
             assert_eq!(want.name, got.name);
         })
     }))
@@ -90,9 +85,7 @@ async fn test_delete_item(conn: SqlitePool) -> Result<()> {
     let originals = init_test(&conn).await?;
     let param = ItemParams::new().item_id(originals.get(0).unwrap().id);
 
-    let mut tx = conn.begin().await?;
-    param.delete(&mut *tx).await?;
-    tx.commit().await?;
+    param.delete(&conn).await?;
 
     let finals = get_store_items(&conn)
         .await?
@@ -142,11 +135,9 @@ async fn test_update_item(conn: SqlitePool) -> Result<()> {
     ];
 
     let got = try_join_all(update_params.into_iter().map(async |param| {
-        Ok::<StoreItem, Error>({
+        Ok::<StoreItem>({
             sleep_until(Instant::now() + Duration::from_secs(1)).await;
-            let mut conn = conn.begin().await?;
-            let item = param.update(&mut *conn).await?;
-            conn.commit().await?;
+            let item = param.update(&conn).await?;
             item
         })
     }))
@@ -169,12 +160,12 @@ async fn test_update_item(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_blank_item_update(conn: SqlitePool) -> Result<()> {
     let originals = init_test(&conn).await?;
-    let mut tx = conn.begin().await?;
-
     let params = ItemParams::new().item_id(originals.get(0).unwrap().id);
 
-    match params.update(&mut *tx).await {
-        Ok(_) => panic!("UPDATE suceeded, but an error was expected."),
+    match params.update(&conn).await {
+        std::result::Result::Ok(_) => {
+            panic!("UPDATE suceeded, but an error was expected.")
+        }
         Err(e) => {
             assert_eq!(
                 "Malformed params: required field \"item name, item price\" is missing.",
@@ -184,8 +175,10 @@ async fn test_blank_item_update(conn: SqlitePool) -> Result<()> {
         }
     }
 
-    match params.post(&mut *tx).await {
-        Ok(_) => panic!("POST suceeded, but an error was expected."),
+    match params.post(&conn).await {
+        std::result::Result::Ok(_) => {
+            panic!("POST suceeded, but an error was expected.")
+        }
         Err(e) => {
             assert_eq!(
                 "Malformed params: required field \"item name\" is missing.",
