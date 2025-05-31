@@ -1,4 +1,4 @@
-use sqlx::SqliteConnection;
+use sqlx::SqliteExecutor;
 
 use super::*;
 
@@ -9,31 +9,31 @@ pub mod prelude {
 
 mod errors;
 mod item_params;
+mod joined_params;
 mod receipts_params;
 mod receipts_users_params;
 mod user_params;
 
-pub trait Request<T> {
-    fn check_id(&self) -> Result<i64>;
+pub trait Request<'e> {
+    type Output;
+    type Connection: SqliteExecutor<'e>;
 
+    fn check_id(&self) -> Result<i64>;
     fn get(
         &self,
-        conn: &mut SqliteConnection,
-    ) -> impl Future<Output = Result<T>>;
-
+        conn: Self::Connection,
+    ) -> impl Future<Output = Result<Self::Output>>;
     fn post(
         &self,
-        conn: &mut SqliteConnection,
-    ) -> impl Future<Output = Result<T>>;
-
+        conn: Self::Connection,
+    ) -> impl Future<Output = Result<Self::Output>>;
     fn update(
         &self,
-        conn: &mut SqliteConnection,
-    ) -> impl Future<Output = Result<T>>;
-
+        conn: Self::Connection,
+    ) -> impl Future<Output = Result<Self::Output>>;
     fn delete(
         &self,
-        conn: &mut SqliteConnection,
+        conn: Self::Connection,
     ) -> impl Future<Output = Result<u64>>;
 }
 
