@@ -59,7 +59,7 @@ pub enum DbPayload<'db> {
     Receipt(StoreJoinRow),
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum RequestType {
     Get,
     GetAll,
