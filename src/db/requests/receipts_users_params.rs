@@ -26,6 +26,17 @@ impl<'e> Request<'e> for ReceiptsUsersParams {
         Ok(self.r_id.ok_or(RequestError::missing_param("receipt id"))?)
     }
 
+    /// get_all for Receipt Params should not be called directly
+    /// consider getting data needed from [`JoinedReceiptsParams`]
+    /// instead
+    async fn get_all(
+        &self,
+        conn: Self::Connection,
+    ) -> Result<Vec<Self::Output>> {
+        let _ = conn;
+        todo!()
+    }
+
     async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
         let id = self.check_id()?;
 
