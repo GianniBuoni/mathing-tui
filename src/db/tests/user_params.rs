@@ -27,7 +27,7 @@ async fn test_add_users(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_get_users(conn: SqlitePool) -> Result<()> {
     let unordered = init_test(&conn).await?;
-    let ordered = get_store_users(&conn).await?;
+    let ordered = UserParams::new().get_all(&conn).await?;
 
     assert_eq!(
         ordered.len(),
@@ -36,8 +36,8 @@ async fn test_get_users(conn: SqlitePool) -> Result<()> {
     );
 
     assert_eq!(
-        ordered.get(0).unwrap().name,
         "Jon".to_string(),
+        ordered.get(0).unwrap().name,
         "Test if returned users are ordered alphabetically"
     );
 

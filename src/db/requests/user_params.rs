@@ -22,6 +22,17 @@ impl<'e> Request<'e> for UserParams<'_> {
         Ok(self.u_id.ok_or(RequestError::missing_param("id"))?)
     }
 
+    async fn get_all(
+        &self,
+        conn: Self::Connection,
+    ) -> Result<Vec<Self::Output>> {
+        Ok(
+            sqlx::query_as!(Self::Output, "SELECT * FROM users ORDER BY name")
+                .fetch_all(conn)
+                .await?,
+        )
+    }
+
     async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
         let id = self.check_id()?;
         Ok(
