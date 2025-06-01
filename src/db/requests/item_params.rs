@@ -16,6 +16,10 @@ impl<'db> ItemParams<'db> {
         self.item_price = Some(price);
         self
     }
+    pub fn offset(mut self, offset: i64) -> Self {
+        self.offset = Some(offset);
+        self
+    }
 }
 
 impl<'e> Request<'e> for ItemParams<'_> {
@@ -24,6 +28,22 @@ impl<'e> Request<'e> for ItemParams<'_> {
 
     fn check_id(&self) -> Result<i64> {
         Ok(self.item_id.ok_or(RequestError::missing_param("id"))?)
+    }
+
+    async fn get_all(
+        &self,
+        conn: Self::Connection,
+    ) -> Result<Vec<Self::Output>> {
+        let offset =
+            self.offset.ok_or(RequestError::missing_param("offset"))?;
+
+        Ok(sqlx::query_as!(
+            StoreItem,
+            "SELECT * FROM items ORDER BY name LIMIT 20 OFFSET ?1",
+            offset
+        )
+        .fetch_all(conn)
+        .await?)
     }
 
     async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {

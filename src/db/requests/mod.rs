@@ -23,6 +23,10 @@ pub trait Request<'e> {
         &self,
         conn: Self::Connection,
     ) -> impl Future<Output = Result<Self::Output>>;
+    fn get_all(
+        &self,
+        conn: Self::Connection,
+    ) -> impl Future<Output = Result<Vec<Self::Output>>>;
     fn post(
         &self,
         conn: Self::Connection,

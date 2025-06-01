@@ -26,7 +26,7 @@ async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreItem>> {
 #[sqlx::test]
 async fn test_get_items(conn: SqlitePool) -> Result<()> {
     let unordered = init_test(&conn).await?;
-    let ordered = get_store_items(&conn).await?;
+    let ordered = ItemParams::new().offset(0).get_all(&conn).await?;
 
     assert_eq!(
         ordered.len(),
