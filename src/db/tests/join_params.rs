@@ -214,3 +214,25 @@ async fn test_joined_errors(conn: SqlitePool) -> Result<()> {
 
     Ok(())
 }
+
+#[sqlx::test]
+async fn test_get_totals(conn: SqlitePool) -> Result<()> {
+    join_init_test(&conn).await?;
+    let want = expected_totals();
+    let mut got = StoreTotal::default();
+
+    JoinedReceiptParams::new()
+        .offset(0)
+        .get_all(&conn)
+        .await?
+        .into_iter()
+        .zip(intermediate_totals())
+        .for_each(|(row, want)| {
+            assert_eq!(want, row.calc());
+            got.add(row.calc());
+        });
+
+    assert_eq!(want, got.0, "Test if all the math is right ✨");
+
+    Ok(())
+}
