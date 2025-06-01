@@ -1,39 +1,8 @@
 use super::*;
-use crate::prelude::{Request, RequestError};
 
-async fn init_test(conn: &SqlitePool) -> Result<()> {
-    let users = try_join_all(TEST_USERS.into_iter().map(async |name| {
-        anyhow::Ok::<StoreUser>({
-            UserParams::new().user_name(name).post(&conn).await?
-        })
-    }))
-    .await?
-    .into_iter()
-    .collect::<Vec<StoreUser>>();
-
-    let receipts =
-        try_join_all(TEST_ITEMS.into_iter().map(async |(name, price, qty)| {
-            anyhow::Ok::<StoreReceipt>({
-                let item = ItemParams::new()
-                    .item_name(name)
-                    .item_price(price)
-                    .post(&conn)
-                    .await?;
-
-                let mut tx = conn.begin().await?;
-                let receipts = ReceiptParams::new()
-                    .item_id(item.id)
-                    .item_qty(qty)
-                    .post(&mut *tx)
-                    .await?;
-                tx.commit().await?;
-
-                receipts
-            })
-        }))
-        .await?
-        .into_iter()
-        .collect::<Vec<StoreReceipt>>();
+async fn ru_init_test(conn: &SqlitePool) -> Result<()> {
+    let users = init_users(conn).await?;
+    let receipts = init_reciepts(conn).await?;
 
     let err = "Wrong id/user match; check how you add users into db.";
     let noodle = if users.get(1).unwrap().name == "Noodle" {
@@ -77,13 +46,13 @@ async fn init_test(conn: &SqlitePool) -> Result<()> {
 
 #[sqlx::test]
 async fn test_add_receipts_users(conn: SqlitePool) -> Result<()> {
-    init_test(&conn).await?;
+    ru_init_test(&conn).await?;
     Ok(())
 }
 
 #[sqlx::test]
 async fn test_get_receipts_users(conn: SqlitePool) -> Result<()> {
-    init_test(&conn).await?;
+    ru_init_test(&conn).await?;
 
     let got = ReceiptsUsersParams::new()
         .r_id(3)
@@ -101,7 +70,7 @@ async fn test_get_receipts_users(conn: SqlitePool) -> Result<()> {
 
 #[sqlx::test]
 async fn test_del_receipts_users(conn: SqlitePool) -> Result<()> {
-    init_test(&conn).await?;
+    ru_init_test(&conn).await?;
 
     let (test, want) = (ReceiptsUsersParams::new().r_id(1).u_id(3), 1 as u64);
 
@@ -114,7 +83,7 @@ async fn test_del_receipts_users(conn: SqlitePool) -> Result<()> {
 
 #[sqlx::test]
 async fn test_del_cascade(conn: SqlitePool) -> Result<()> {
-    init_test(&conn).await?;
+    ru_init_test(&conn).await?;
 
     let mut tx = conn.begin().await?;
     ReceiptParams::new().r_id(3).delete(&mut *tx).await?;
