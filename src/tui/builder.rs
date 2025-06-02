@@ -28,8 +28,8 @@ impl Tui {
 
 impl TuiBuilder {
     pub fn build(self) -> Tui {
-        let event_loop = Tui::event_loop(self.event_tx.clone());
-        let db_loop = Tui::db_loop(self.req_rx, self.res_tx.clone());
+        let event_loop = Tui::event_loop(self.event_tx);
+        let db_loop = Tui::db_loop(self.req_rx, self.res_tx);
 
         Tui {
             terminal: ratatui::init(),
@@ -39,9 +39,7 @@ impl TuiBuilder {
             _db_task: tokio::spawn(async {
                 db_loop.await;
             }),
-            event_tx: self.event_tx,
             event_rx: self.event_rx,
-            res_tx: self.res_tx,
             res_rx: self.res_rx,
             req_tx: self.req_tx,
         }

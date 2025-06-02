@@ -13,6 +13,7 @@ pub mod prelude {
 }
 
 mod builder;
+mod handle_requests;
 
 pub enum Event {
     Init,
@@ -24,10 +25,8 @@ pub enum Event {
 pub struct Tui {
     pub terminal: DefaultTerminal,
     event_rx: UnboundedReceiver<Event>,
-    event_tx: UnboundedSender<Event>,
     res_rx: UnboundedReceiver<DbResponse<'static>>,
-    res_tx: UnboundedSender<DbResponse<'static>>,
-    req_tx: UnboundedSender<DbRequest<'static>>,
+    pub req_tx: UnboundedSender<DbRequest<'static>>, // clone to app forms
     _event_task: JoinHandle<()>,
     _db_task: JoinHandle<()>,
 }
