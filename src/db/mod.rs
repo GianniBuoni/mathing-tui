@@ -6,12 +6,10 @@ use rust_decimal::prelude::*;
 use sqlx::SqlitePool;
 
 use db_time::get_time;
-use queries::prelude::*;
 
 mod connection;
 mod db_time;
 mod processing;
-mod queries;
 mod requests;
 mod table_displays;
 #[cfg(test)]
@@ -21,7 +19,6 @@ mod tests;
 
 pub mod prelude {
     pub use super::connection::get_db;
-    pub use super::queries::prelude::*;
     pub use super::requests::prelude::*;
     #[cfg(test)]
     pub use super::test_cases::*;
@@ -101,6 +98,7 @@ pub struct ItemParams<'db> {
     item_id: Option<i64>,
     item_name: Option<Cow<'db, str>>,
     item_price: Option<f64>,
+    offset: Option<i64>,
 }
 
 #[derive(Debug, Default)]
