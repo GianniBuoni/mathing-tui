@@ -21,28 +21,25 @@ async fn test_db_conn() {
 }
 
 async fn init_users(conn: &SqlitePool) -> Result<Vec<StoreUser>> {
-    anyhow::Ok(
-        try_join_all(TEST_USERS.into_iter().map(async |name| {
-            UserParams::new().user_name(name).post(conn).await
-        }))
-        .await?,
-    )
+    let mut res = vec![];
+    for name in TEST_USERS {
+        let user = UserParams::new().user_name(name).post(conn).await?;
+        res.push(user);
+    }
+    Ok(res)
 }
 
 async fn intit_items(conn: &SqlitePool) -> Result<Vec<(StoreItem, i64)>> {
-    anyhow::Ok(
-        try_join_all(TEST_ITEMS.into_iter().map(async |(name, price, qty)| {
-            anyhow::Ok::<(StoreItem, i64)>({
-                let item = ItemParams::new()
-                    .item_name(name)
-                    .item_price(price)
-                    .post(conn)
-                    .await?;
-                (item, qty)
-            })
-        }))
-        .await?,
-    )
+    let mut res = vec![];
+    for (name, price, qty) in TEST_ITEMS {
+        let item = ItemParams::new()
+            .item_name(name)
+            .item_price(price)
+            .post(conn)
+            .await?;
+        res.push((item, qty));
+    }
+    Ok(res)
 }
 
 async fn init_reciepts(conn: &SqlitePool) -> Result<Vec<StoreReceipt>> {
