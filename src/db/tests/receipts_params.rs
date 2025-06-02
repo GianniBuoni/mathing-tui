@@ -1,5 +1,4 @@
 use super::*;
-use crate::prelude::*;
 
 async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreReceipt>> {
     let items =
@@ -47,7 +46,14 @@ async fn test_add_receipts(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_get_receipts(conn: SqlitePool) -> Result<()> {
     let want = init_test(&conn).await?;
-    let got = get_store_receipts(&conn, 0).await?;
+    let got = sqlx::query_as!(
+        StoreReceipt,
+        "
+            SELECT * from receipts
+        "
+    )
+    .fetch_all(&conn)
+    .await?;
 
     assert_eq!(
         want.len(),
@@ -90,7 +96,10 @@ async fn test_cascade_del(conn: SqlitePool) -> Result<()> {
         panic!("Test failed prematurely, no items deleted.")
     }
 
-    let got = get_store_receipts(&conn, 0).await?;
+    let got = sqlx::query_as!(StoreReceipt, "SELECT * FROM receipts")
+        .fetch_all(&conn)
+        .await?;
+
     assert_ne!(
         cmp.len(),
         got.len(),
@@ -114,7 +123,8 @@ fn test_delete_receipt(conn: SqlitePool) -> Result<()> {
 
     assert_eq!(1, affected_rows, "Test if row was deleted");
 
-    let got = get_store_receipts(&conn, 0)
+    let got = sqlx::query_as!(StoreReceipt, "SELECT * FROM receipts")
+        .fetch_all(&conn)
         .await?
         .into_iter()
         .map(|r| r.id)

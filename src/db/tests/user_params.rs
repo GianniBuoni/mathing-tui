@@ -1,5 +1,4 @@
 use super::*;
-use crate::prelude::*;
 
 async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreUser>> {
     Ok(try_join_all(TEST_USERS.into_iter().map(async |user_name| {
@@ -67,7 +66,8 @@ async fn test_delete_user(conn: SqlitePool) -> Result<()> {
 
     params.delete(&conn).await?;
 
-    let finals = get_store_users(&conn)
+    let finals = UserParams::new()
+        .get_all(&conn)
         .await?
         .into_iter()
         .map(|user| user.name)

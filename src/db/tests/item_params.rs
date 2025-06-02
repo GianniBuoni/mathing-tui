@@ -3,7 +3,6 @@ use anyhow::Ok;
 use std::rc::Rc;
 
 use super::*;
-use crate::prelude::*;
 
 fn test_items<'db>() -> Rc<[ItemParams<'db>]> {
     TEST_ITEMS
@@ -87,7 +86,9 @@ async fn test_delete_item(conn: SqlitePool) -> Result<()> {
 
     param.delete(&conn).await?;
 
-    let finals = get_store_items(&conn)
+    let finals = ItemParams::new()
+        .offset(0)
+        .get_all(&conn)
         .await?
         .into_iter()
         .map(|item| item.name)
