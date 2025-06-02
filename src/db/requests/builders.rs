@@ -1,6 +1,6 @@
 use super::*;
 
-impl<'db> DbResponse<'db> {
+impl DbResponse {
     pub fn new(req_type: RequestType) -> Self {
         Self {
             req_type,
@@ -8,7 +8,7 @@ impl<'db> DbResponse<'db> {
             error: None,
         }
     }
-    pub fn payload(mut self, payload: DbPayload<'db>) -> Self {
+    pub fn payload(mut self, payload: DbPayload) -> Self {
         self.payload = payload;
         self
     }

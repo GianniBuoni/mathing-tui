@@ -25,8 +25,8 @@ pub enum Event {
 pub struct Tui {
     pub terminal: DefaultTerminal,
     event_rx: UnboundedReceiver<Event>,
-    res_rx: UnboundedReceiver<DbResponse<'static>>,
-    pub req_tx: UnboundedSender<DbRequest<'static>>, // clone to app forms
+    res_rx: UnboundedReceiver<DbResponse>,
+    pub req_tx: UnboundedSender<DbRequest>, // clone to app forms
     _event_task: JoinHandle<()>,
     _db_task: JoinHandle<()>,
 }
@@ -69,23 +69,14 @@ impl Tui {
     }
 
     async fn db_loop(
-        mut req_rx: UnboundedReceiver<DbRequest<'static>>,
-        res_tx: UnboundedSender<DbResponse<'static>>,
+        mut req_rx: UnboundedReceiver<DbRequest>,
+        res_tx: UnboundedSender<DbResponse>,
     ) {
         // inital fetch should go here
 
         loop {
             let res = tokio::select! {
-                Some(req) = req_rx.recv() => match (req.req_type, req.payload){
-                    (RequestType::Get, DbPayload::Item(i)) => {
-                        DbResponse {
-                            req_type: req.req_type,
-                            payload: DbPayload::Item(i),
-                            error: None,
-                        }
-                    }
-                    _ => break,
-                },
+                Some(req) = req_rx.recv() => Self::handle_requests(req).await,
                 else => break,
             };
             if res_tx.send(res).is_err() {

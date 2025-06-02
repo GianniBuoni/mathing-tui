@@ -43,27 +43,27 @@ pub trait Request<'e> {
 }
 
 #[derive(Debug)]
-pub struct DbResponse<'db> {
+pub struct DbResponse {
     pub req_type: RequestType,
-    pub payload: DbPayload<'db>,
+    pub payload: DbPayload,
     pub error: Option<String>,
 }
 
-pub struct DbRequest<'db> {
+pub struct DbRequest {
     pub req_type: RequestType,
-    pub payload: DbPayload<'db>,
+    pub payload: DbPayload,
 }
 
 #[derive(Debug, Default)]
-pub enum DbPayload<'db> {
+pub enum DbPayload {
     #[default]
     None,
-    ItemParams(ItemParams<'db>),
+    AffectedRows(u64),
+    ItemParams(ItemParams),
     ReceiptParams(JoinedReceiptParams),
     Item(StoreItem),
-    Items(Vec<StoreUser>),
     Receipt(StoreJoinRow),
-    Receipts(Vec<StoreJoinRow>),
+    UserParams(UserParams),
     User(StoreUser),
 }
 

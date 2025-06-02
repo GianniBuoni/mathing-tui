@@ -1,4 +1,4 @@
-use std::{borrow::Cow, collections::HashMap};
+use std::collections::HashMap;
 
 use anyhow::{Error, Result};
 use futures::future::try_join_all;
@@ -88,15 +88,15 @@ pub struct StoreJoinRow {
 pub struct StoreTotal(HashMap<i64, Decimal>);
 
 #[derive(Debug, Default)]
-pub struct UserParams<'db> {
+pub struct UserParams {
     u_id: Option<i64>,
-    name: Option<Cow<'db, str>>,
+    name: Option<String>,
 }
 
 #[derive(Debug, Default)]
-pub struct ItemParams<'db> {
+pub struct ItemParams {
     item_id: Option<i64>,
-    item_name: Option<Cow<'db, str>>,
+    item_name: Option<String>,
     item_price: Option<f64>,
     offset: Option<i64>,
 }

@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use super::*;
 
-fn test_items<'db>() -> Rc<[ItemParams<'db>]> {
+fn test_items() -> Rc<[ItemParams]> {
     TEST_ITEMS
         .iter()
         .map(|(name, price, _)| {

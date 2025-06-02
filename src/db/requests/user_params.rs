@@ -1,6 +1,6 @@
 use super::{errors::RequestError, *};
 
-impl<'db> UserParams<'db> {
+impl UserParams {
     pub fn new() -> Self {
         Self::default()
     }
@@ -8,13 +8,13 @@ impl<'db> UserParams<'db> {
         self.u_id = Some(id);
         self
     }
-    pub fn user_name(mut self, name: impl Into<Cow<'db, str>>) -> Self {
-        self.name = Some(name.into());
+    pub fn user_name(mut self, name: impl ToString) -> Self {
+        self.name = Some(name.to_string());
         self
     }
 }
 
-impl<'e> Request<'e> for UserParams<'_> {
+impl<'e> Request<'e> for UserParams {
     type Output = StoreUser;
     type Connection = &'e SqlitePool;
 
