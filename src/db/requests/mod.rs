@@ -7,6 +7,7 @@ pub mod prelude {
     pub use super::{DbPayload, DbRequest, DbResponse, Request, RequestType};
 }
 
+mod builders;
 mod errors;
 mod item_params;
 mod joined_params;
@@ -41,6 +42,7 @@ pub trait Request<'e> {
     ) -> impl Future<Output = Result<u64>>;
 }
 
+#[derive(Debug)]
 pub struct DbResponse<'db> {
     pub req_type: RequestType,
     pub payload: DbPayload<'db>,
@@ -52,11 +54,17 @@ pub struct DbRequest<'db> {
     pub payload: DbPayload<'db>,
 }
 
+#[derive(Debug, Default)]
 pub enum DbPayload<'db> {
+    #[default]
+    None,
     ItemParams(ItemParams<'db>),
     ReceiptParams(JoinedReceiptParams),
     Item(StoreItem),
+    Items(Vec<StoreUser>),
     Receipt(StoreJoinRow),
+    Receipts(Vec<StoreJoinRow>),
+    User(StoreUser),
 }
 
 #[derive(Clone, Copy, Debug)]
