@@ -1,11 +1,7 @@
-use core::panic;
-
-use ratatui::text::ToText;
-
 use super::*;
 
-// TODO: make these tests more deterministic.
-// 2. Add ordering by to the query
+// TODO
+// Add ordering by to the params GET query
 
 async fn join_init_test(conn: &SqlitePool) -> Result<Vec<StoreJoinRow>> {
     let users = init_users(conn).await?;
