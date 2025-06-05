@@ -1,44 +1,38 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT * FROM items ORDER BY name",
+  "query": "\n        SELECT * FROM receipts_users WHERE receipt_id=?1\n                ",
   "describe": {
     "columns": [
       {
-        "name": "id",
+        "name": "created_at",
         "ordinal": 0,
         "type_info": "Integer"
       },
       {
-        "name": "created_at",
+        "name": "updated_at",
         "ordinal": 1,
         "type_info": "Integer"
       },
       {
-        "name": "updated_at",
+        "name": "receipt_id",
         "ordinal": 2,
         "type_info": "Integer"
       },
       {
-        "name": "name",
+        "name": "user_id",
         "ordinal": 3,
-        "type_info": "Text"
-      },
-      {
-        "name": "price",
-        "ordinal": 4,
-        "type_info": "Float"
+        "type_info": "Integer"
       }
     ],
     "parameters": {
-      "Right": 0
+      "Right": 1
     },
     "nullable": [
-      false,
       false,
       false,
       false,
       false
     ]
   },
-  "hash": "c868a3eea45888c806c647bc4044a0db4df84ea11aac75203db57bbedf1885c0"
+  "hash": "6f2a0e05d1cb19eb5713a75c7e36e95f00bbed573162fa981bff00e5592fc130"
 }

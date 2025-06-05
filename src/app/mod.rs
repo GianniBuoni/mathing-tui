@@ -17,8 +17,12 @@ pub struct App<'a> {
 impl App<'_> {
     pub async fn run(&mut self, mut tui: Tui) -> Result<()> {
         while !self.should_exit {
+            let _ = tui.next_response();
             let event = tui.next_event().await;
+
             let action = self.handle_events(event);
+            //handle responses
+
             self.update(action);
 
             tui.terminal

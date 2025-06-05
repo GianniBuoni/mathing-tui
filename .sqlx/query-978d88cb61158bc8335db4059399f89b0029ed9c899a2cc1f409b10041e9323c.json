@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n        INSERT INTO items (\n            name, price, created_at, updated_at\n        ) VALUES (\n            ?1, ?2, ?3, ?4\n        ) RETURNING *\n        ",
+  "query": "SELECT * FROM receipts WHERE id=?1",
   "describe": {
     "columns": [
       {
@@ -19,18 +19,18 @@
         "type_info": "Integer"
       },
       {
-        "name": "name",
+        "name": "item_id",
         "ordinal": 3,
-        "type_info": "Text"
+        "type_info": "Integer"
       },
       {
-        "name": "price",
+        "name": "item_qty",
         "ordinal": 4,
-        "type_info": "Float"
+        "type_info": "Integer"
       }
     ],
     "parameters": {
-      "Right": 4
+      "Right": 1
     },
     "nullable": [
       false,
@@ -40,5 +40,5 @@
       false
     ]
   },
-  "hash": "0d17808ed9b3c3a56c75ab4c10fa5f416aa2e044e62aec3dd67385c10c1f47c1"
+  "hash": "978d88cb61158bc8335db4059399f89b0029ed9c899a2cc1f409b10041e9323c"
 }

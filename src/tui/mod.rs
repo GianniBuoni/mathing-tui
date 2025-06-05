@@ -1,7 +1,10 @@
 use crossterm::event::{EventStream, KeyEventKind};
 use futures::{FutureExt, StreamExt};
 use ratatui::DefaultTerminal;
-use tokio::{sync::mpsc::UnboundedSender, task::JoinHandle};
+use tokio::{
+    sync::mpsc::{UnboundedReceiver, UnboundedSender},
+    task::JoinHandle,
+};
 
 use crate::prelude::*;
 
@@ -10,6 +13,7 @@ pub mod prelude {
 }
 
 mod builder;
+mod handle_requests;
 
 pub enum Event {
     Init,
@@ -20,9 +24,11 @@ pub enum Event {
 
 pub struct Tui {
     pub terminal: DefaultTerminal,
-    event_rx: tokio::sync::mpsc::UnboundedReceiver<Event>,
-    event_tx: tokio::sync::mpsc::UnboundedSender<Event>,
-    task: JoinHandle<()>,
+    event_rx: UnboundedReceiver<Event>,
+    res_rx: UnboundedReceiver<DbResponse>,
+    pub req_tx: UnboundedSender<DbRequest>, // clone to app forms
+    _event_task: JoinHandle<()>,
+    _db_task: JoinHandle<()>,
 }
 
 impl Tui {
@@ -30,12 +36,21 @@ impl Tui {
         self.event_rx.recv().await
     }
 
+    pub fn next_response(&mut self) -> Option<DbResponse> {
+        match self.res_rx.try_recv() {
+            Ok(_) => None,
+            Err(_) => None,
+        }
+    }
+
     async fn event_loop(event_tx: UnboundedSender<Event>) {
-        // if this fails, then it's likely a bug in the calling code
         let mut event_stream = EventStream::new();
+
+        // if this fails, then it's likely a bug in the calling code
         event_tx
             .send(Event::Init)
             .expect("Failed to send Init event");
+
         loop {
             let event = tokio::select! {
             crossterm_event = event_stream.next().fuse() => match crossterm_event {
@@ -48,6 +63,23 @@ impl Tui {
                 }
             };
             if event_tx.send(event).is_err() {
+                break;
+            }
+        }
+    }
+
+    async fn db_loop(
+        mut req_rx: UnboundedReceiver<DbRequest>,
+        res_tx: UnboundedSender<DbResponse>,
+    ) {
+        // inital fetch should go here
+
+        loop {
+            let res = tokio::select! {
+                Some(req) = req_rx.recv() => Self::handle_requests(req).await,
+                else => break,
+            };
+            if res_tx.send(res).is_err() {
                 break;
             }
         }
