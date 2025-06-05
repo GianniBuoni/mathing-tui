@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE receipts SET item_qty=?1 WHERE id=?2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "158db40541ce52d31aa50255b5f6637b9cc94b179baad06ca6dc128994248077"
+}
