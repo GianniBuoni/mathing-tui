@@ -62,8 +62,10 @@ impl Tui {
         };
 
         match res {
-            Ok(payload) => DbResponse::new(req.req_type).payload(payload),
-            Err(e) => DbResponse::new(req.req_type).error(e),
+            Ok(payload) => {
+                DbResponse::new().req_type(req.req_type).payload(payload)
+            }
+            Err(e) => DbResponse::new().req_type(req.req_type).error(e),
         }
     }
 }

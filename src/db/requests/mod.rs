@@ -42,13 +42,14 @@ pub trait Request<'e> {
     ) -> impl Future<Output = Result<u64>>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct DbResponse {
     pub req_type: RequestType,
     pub payload: DbPayload,
     pub error: Option<String>,
 }
 
+#[derive(Debug, Default)]
 pub struct DbRequest {
     pub req_type: RequestType,
     pub payload: DbPayload,
@@ -67,8 +68,10 @@ pub enum DbPayload {
     User(StoreUser),
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub enum RequestType {
+    #[default]
+    None,
     Get,
     GetAll,
     Post,
