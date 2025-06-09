@@ -87,13 +87,13 @@ pub struct StoreJoinRow {
 #[derive(Debug, Default)]
 pub struct StoreTotal(HashMap<i64, Decimal>);
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq)]
 pub struct UserParams {
     u_id: Option<i64>,
     name: Option<String>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq)]
 pub struct ItemParams {
     item_id: Option<i64>,
     item_name: Option<String>,
@@ -101,7 +101,7 @@ pub struct ItemParams {
     offset: Option<i64>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq)]
 pub struct JoinedReceiptParams {
     users: Vec<i64>,
     r_id: Option<i64>,

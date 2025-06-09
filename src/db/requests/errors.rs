@@ -5,6 +5,7 @@ pub enum RequestError {
     MissingParam(String),
     NotFound(String, String),
     Unhandled(String),
+    Connection,
 }
 
 impl RequestError {
@@ -36,6 +37,9 @@ impl Display for RequestError {
             }
             Self::Unhandled(request) => {
                 write!(f, "Unhandled Request: invalid {request}.")
+            }
+            Self::Connection => {
+                write!(f, "DB Connection unreachable.")
             }
         }
     }

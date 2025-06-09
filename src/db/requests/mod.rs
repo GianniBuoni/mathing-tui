@@ -42,20 +42,20 @@ pub trait Request<'e> {
     ) -> impl Future<Output = Result<u64>>;
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq)]
 pub struct DbResponse {
     pub req_type: RequestType,
     pub payload: DbPayload,
     pub error: Option<String>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq)]
 pub struct DbRequest {
     pub req_type: RequestType,
     pub payload: DbPayload,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq)]
 pub enum DbPayload {
     #[default]
     None,
@@ -68,7 +68,7 @@ pub enum DbPayload {
     User(StoreUser),
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub enum RequestType {
     #[default]
     None,
