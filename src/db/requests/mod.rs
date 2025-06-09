@@ -4,11 +4,13 @@ use super::*;
 
 pub mod prelude {
     pub use super::errors::RequestError;
+    pub use super::handle_requests::handle_requests;
     pub use super::{DbPayload, DbRequest, DbResponse, Request, RequestType};
 }
 
 mod builders;
 mod errors;
+mod handle_requests;
 mod item_params;
 mod joined_params;
 mod receipts_params;

@@ -15,9 +15,6 @@ pub mod prelude {
 }
 
 mod builder;
-mod handle_requests;
-#[cfg(test)]
-mod tests;
 
 pub enum Event {
     Init,
@@ -87,7 +84,7 @@ impl Tui {
 
         loop {
             let res = tokio::select! {
-                Some(req) = req_rx.recv() => Self::handle_requests(req, conn.as_ref().unwrap()).await,
+                Some(req) = req_rx.recv() => handle_requests(req, conn.as_ref().unwrap()).await,
                 else => break,
             };
             if res_tx.send(res).is_err() {
