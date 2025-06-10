@@ -218,7 +218,7 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
         ),
         (
             ReqReceipt(JoinedReceiptParams::new()),
-            RequestType::DeleteAll,
+            RequestType::Reset,
             DbPayload::AffectedRows(0),
         ),
     ];
@@ -262,5 +262,69 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
         }
     }
 
+    Ok(())
+}
+
+#[sqlx::test]
+async fn test_req_inits(conn: SqlitePool) -> Result<()> {
+    // init test
+    ItemParams::new()
+        .item_name("Slamon")
+        .item_price(9.49)
+        .post(&conn)
+        .await?;
+    UserParams::new().user_name("Jon").post(&conn).await?;
+    UserParams::new().user_name("Noodle").post(&conn).await?;
+    JoinedReceiptParams::new()
+        .item_id(1)
+        .item_qty(3)
+        .add_user(1)
+        .add_user(2)
+        .post(&conn)
+        .await?;
+
+    // test cases
+    let test_cases = [
+        (ReqUser(UserParams::new()), 2, "users"),
+        (ReqItem(ItemParams::new().offset(0)), 1, "items"),
+        (
+            ReqReceipt(JoinedReceiptParams::new().offset(0)),
+            1,
+            "receipts",
+        ),
+    ];
+
+    for (payload, want, desc) in test_cases {
+        let res = handle_requests(
+            DbRequest::new()
+                .payload(payload)
+                .req_type(RequestType::GetAll),
+            &conn,
+        )
+        .await;
+
+        if res.error.is_some() {
+            let message =
+                format!("Test: {desc} failed. {}", res.error.unwrap());
+            return Err(Error::msg(message));
+        }
+
+        let got = match res.payload {
+            DbPayload::Users(u) => u.len(),
+            DbPayload::Items(i) => i.len(),
+            DbPayload::Receipts(r) => r.len(),
+            _ => {
+                let req_type = format!("test: {desc}, request type");
+                return Err(
+                    RequestError::unhandled(req_type, res.payload).into()
+                );
+            }
+        };
+
+        assert_eq!(
+            want, got,
+            "Test if init handler for {desc} returns expected vec with expected lenght."
+        )
+    }
     Ok(())
 }

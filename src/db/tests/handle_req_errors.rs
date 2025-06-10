@@ -43,14 +43,8 @@ async fn test_req_errors(conn: SqlitePool) {
         ),
         (
             DbPayload::ItemParams(ItemParams::new()),
-            RequestType::GetAll,
-            RequestError::unhandled("request type", "GetAll"),
-            "Test unhandled GetAll request type.",
-        ),
-        (
-            DbPayload::ItemParams(ItemParams::new()),
-            RequestType::DeleteAll,
-            RequestError::unhandled("request type", "DeleteAll"),
+            RequestType::Reset,
+            RequestError::unhandled("request type", "Reset"),
             "Test unhandled DeleteAll request type.",
         ),
         (

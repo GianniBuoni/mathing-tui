@@ -64,21 +64,24 @@ pub enum DbPayload {
     None,
     AffectedRows(u64),
     ItemParams(ItemParams),
-    ReceiptParams(JoinedReceiptParams),
     Item(StoreItem),
+    Items(Vec<StoreItem>),
+    ReceiptParams(JoinedReceiptParams),
     Receipt(StoreJoinRow),
+    Receipts(Vec<StoreJoinRow>),
     UserParams(UserParams),
     User(StoreUser),
+    Users(Vec<StoreUser>),
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub enum RequestType {
     #[default]
     None,
-    Get,
     GetAll,
+    Get,
     Post,
     Update,
     Delete,
-    DeleteAll,
+    Reset,
 }
