@@ -13,6 +13,7 @@ mod errors;
 mod handle_requests;
 mod item_params;
 mod joined_params;
+mod payloads;
 mod receipts_params;
 mod receipts_users_params;
 mod user_params;

@@ -1,0 +1,18 @@
+use std::fmt::Display;
+
+use super::*;
+
+impl Display for DbPayload {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::None => write!(f, "None"),
+            Self::AffectedRows(_) => write!(f, "AffectedRows"),
+            Self::ItemParams(_) => write!(f, "ItemParams"),
+            Self::ReceiptParams(_) => write!(f, "ReceiptParams"),
+            Self::Item(_) => write!(f, "Item"),
+            Self::Receipt(_) => write!(f, "Receipt"),
+            Self::UserParams(_) => write!(f, "UserParams"),
+            Self::User(_) => write!(f, "User"),
+        }
+    }
+}

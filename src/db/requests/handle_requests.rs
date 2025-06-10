@@ -42,10 +42,7 @@ pub async fn handle_requests(req: DbRequest, conn: &SqlitePool) -> DbResponse {
                 Err(RequestError::unhandled("request type", req_type).into())
             }
         },
-        _ => {
-            let req_payload = format!("{:?}", req.payload);
-            Err(RequestError::unhandled("payload", req_payload).into())
-        }
+        _ => Err(RequestError::unhandled("payload", req.payload).into()),
     };
 
     match res {
