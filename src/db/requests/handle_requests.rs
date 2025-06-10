@@ -14,8 +14,8 @@ pub async fn handle_requests(req: DbRequest, conn: &SqlitePool) -> DbResponse {
                 i.delete(conn).await.map(DbPayload::AffectedRows)
             }
             _ => {
-                let msg = format!("request type: {:?}", req.req_type);
-                Err(RequestError::unhandled(msg).into())
+                let req_type = format!("{:?}", req.req_type);
+                Err(RequestError::unhandled("request type", req_type).into())
             }
         },
         DbPayload::UserParams(u) => match req.req_type {
@@ -26,8 +26,8 @@ pub async fn handle_requests(req: DbRequest, conn: &SqlitePool) -> DbResponse {
                 u.delete(conn).await.map(DbPayload::AffectedRows)
             }
             _ => {
-                let msg = format!("request type: {:?}", req.req_type);
-                Err(RequestError::unhandled(msg).into())
+                let req_type = format!("{:?}", req.req_type);
+                Err(RequestError::unhandled("request type: ", req_type).into())
             }
         },
         DbPayload::ReceiptParams(r) => match req.req_type {
@@ -38,13 +38,13 @@ pub async fn handle_requests(req: DbRequest, conn: &SqlitePool) -> DbResponse {
                 r.delete(conn).await.map(DbPayload::AffectedRows)
             }
             _ => {
-                let msg = format!("request type: {:?}", req.req_type);
-                Err(RequestError::unhandled(msg).into())
+                let req_type = format!("{:?}", req.req_type);
+                Err(RequestError::unhandled("request type", req_type).into())
             }
         },
         _ => {
-            let msg = format!("payload: {:?}", req.payload);
-            Err(RequestError::unhandled(msg).into())
+            let req_payload = format!("{:?}", req.payload);
+            Err(RequestError::unhandled("payload", req_payload).into())
         }
     };
 
