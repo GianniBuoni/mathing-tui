@@ -216,6 +216,11 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
             RequestType::Delete,
             DbPayload::AffectedRows(1),
         ),
+        (
+            ReqReceipt(JoinedReceiptParams::new()),
+            RequestType::DeleteAll,
+            DbPayload::AffectedRows(0),
+        ),
     ];
 
     for (payload, req_type, want) in test_cases {

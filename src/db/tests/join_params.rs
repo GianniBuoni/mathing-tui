@@ -132,6 +132,17 @@ async fn test_joined_update(conn: SqlitePool) -> Result<()> {
 }
 
 #[sqlx::test]
+async fn test_joined_reset(conn: SqlitePool) -> Result<()> {
+    join_init_test(&conn).await?;
+    let rows = JoinedReceiptParams::new().reset(&conn).await?;
+    assert_eq!(3, rows, "Test if expected amount of rows were affected.");
+
+    let got = JoinedReceiptParams::new().offset(0).get_all(&conn).await?;
+    assert_eq!(0, got.len(), "Test if reset deleted all receipt records.");
+    Ok(())
+}
+
+#[sqlx::test]
 async fn test_joined_errors(conn: SqlitePool) -> Result<()> {
     let test_cases = [
         (

@@ -37,6 +37,9 @@ pub async fn handle_requests(req: DbRequest, conn: &SqlitePool) -> DbResponse {
             RequestType::Delete => {
                 r.delete(conn).await.map(DbPayload::AffectedRows)
             }
+            RequestType::DeleteAll => {
+                r.reset(conn).await.map(DbPayload::AffectedRows)
+            }
             _ => {
                 let req_type = format!("{:?}", req.req_type);
                 Err(RequestError::unhandled("request type", req_type).into())
