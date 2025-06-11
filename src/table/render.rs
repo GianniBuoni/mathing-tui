@@ -1,6 +1,8 @@
+use std::ops::Deref;
+
 use super::*;
 
-impl<T> TableData<'_, T>
+impl<T> TableData<T>
 where
     T: TableDisplay,
 {
@@ -8,18 +10,14 @@ where
         Block::bordered()
             .border_style(style)
             .border_type(BorderType::Rounded)
-            .title(self.title())
+            .title(format!(" [{}] {} ", self.app_index, self.title))
     }
 
     pub(super) fn render_rows(&self, style: Style) -> Vec<Row> {
         self.items
             .iter()
             .map(|data| {
-                data.ref_array()
-                    .into_iter()
-                    .map(Cell::from)
-                    .collect::<Row>()
-                    .style(style)
+                data.ref_array().into_iter().collect::<Row>().style(style)
             })
             .collect()
     }
@@ -27,7 +25,7 @@ where
     pub(super) fn render_heading(&self, styles: &AppStyles) -> Row {
         self.headings
             .iter()
-            .map(|cow| Cell::from(cow.deref()))
+            .map(|heading| Cell::from(heading.deref()))
             .collect::<Row>()
             .style(styles.header_style)
             .height(1)

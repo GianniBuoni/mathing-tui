@@ -3,31 +3,25 @@ use std::ops::Deref;
 use super::*;
 
 #[test]
-fn test_input_validation() {
+fn test_input_validation_f64() {
     let mut key_events = [
         (
-            Box::new(test_f64_input()) as Box<dyn Field>,
+            test_f64_input(),
             Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('1')))),
-            "Ok",
+            None,
             "Test valid float input.",
         ),
         (
-            Box::new(test_f64_input()) as Box<dyn Field>,
+            test_f64_input(),
             Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('a')))),
-            "Unable to parse \"a\" as f64.",
+            Some(FormErrors::validation("a", "f64").to_string()),
             "Test invalid input.",
         ),
         (
-            Box::new(test_f64_input()) as Box<dyn Field>,
+            test_f64_input(),
             None,
-            "Item Price is unset.",
+            Some(FormErrors::no_data("Item Price").to_string()),
             "Test unset data.",
-        ),
-        (
-            Box::new(test_str_input()) as Box<dyn Field>,
-            Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('a')))),
-            "Ok",
-            "Test valid str input.",
         ),
     ];
 
@@ -35,12 +29,8 @@ fn test_input_validation() {
         .iter_mut()
         .for_each(|(input, action, want, desc)| {
             input.update(*action);
-            let got = match input.validate() {
-                Ok(_) => "Ok".to_string(),
-                Err(e) => e.to_string(),
-            };
-
-            assert_eq!(want.to_string(), got, "{desc}")
+            let got = input.validate().map_err(|e| e.to_string()).err();
+            assert_eq!(*want, got, "{desc}")
         });
 }
 
@@ -89,7 +79,7 @@ fn test_form_validation() -> Result<()> {
 
     let mut form = test_valid_form(&OutputStruct::default());
     key_events.iter().for_each(|key| form.update(Some(*key)));
-    form.fields.iter().try_for_each(|field| field.validate())?;
+    form.fields.iter().try_for_each(|field| field.submit())?;
 
     Ok(())
 }

@@ -1,6 +1,8 @@
+use std::ops::Deref;
+
 use super::*;
 
-impl Component for Form<'_> {
+impl Component for Form {
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
         // blocks and areas hard coded to return a len of 2
         let blocks = self.render_block();
@@ -48,9 +50,9 @@ impl Component for Form<'_> {
     }
 }
 
-impl Form<'_> {
+impl Form {
     pub fn render_block(&self) -> Rc<[Block]> {
-        let popup_block = Block::new().title(format!(" {} ", self.title));
+        let popup_block = Block::new().title(self.title.deref());
         let bordered_block = Block::bordered().border_type(BorderType::Rounded);
         [popup_block, bordered_block].into()
     }
@@ -74,7 +76,7 @@ impl Form<'_> {
 
     pub fn submit(&self) -> Result<()> {
         if self.fields.is_empty() {
-            return Err(anyhow::Error::msg("Malformed: form has no fields."));
+            return Err(FormErrors::Malformed.into());
         }
 
         self.fields.iter().try_for_each(|f| f.submit())

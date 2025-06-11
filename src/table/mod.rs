@@ -1,4 +1,4 @@
-use std::{borrow::Cow, cell::RefCell, fmt::Debug, ops::Deref, rc::Rc};
+use std::{cell::RefCell, fmt::Debug, rc::Rc};
 
 use crate::prelude::*;
 
@@ -16,23 +16,23 @@ pub mod prelude {
 }
 
 pub trait TableDisplay: Debug + Default {
-    fn ref_array(&self) -> Vec<Cow<str>>;
+    fn ref_array(&self) -> Vec<Cell>;
 }
 
 #[derive(Debug)]
-pub enum TableTui<'a> {
-    Items(TableData<'a, StoreItem>),
-    Receipt(TableData<'a, StoreJoinRow>),
+pub enum TableTui {
+    Items(TableData<StoreItem>),
+    Receipt(TableData<StoreJoinRow>),
 }
 
 #[derive(Debug, Default)]
-pub struct TableData<'a, T>
+pub struct TableData<T>
 where
     T: TableDisplay,
 {
-    title: Cow<'a, str>,
-    headings: Rc<[Cow<'a, str>]>,
+    title: Rc<str>,
     items: Vec<T>,
+    headings: Rc<[Rc<str>]>,
     table_index: usize,
     app_index: usize,
     tracker: Rc<RefCell<usize>>,

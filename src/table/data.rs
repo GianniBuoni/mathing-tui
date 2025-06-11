@@ -2,11 +2,11 @@ use super::*;
 
 use builder::TableBuilder;
 
-impl<'a, T> TableData<'a, T>
+impl<T> TableData<T>
 where
     T: TableDisplay,
 {
-    pub fn new_builder() -> TableBuilder<'a, T> {
+    pub fn new_builder() -> TableBuilder<T> {
         TableBuilder::default()
     }
 
@@ -15,7 +15,7 @@ where
     }
 }
 
-impl<T> Component for TableData<'_, T>
+impl<T> Component for TableData<T>
 where
     T: TableDisplay,
 {

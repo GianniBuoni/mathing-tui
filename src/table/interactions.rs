@@ -1,17 +1,13 @@
 use super::*;
 
-impl<T> TableData<'_, T> where T: TableDisplay {}
+impl<T> TableData<T> where T: TableDisplay {}
 
-impl<T> TableData<'_, T>
+impl<T> TableData<T>
 where
     T: TableDisplay,
 {
     pub fn max(&self) -> usize {
         self.items.len() - 1
-    }
-
-    pub fn title(&self) -> Cow<str> {
-        Cow::Owned(format!(" [{}] {} ", self.app_index, self.title))
     }
 
     pub fn next_row(&mut self) {
@@ -32,6 +28,6 @@ where
 
     pub fn check_active(&mut self) {
         let current_index = self.tracker.borrow();
-        self.active = current_index.deref() == &self.app_index;
+        self.active = *current_index == self.app_index;
     }
 }

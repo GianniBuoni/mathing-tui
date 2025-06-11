@@ -1,11 +1,10 @@
-use std::any::type_name;
+use std::{any::type_name, ops::Deref};
 
-use anyhow::Error;
 use tui_input::backend::crossterm::EventHandler;
 
 use super::*;
 
-impl<T> InputField<'_, T>
+impl<T> InputField<T>
 where
     T: Debug + FromStr,
     <T as FromStr>::Err: Debug,
@@ -18,7 +17,7 @@ where
     pub fn render_block(&self, style: Style) -> Block {
         Block::bordered()
             .border_type(BorderType::Rounded)
-            .title(format!(" {} ", self.title))
+            .title(self.title.deref())
             .style(style)
     }
 
@@ -27,9 +26,23 @@ where
             .style(style)
             .add_modifier(Modifier::RAPID_BLINK)
     }
+
+    pub fn validate(&self) -> Result<T> {
+        let inner_value = self.input.value();
+
+        if inner_value.is_empty() {
+            return Err({
+                FormErrors::no_data(self.title.deref().trim()).into()
+            });
+        }
+
+        inner_value.parse::<T>().map_err(|_| {
+            FormErrors::validation(inner_value, type_name::<T>()).into()
+        })
+    }
 }
 
-impl<T> Component for InputField<'_, T>
+impl<T> Component for InputField<T>
 where
     T: Debug + FromStr,
     <T as FromStr>::Err: Debug,
@@ -64,7 +77,7 @@ where
     }
 }
 
-impl<T> Field for InputField<'_, T>
+impl<T> Field for InputField<T>
 where
     T: Debug + FromStr,
     <T as FromStr>::Err: Debug,
@@ -79,37 +92,11 @@ where
         }
     }
 
-    fn validate(&self) -> Result<()> {
-        let inner_value = self.input.value();
-
-        if inner_value.is_empty() {
-            let message = format!("{} is unset.", self.title);
-            return Err(Error::msg(message));
-        }
-
-        match inner_value.parse::<T>() {
-            Ok(_) => Ok(()),
-            Err(_) => {
-                let message = format!(
-                    "Unable to parse \"{}\" as {}.",
-                    inner_value,
-                    type_name::<T>()
-                );
-                Err(Error::msg(message))
-            }
-        }
-    }
-
     fn submit(&self) -> Result<()> {
         match &self.value {
-            None => {
-                let message =
-                    format!("{} is not mapped to any value.", self.title);
-                Err(Error::msg(message))
-            }
+            None => Err(FormErrors::unmapped(self.title.deref().trim()).into()),
             Some(value) => {
-                self.validate()?;
-                let new_value = self.input.value().parse::<T>().unwrap();
+                let new_value = self.validate()?;
                 *value.borrow_mut() = new_value;
                 Ok(())
             }

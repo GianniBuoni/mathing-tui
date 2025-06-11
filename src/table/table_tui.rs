@@ -1,6 +1,6 @@
 use super::*;
 
-impl Component for TableTui<'_> {
+impl Component for TableTui {
     fn init(&mut self, index: usize, tracker: Rc<RefCell<usize>>) {
         match self {
             TableTui::Items(i) => i.init(index, tracker),
@@ -23,7 +23,7 @@ impl Component for TableTui<'_> {
     }
 }
 
-impl TableTui<'_> {
+impl TableTui {
     pub fn is_active(&self) -> bool {
         match self {
             TableTui::Items(i) => i.active,

@@ -1,14 +1,14 @@
 use super::*;
 
-impl<'a> HomeBuilder<'a> {
-    pub fn add_component(mut self, component: TableTui<'a>) -> Self {
+impl HomeBuilder {
+    pub fn add_component(mut self, component: TableTui) -> Self {
         self.components.push(component);
         self
     }
 }
 
-impl<'a> ComponentBuilder<Home<'a>> for HomeBuilder<'a> {
-    fn build(mut self) -> Home<'a> {
+impl ComponentBuilder<Home> for HomeBuilder {
+    fn build(mut self) -> Home {
         self.components.iter_mut().enumerate().for_each(
             |(index, component)| {
                 component.init(index, self.component_tracker.clone());

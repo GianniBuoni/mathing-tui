@@ -23,25 +23,25 @@ pub enum Mode {
 }
 
 #[derive(Default, Debug)]
-pub struct Home<'a> {
+pub struct Home {
     keymap: HashMap<KeyEvent, Action>,
-    form: Option<FormTui<'a>>,
-    components: Vec<TableTui<'a>>,
+    form: Option<FormTui>,
+    components: Vec<TableTui>,
     component_tracker: Rc<RefCell<usize>>,
     _req_tx: Option<UnboundedSender<DbRequest>>,
     mode: Mode,
 }
 
 #[derive(Default, Debug)]
-pub struct HomeBuilder<'a> {
+pub struct HomeBuilder {
     keymap: HashMap<KeyEvent, Action>,
-    components: Vec<TableTui<'a>>,
+    components: Vec<TableTui>,
     component_tracker: Rc<RefCell<usize>>,
     _req_tx: Option<UnboundedSender<DbRequest>>,
 }
 
-impl<'a> Home<'a> {
-    pub fn new_builder() -> HomeBuilder<'a> {
+impl Home {
+    pub fn new_builder() -> HomeBuilder {
         HomeBuilder::default()
     }
     fn cycle_active(&mut self, add: i32) {
@@ -60,7 +60,7 @@ impl<'a> Home<'a> {
     }
 }
 
-impl Component for Home<'_> {
+impl Component for Home {
     fn handle_key_events(&self, key: KeyEvent) -> Option<Action> {
         match key.code {
             KeyCode::Char(_) if self.form.is_some() => {
