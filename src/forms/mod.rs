@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use std::{borrow::Cow, cell::RefCell, fmt::Debug, rc::Rc, str::FromStr};
+use std::{cell::RefCell, fmt::Debug, rc::Rc, str::FromStr};
 
 use tui_input::Input;
 
@@ -8,9 +8,7 @@ use crate::prelude::*;
 mod builder;
 mod form_data;
 mod form_tui;
-mod form_value;
 mod input_field;
-mod render;
 #[cfg(test)]
 mod tests;
 
@@ -20,9 +18,9 @@ pub mod prelude {
 }
 
 #[derive(Debug)]
-pub enum FormTui<'a> {
-    ItemForm(Form<'a>),
-    ReceiptForm(Form<'a>),
+pub enum FormTui {
+    ItemForm(Form),
+    ReceiptForm(Form),
 }
 
 pub trait Field: Component {
@@ -33,12 +31,12 @@ pub trait Field: Component {
 }
 
 #[derive(Default, Debug)]
-pub struct InputField<'a, T>
+pub struct InputField<T>
 where
     T: Debug + FromStr,
     <T as FromStr>::Err: Debug,
 {
-    title: Cow<'a, str>,
+    title: Rc<str>,
     index: usize,
     input: Input,
     active_field: Rc<RefCell<usize>>,
@@ -47,18 +45,18 @@ where
 }
 
 #[derive(Default, Debug)]
-pub struct Form<'a> {
-    title: Cow<'a, str>,
+pub struct Form {
+    title: Rc<str>,
     fields: Vec<Box<dyn Field>>,
     active_field: Rc<RefCell<usize>>,
     rect: Rect,
     cursor_pos: Position,
-    error: Option<Cow<'a, str>>,
+    error: Option<String>,
 }
 
 #[derive(Debug, Default)]
-pub struct FormBuilder<'a> {
-    title: Cow<'a, str>,
+pub struct FormBuilder {
+    title: Rc<str>,
     fields: Vec<Box<dyn Field>>,
     active_field: Rc<RefCell<usize>>,
     rect: Rect,

@@ -1,26 +1,26 @@
 use super::*;
 
 #[derive(Default)]
-pub struct TableBuilder<'a, T>
+pub struct TableBuilder<T>
 where
     T: TableDisplay,
 {
-    title: Cow<'a, str>,
-    headings: Vec<Cow<'a, str>>,
+    title: Rc<str>,
+    headings: Vec<String>,
     items: Vec<T>,
     tracker: Rc<RefCell<usize>>,
 }
 
-impl<'a, T> TableBuilder<'a, T>
+impl<T> TableBuilder<T>
 where
     T: TableDisplay,
 {
-    pub fn add_title(mut self, title: &'a str) -> Self {
-        self.title = Cow::Borrowed(title);
+    pub fn add_title(mut self, title: impl Into<Rc<str>>) -> Self {
+        self.title = title.into();
         self
     }
-    pub fn add_heading(mut self, heading: &'a str) -> Self {
-        self.headings.push(Cow::Owned(format!(" {heading} ")));
+    pub fn add_heading(mut self, heading: impl ToString) -> Self {
+        self.headings.push(heading.to_string());
         self
     }
     pub fn add_item(mut self, item: T) -> Self {
@@ -29,12 +29,12 @@ where
     }
 }
 
-impl<'a, T> ComponentBuilder<TableData<'a, T>> for TableBuilder<'a, T>
+impl<T> ComponentBuilder<TableData<T>> for TableBuilder<T>
 where
     T: TableDisplay,
 {
-    fn build(self) -> TableData<'a, T> {
-        TableData::<'a, T> {
+    fn build(self) -> TableData<T> {
+        TableData::<T> {
             title: self.title,
             headings: self.headings.into(),
             items: self.items,

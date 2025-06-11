@@ -9,12 +9,12 @@ mod builder;
 mod tests;
 
 #[derive(Debug, Default)]
-pub struct App<'a> {
-    component: Home<'a>,
+pub struct App {
+    component: Home,
     should_exit: bool,
 }
 
-impl App<'_> {
+impl App {
     pub async fn run(&mut self, mut tui: Tui) -> Result<()> {
         while !self.should_exit {
             let _ = tui.next_response();

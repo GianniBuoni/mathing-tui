@@ -5,7 +5,7 @@ use tui_input::backend::crossterm::EventHandler;
 
 use super::*;
 
-impl<T> InputField<'_, T>
+impl<T> InputField<T>
 where
     T: Debug + FromStr,
     <T as FromStr>::Err: Debug,
@@ -29,7 +29,7 @@ where
     }
 }
 
-impl<T> Component for InputField<'_, T>
+impl<T> Component for InputField<T>
 where
     T: Debug + FromStr,
     <T as FromStr>::Err: Debug,
@@ -64,7 +64,7 @@ where
     }
 }
 
-impl<T> Field for InputField<'_, T>
+impl<T> Field for InputField<T>
 where
     T: Debug + FromStr,
     <T as FromStr>::Err: Debug,

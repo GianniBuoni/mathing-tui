@@ -3,7 +3,7 @@
 
 use crate::prelude::*;
 
-pub fn mock_items<'a>() -> TableData<'a, StoreItem> {
+pub fn mock_items() -> TableData<StoreItem> {
     let test_1 = StoreItem {
         name: "Slamon".into(),
         price: 9.49,
@@ -32,7 +32,7 @@ pub fn mock_items<'a>() -> TableData<'a, StoreItem> {
         .build()
 }
 
-pub fn mock_receipts<'a>() -> TableData<'a, StoreJoinRow> {
+pub fn mock_receipts() -> TableData<StoreJoinRow> {
     let jon = StoreUser {
         name: "Jon".into(),
         ..Default::default()

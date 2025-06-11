@@ -11,18 +11,18 @@ fn test_input_rect() -> Rect {
     Rect::new(0, 0, 50, 3)
 }
 
-fn test_form<'a>() -> Form<'a> {
+fn test_form<'a>() -> Form {
     Form::new_builder()
         .add_title("Add New Item")
         .add_rect(Rect::new(0, 0, 50, 9))
         .build()
 }
 
-fn test_f64_input<'a>() -> InputField<'a, f64> {
+fn test_f64_input<'a>() -> InputField<f64> {
     InputField::new("Item Price")
 }
 
-fn test_str_input<'a>() -> InputField<'a, String> {
+fn test_str_input<'a>() -> InputField<String> {
     InputField::new("Item Name")
 }
 
@@ -32,7 +32,7 @@ struct OutputStruct {
     price: Rc<RefCell<f64>>,
 }
 
-fn test_valid_form<'a>(source: &OutputStruct) -> Form<'a> {
+fn test_valid_form(source: &OutputStruct) -> Form {
     let name_field =
         InputField::<String>::new("Item Name").map_value(source.name.clone());
     let price_field =
@@ -46,7 +46,7 @@ fn test_valid_form<'a>(source: &OutputStruct) -> Form<'a> {
         .build()
 }
 
-fn test_invalid_form_no_fields<'a>() -> Form<'a> {
+fn test_invalid_form_no_fields() -> Form {
     Form::new_builder()
         .add_title("Add New Item")
         .add_rect(Rect::new(0, 0, 50, 9))

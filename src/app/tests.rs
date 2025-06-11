@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-pub fn test_app<'a>() -> App<'a> {
+pub fn test_app() -> App {
     App::new(test_home())
 }
 
