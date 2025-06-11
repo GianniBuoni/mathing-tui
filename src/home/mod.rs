@@ -1,4 +1,5 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use tokio::sync::mpsc::UnboundedSender;
 
 use crate::prelude::*;
 
@@ -23,18 +24,20 @@ pub enum Mode {
 
 #[derive(Default, Debug)]
 pub struct Home<'a> {
+    keymap: HashMap<KeyEvent, Action>,
+    form: Option<FormTui<'a>>,
     components: Vec<TableTui<'a>>,
     component_tracker: Rc<RefCell<usize>>,
-    form: Option<FormTui<'a>>,
-    keymap: HashMap<KeyEvent, Action>,
+    req_tx: Option<UnboundedSender<DbRequest>>,
     mode: Mode,
 }
 
 #[derive(Default, Debug)]
 pub struct HomeBuilder<'a> {
+    keymap: HashMap<KeyEvent, Action>,
     components: Vec<TableTui<'a>>,
     component_tracker: Rc<RefCell<usize>>,
-    keymap: HashMap<KeyEvent, Action>,
+    req_tx: Option<UnboundedSender<DbRequest>>,
 }
 
 impl<'a> Home<'a> {
