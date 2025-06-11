@@ -36,28 +36,28 @@ where
     T: Debug + FromStr,
     <T as FromStr>::Err: Debug,
 {
-    title: Rc<str>,
-    index: usize,
     input: Input,
+    title: Rc<str>,
     active_field: Rc<RefCell<usize>>,
-    active: bool,
     value: Option<Rc<RefCell<T>>>,
+    index: usize,
+    active: bool,
 }
 
 #[derive(Default, Debug)]
 pub struct Form {
-    title: Rc<str>,
+    error: Option<String>,
     fields: Vec<Box<dyn Field>>,
+    title: Rc<str>,
     active_field: Rc<RefCell<usize>>,
     rect: Rect,
     cursor_pos: Position,
-    error: Option<String>,
 }
 
 #[derive(Debug, Default)]
 pub struct FormBuilder {
-    title: Rc<str>,
     fields: Vec<Box<dyn Field>>,
+    title: Rc<str>,
     active_field: Rc<RefCell<usize>>,
     rect: Rect,
 }

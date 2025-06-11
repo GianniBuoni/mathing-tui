@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use super::*;
 
 impl Component for Form {
@@ -50,7 +52,7 @@ impl Component for Form {
 
 impl Form {
     pub fn render_block(&self) -> Rc<[Block]> {
-        let popup_block = Block::new().title(format!(" {} ", self.title));
+        let popup_block = Block::new().title(self.title.deref());
         let bordered_block = Block::bordered().border_type(BorderType::Rounded);
         [popup_block, bordered_block].into()
     }

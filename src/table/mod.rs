@@ -32,7 +32,7 @@ where
 {
     title: Rc<str>,
     items: Vec<T>,
-    headings: Rc<[String]>,
+    headings: Rc<[Rc<str>]>,
     table_index: usize,
     app_index: usize,
     tracker: Rc<RefCell<usize>>,

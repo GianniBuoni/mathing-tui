@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use super::*;
 
 impl<T> TableData<T>
@@ -23,7 +25,7 @@ where
     pub(super) fn render_heading(&self, styles: &AppStyles) -> Row {
         self.headings
             .iter()
-            .map(|heading| Cell::from(format!(" {} ", heading)))
+            .map(|heading| Cell::from(heading.deref()))
             .collect::<Row>()
             .style(styles.header_style)
             .height(1)

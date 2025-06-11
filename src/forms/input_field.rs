@@ -1,4 +1,4 @@
-use std::any::type_name;
+use std::{any::type_name, ops::Deref};
 
 use anyhow::Error;
 use tui_input::backend::crossterm::EventHandler;
@@ -18,7 +18,7 @@ where
     pub fn render_block(&self, style: Style) -> Block {
         Block::bordered()
             .border_type(BorderType::Rounded)
-            .title(format!(" {} ", self.title))
+            .title(self.title.deref())
             .style(style)
     }
 
@@ -83,7 +83,8 @@ where
         let inner_value = self.input.value();
 
         if inner_value.is_empty() {
-            let message = format!("{} is unset.", self.title);
+            let title = self.title.deref().trim();
+            let message = format!("{} is unset.", title);
             return Err(Error::msg(message));
         }
 
@@ -103,8 +104,8 @@ where
     fn submit(&self) -> Result<()> {
         match &self.value {
             None => {
-                let message =
-                    format!("{} is not mapped to any value.", self.title);
+                let title = self.title.deref().trim();
+                let message = format!("{} is not mapped to any value.", title);
                 Err(Error::msg(message))
             }
             Some(value) => {

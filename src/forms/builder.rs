@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use super::*;
 
 impl Form {
@@ -11,7 +13,9 @@ where
     T: Debug + Default + FromStr,
     <T as FromStr>::Err: Debug,
 {
-    pub fn new(title: impl Into<Rc<str>>) -> Self {
+    pub fn new(title: impl Display) -> Self {
+        let title = format!(" {} ", title);
+
         Self {
             title: title.into(),
             ..Default::default()
@@ -25,7 +29,8 @@ impl FormBuilder {
         self
     }
 
-    pub fn add_title(mut self, title: impl Into<Rc<str>>) -> Self {
+    pub fn add_title(mut self, title: impl Display) -> Self {
+        let title = format!(" {} ", title);
         self.title = title.into();
         self
     }

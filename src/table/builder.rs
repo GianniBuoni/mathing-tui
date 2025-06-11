@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use super::*;
 
 #[derive(Default)]
@@ -6,7 +8,7 @@ where
     T: TableDisplay,
 {
     title: Rc<str>,
-    headings: Vec<String>,
+    headings: Vec<Rc<str>>,
     items: Vec<T>,
     tracker: Rc<RefCell<usize>>,
 }
@@ -19,8 +21,9 @@ where
         self.title = title.into();
         self
     }
-    pub fn add_heading(mut self, heading: impl ToString) -> Self {
-        self.headings.push(heading.to_string());
+    pub fn add_heading(mut self, heading: impl Display) -> Self {
+        let heading = format!(" {heading} ");
+        self.headings.push(heading.into());
         self
     }
     pub fn add_item(mut self, item: T) -> Self {
