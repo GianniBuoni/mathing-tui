@@ -1,6 +1,5 @@
 use std::{any::type_name, ops::Deref};
 
-use anyhow::Error;
 use tui_input::backend::crossterm::EventHandler;
 
 use super::*;
@@ -26,6 +25,20 @@ where
         Paragraph::new(self.input.value())
             .style(style)
             .add_modifier(Modifier::RAPID_BLINK)
+    }
+
+    pub fn validate(&self) -> Result<T> {
+        let inner_value = self.input.value();
+
+        if inner_value.is_empty() {
+            return Err({
+                FormErrors::no_data(self.title.deref().trim()).into()
+            });
+        }
+
+        inner_value.parse::<T>().map_err(|_| {
+            FormErrors::validation(inner_value, type_name::<T>()).into()
+        })
     }
 }
 
@@ -79,38 +92,11 @@ where
         }
     }
 
-    fn validate(&self) -> Result<()> {
-        let inner_value = self.input.value();
-
-        if inner_value.is_empty() {
-            let title = self.title.deref().trim();
-            let message = format!("{} is unset.", title);
-            return Err(Error::msg(message));
-        }
-
-        match inner_value.parse::<T>() {
-            Ok(_) => Ok(()),
-            Err(_) => {
-                let message = format!(
-                    "Unable to parse \"{}\" as {}.",
-                    inner_value,
-                    type_name::<T>()
-                );
-                Err(Error::msg(message))
-            }
-        }
-    }
-
     fn submit(&self) -> Result<()> {
         match &self.value {
-            None => {
-                let title = self.title.deref().trim();
-                let message = format!("{} is not mapped to any value.", title);
-                Err(Error::msg(message))
-            }
+            None => Err(FormErrors::unmapped(self.title.deref().trim()).into()),
             Some(value) => {
-                self.validate()?;
-                let new_value = self.input.value().parse::<T>().unwrap();
+                let new_value = self.validate()?;
                 *value.borrow_mut() = new_value;
                 Ok(())
             }

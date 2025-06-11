@@ -1,11 +1,17 @@
 #![allow(dead_code)]
-use std::{cell::RefCell, fmt::Debug, rc::Rc, str::FromStr};
+use std::{
+    cell::RefCell,
+    fmt::{Debug, Display},
+    rc::Rc,
+    str::FromStr,
+};
 
 use tui_input::Input;
 
 use crate::prelude::*;
 
 mod builder;
+mod errors;
 mod form_data;
 mod form_tui;
 mod input_field;
@@ -13,6 +19,7 @@ mod input_field;
 mod tests;
 
 pub mod prelude {
+    pub use super::errors::FormErrors;
     #[allow(unused_imports)]
     pub use super::{Form, FormTui, InputField};
 }
@@ -26,7 +33,6 @@ pub enum FormTui {
 pub trait Field: Component {
     fn check_active(&mut self);
     fn assign_index(&mut self, index: usize);
-    fn validate(&self) -> Result<()>;
     fn submit(&self) -> Result<()>;
 }
 
