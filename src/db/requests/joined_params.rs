@@ -27,6 +27,12 @@ impl JoinedReceiptParams {
         self.offset = Some(offset);
         self
     }
+    pub async fn reset(&self, conn: &SqlitePool) -> Result<u64> {
+        Ok(sqlx::query!("DELETE FROM receipts")
+            .execute(conn)
+            .await?
+            .rows_affected())
+    }
 }
 
 impl<'e> Request<'e> for JoinedReceiptParams {

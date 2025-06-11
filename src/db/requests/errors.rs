@@ -4,7 +4,8 @@ use std::fmt::Display;
 pub enum RequestError {
     MissingParam(String),
     NotFound(String, String),
-    Unhandled(String),
+    Unhandled(String, String),
+    Connection,
 }
 
 impl RequestError {
@@ -14,8 +15,8 @@ impl RequestError {
     pub fn not_found(id: impl ToString, table: impl ToString) -> Self {
         Self::NotFound(id.to_string(), table.to_string())
     }
-    pub fn unhandled(request: impl ToString) -> Self {
-        Self::Unhandled(request.to_string())
+    pub fn unhandled(request: impl ToString, payload: impl ToString) -> Self {
+        Self::Unhandled(request.to_string(), payload.to_string())
     }
 }
 
@@ -34,8 +35,11 @@ impl Display for RequestError {
                     "Database error: cound not find {id} in table: {table}."
                 )
             }
-            Self::Unhandled(request) => {
-                write!(f, "Unhandled Request: invalid {request}.")
+            Self::Unhandled(request, payload) => {
+                write!(f, "Unhandled Request, invalid {request}: {payload}.")
+            }
+            Self::Connection => {
+                write!(f, "DB Connection unreachable.")
             }
         }
     }

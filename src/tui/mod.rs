@@ -1,3 +1,5 @@
+use core::panic;
+
 use crossterm::event::{EventStream, KeyEventKind};
 use futures::{FutureExt, StreamExt};
 use ratatui::DefaultTerminal;
@@ -13,7 +15,6 @@ pub mod prelude {
 }
 
 mod builder;
-mod handle_requests;
 
 pub enum Event {
     Init,
@@ -72,11 +73,18 @@ impl Tui {
         mut req_rx: UnboundedReceiver<DbRequest>,
         res_tx: UnboundedSender<DbResponse>,
     ) {
+        let conn = get_db().await.map_err(|_| {
+            let res = DbResponse::new()
+                .req_type(RequestType::GetAll)
+                .error(RequestError::Connection.to_string());
+            res_tx.send(res)
+        });
+
         // inital fetch should go here
 
         loop {
             let res = tokio::select! {
-                Some(req) = req_rx.recv() => Self::handle_requests(req).await,
+                Some(req) = req_rx.recv() => handle_requests(req, conn.as_ref().unwrap()).await,
                 else => break,
             };
             if res_tx.send(res).is_err() {
