@@ -5,7 +5,10 @@ use super::*;
 pub mod prelude {
     pub use super::errors::RequestError;
     pub use super::handle_requests::handle_requests;
-    pub use super::{DbPayload, DbRequest, DbResponse, Request, RequestType};
+    pub use super::{
+        DbPayload, DbPayloadBuilder, DbRequest, DbResponse, ItemParamsBuilder,
+        JoinParamsBuilder, Request, RequestType, UserParamsBuilder,
+    };
 }
 
 mod builders;
@@ -74,6 +77,15 @@ pub enum DbPayload {
     Users(Vec<StoreUser>),
 }
 
+#[derive(Debug, Default)]
+pub enum DbPayloadBuilder {
+    #[default]
+    None,
+    ItemParams(ItemParamsBuilder),
+    UserParams(UserParamsBuilder),
+    ReceiptParams(JoinParamsBuilder),
+}
+
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub enum RequestType {
     #[default]
@@ -84,4 +96,47 @@ pub enum RequestType {
     Update,
     Delete,
     Reset,
+}
+
+#[derive(Debug, Default)]
+pub struct ParamOption<T>(Option<Rc<RefCell<T>>>)
+where
+    T: Default + Debug;
+
+impl<T> ParamOption<T>
+where
+    T: Default + Debug + Clone,
+{
+    pub fn new(value: T) -> Self {
+        Self(Some(Rc::new(RefCell::new(value))))
+    }
+    pub fn unwrap(self) -> Option<T> {
+        let inner_value = self.0.as_ref()?;
+        let inner_value = inner_value.borrow();
+
+        Some(inner_value.to_owned())
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct UserParamsBuilder {
+    u_id: ParamOption<i64>,
+    name: ParamOption<String>,
+}
+
+#[derive(Debug, Default)]
+pub struct ItemParamsBuilder {
+    offset: Option<i64>,
+    item_id: ParamOption<i64>,
+    item_name: ParamOption<String>,
+    item_price: ParamOption<f64>,
+}
+
+#[derive(Debug, Default)]
+pub struct JoinParamsBuilder {
+    offset: Option<i64>,
+    users: Rc<RefCell<Vec<i64>>>,
+    r_id: ParamOption<i64>,
+    item_id: ParamOption<i64>,
+    item_qty: ParamOption<i64>,
 }

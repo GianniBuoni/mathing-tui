@@ -8,7 +8,10 @@ fn test_items() -> Rc<[ItemParams]> {
     TEST_ITEMS
         .iter()
         .map(|(name, price, _)| {
-            ItemParams::new().item_name(*name).item_price(*price)
+            ItemParams::builder()
+                .item_name(*name)
+                .item_price(*price)
+                .build()
         })
         .collect()
 }
@@ -25,7 +28,11 @@ async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreItem>> {
 #[sqlx::test]
 async fn test_get_items(conn: SqlitePool) -> Result<()> {
     let unordered = init_test(&conn).await?;
-    let ordered = ItemParams::new().offset(0).get_all(&conn).await?;
+    let ordered = ItemParams::builder()
+        .offset(0)
+        .build()
+        .get_all(&conn)
+        .await?;
 
     assert_eq!(
         ordered.len(),
@@ -69,7 +76,7 @@ async fn test_add_items(conn: SqlitePool) -> Result<()> {
 async fn test_get_item_single(conn: SqlitePool) -> Result<()> {
     try_join_all(init_test(&conn).await?.into_iter().map(async |want| {
         Ok::<()>({
-            let param = ItemParams::new().item_id(want.id);
+            let param = ItemParams::builder().item_id(want.id).build();
             let got = param.get(&conn).await?;
             assert_eq!(want.name, got.name);
         })
@@ -82,12 +89,15 @@ async fn test_get_item_single(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_delete_item(conn: SqlitePool) -> Result<()> {
     let originals = init_test(&conn).await?;
-    let param = ItemParams::new().item_id(originals.get(0).unwrap().id);
+    let param = ItemParams::builder()
+        .item_id(originals.get(0).unwrap().id)
+        .build();
 
     param.delete(&conn).await?;
 
-    let finals = ItemParams::new()
+    let finals = ItemParams::builder()
         .offset(0)
+        .build()
         .get_all(&conn)
         .await?
         .into_iter()
@@ -116,7 +126,7 @@ async fn test_update_item(conn: SqlitePool) -> Result<()> {
         .iter()
         .zip(update_params.into_iter())
         .map(|(original, (new_name, new_price))| {
-            let mut param = ItemParams::new().item_id(original.id);
+            let mut param = ItemParams::builder().item_id(original.id);
 
             if let Some(name) = new_name {
                 param = param.item_name(name);
@@ -125,7 +135,7 @@ async fn test_update_item(conn: SqlitePool) -> Result<()> {
             if let Some(price) = new_price {
                 param = param.item_price(price);
             }
-            param
+            param.build()
         })
         .collect::<Vec<ItemParams>>();
 
@@ -161,7 +171,9 @@ async fn test_update_item(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_blank_item_update(conn: SqlitePool) -> Result<()> {
     let originals = init_test(&conn).await?;
-    let params = ItemParams::new().item_id(originals.get(0).unwrap().id);
+    let params = ItemParams::builder()
+        .item_id(originals.get(0).unwrap().id)
+        .build();
 
     match params.update(&conn).await {
         std::result::Result::Ok(_) => {

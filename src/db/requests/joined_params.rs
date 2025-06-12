@@ -3,29 +3,48 @@ use anyhow::Ok;
 use super::*;
 use crate::prelude::*;
 
-impl JoinedReceiptParams {
-    pub fn new() -> Self {
-        Self::default()
-    }
+impl JoinParamsBuilder {
     pub fn r_id(mut self, r_id: i64) -> Self {
-        self.r_id = Some(r_id);
+        self.r_id = ParamOption::new(r_id);
         self
     }
     pub fn item_id(mut self, item_id: i64) -> Self {
-        self.item_id = Some(item_id);
+        self.item_id = ParamOption::new(item_id);
         self
     }
     pub fn item_qty(mut self, item_qty: i64) -> Self {
-        self.item_qty = Some(item_qty);
+        self.item_qty = ParamOption::new(item_qty);
         self
     }
-    pub fn add_user(mut self, u_id: i64) -> Self {
-        self.users.push(u_id);
+    pub fn add_user(self, u_id: i64) -> Self {
+        let users = self.users.clone();
+        {
+            let mut users = users.borrow_mut();
+            users.push(u_id);
+        }
         self
     }
     pub fn offset(mut self, offset: i64) -> Self {
         self.offset = Some(offset);
         self
+    }
+    pub fn build(self) -> JoinedReceiptParams {
+        let users = self.users.clone();
+        let users = users.borrow().to_owned();
+
+        JoinedReceiptParams {
+            offset: self.offset,
+            users,
+            r_id: self.r_id.unwrap(),
+            item_id: self.item_id.unwrap(),
+            item_qty: self.item_qty.unwrap(),
+        }
+    }
+}
+
+impl JoinedReceiptParams {
+    pub fn builder() -> JoinParamsBuilder {
+        JoinParamsBuilder::default()
     }
     pub async fn reset(&self, conn: &SqlitePool) -> Result<u64> {
         Ok(sqlx::query!("DELETE FROM receipts")
@@ -76,7 +95,11 @@ impl<'e> Request<'e> for JoinedReceiptParams {
             .ok_or(RequestError::missing_param("item qty"))?;
 
         // check if item exists
-        ItemParams::new().item_id(item_id).get(conn).await?;
+        ItemParams::builder()
+            .item_id(item_id)
+            .build()
+            .get(conn)
+            .await?;
 
         if self.users.is_empty() {
             return Err(RequestError::missing_param("user id(s)").into());
@@ -89,7 +112,11 @@ impl<'e> Request<'e> for JoinedReceiptParams {
             .await?;
 
         for u_id in self.users.clone() {
-            UserParams::new().user_id(u_id).get(conn).await?;
+            UserParams::builder()
+                .user_id(u_id)
+                .build()
+                .get(conn)
+                .await?;
             ReceiptsUsersParams::new()
                 .r_id(receipt.id)
                 .u_id(u_id)
@@ -98,8 +125,9 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         }
 
         tx.commit().await?;
-        Ok(JoinedReceiptParams::new()
+        Ok(JoinedReceiptParams::builder()
             .r_id(receipt.id)
+            .build()
             .get(conn)
             .await?)
     }
@@ -178,6 +206,10 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         }
         tx.commit().await?;
 
-        Ok(JoinedReceiptParams::new().r_id(id).get(conn).await?)
+        Ok(JoinedReceiptParams::builder()
+            .r_id(id)
+            .build()
+            .get(conn)
+            .await?)
     }
 }

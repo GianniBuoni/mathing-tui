@@ -42,7 +42,11 @@ pub fn expected_totals() -> HashMap<i64, Decimal> {
 async fn init_users(conn: &SqlitePool) -> Result<Vec<StoreUser>> {
     let mut res = vec![];
     for name in TEST_USERS {
-        let user = UserParams::new().user_name(name).post(conn).await?;
+        let user = UserParams::builder()
+            .user_name(name)
+            .build()
+            .post(conn)
+            .await?;
         res.push(user);
     }
     Ok(res)
@@ -51,9 +55,10 @@ async fn init_users(conn: &SqlitePool) -> Result<Vec<StoreUser>> {
 async fn intit_items(conn: &SqlitePool) -> Result<Vec<(StoreItem, i64)>> {
     let mut res = vec![];
     for (name, price, qty) in TEST_ITEMS {
-        let item = ItemParams::new()
+        let item = ItemParams::builder()
             .item_name(name)
             .item_price(price)
+            .build()
             .post(conn)
             .await?;
         res.push((item, qty));
@@ -65,9 +70,10 @@ async fn init_reciepts(conn: &SqlitePool) -> Result<Vec<StoreReceipt>> {
     anyhow::Ok(
         try_join_all(TEST_ITEMS.into_iter().map(async |(name, price, qty)| {
             anyhow::Ok::<StoreReceipt>({
-                let item = ItemParams::new()
+                let item = ItemParams::builder()
                     .item_name(name)
                     .item_price(price)
+                    .build()
                     .post(&conn)
                     .await?;
 

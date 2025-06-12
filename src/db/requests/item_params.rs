@@ -1,24 +1,35 @@
 use super::{errors::RequestError, *};
 
-impl ItemParams {
-    pub fn new() -> Self {
-        Self::default()
-    }
+impl ItemParamsBuilder {
     pub fn item_id(mut self, id: i64) -> Self {
-        self.item_id = Some(id);
+        self.item_id = ParamOption::new(id);
         self
     }
     pub fn item_name(mut self, name: impl ToString) -> Self {
-        self.item_name = Some(name.to_string());
+        self.item_name = ParamOption::new(name.to_string());
         self
     }
     pub fn item_price(mut self, price: f64) -> Self {
-        self.item_price = Some(price);
+        self.item_price = ParamOption::new(price);
         self
     }
     pub fn offset(mut self, offset: i64) -> Self {
         self.offset = Some(offset);
         self
+    }
+    pub fn build(self) -> ItemParams {
+        ItemParams {
+            item_id: self.item_id.unwrap(),
+            item_name: self.item_name.unwrap(),
+            item_price: self.item_price.unwrap(),
+            offset: self.offset,
+        }
+    }
+}
+
+impl ItemParams {
+    pub fn builder() -> ItemParamsBuilder {
+        ItemParamsBuilder::default()
     }
 }
 

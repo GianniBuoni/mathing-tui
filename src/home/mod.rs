@@ -25,8 +25,9 @@ pub enum Mode {
 
 #[derive(Default, Debug)]
 pub struct Home {
-    keymap: HashMap<KeyEvent, Action>,
     form: Option<FormTui>,
+    from_params: Option<DbPayloadBuilder>,
+    keymap: HashMap<KeyEvent, Action>,
     components: Vec<TableTui>,
     component_tracker: Rc<RefCell<usize>>,
     req_tx: Option<UnboundedSender<DbRequest>>,

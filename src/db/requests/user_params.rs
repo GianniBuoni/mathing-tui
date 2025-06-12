@@ -1,16 +1,25 @@
 use super::{errors::RequestError, *};
 
-impl UserParams {
-    pub fn new() -> Self {
-        Self::default()
-    }
+impl UserParamsBuilder {
     pub fn user_id(mut self, id: i64) -> Self {
-        self.u_id = Some(id);
+        self.u_id = ParamOption::new(id);
         self
     }
     pub fn user_name(mut self, name: impl ToString) -> Self {
-        self.name = Some(name.to_string());
+        self.name = ParamOption::new(name.to_string());
         self
+    }
+    pub fn build(self) -> UserParams {
+        UserParams {
+            u_id: self.u_id.unwrap(),
+            name: self.name.unwrap(),
+        }
+    }
+}
+
+impl UserParams {
+    pub fn builder() -> UserParamsBuilder {
+        UserParamsBuilder::default()
     }
 }
 

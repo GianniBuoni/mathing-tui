@@ -11,7 +11,12 @@ use DbPayload::{
 async fn test_req_handler_items(conn: SqlitePool) {
     let test_cases = [
         (
-            ReqItem(ItemParams::new().item_name("Slamon").item_price(9.49)),
+            ReqItem(
+                ItemParams::builder()
+                    .item_name("Slamon")
+                    .item_price(9.49)
+                    .build(),
+            ),
             RequestType::Post,
             Item(StoreItem {
                 name: "Slamon".into(),
@@ -20,7 +25,7 @@ async fn test_req_handler_items(conn: SqlitePool) {
             }),
         ),
         (
-            ReqItem(ItemParams::new().item_id(1)),
+            ReqItem(ItemParams::builder().item_id(1).build()),
             RequestType::Get,
             Item(StoreItem {
                 name: "Slamon".into(),
@@ -30,10 +35,11 @@ async fn test_req_handler_items(conn: SqlitePool) {
         ),
         (
             ReqItem(
-                ItemParams::new()
+                ItemParams::builder()
                     .item_id(1)
                     .item_name("New name")
-                    .item_price(0.),
+                    .item_price(0.)
+                    .build(),
             ),
             RequestType::Update,
             Item(StoreItem {
@@ -43,7 +49,7 @@ async fn test_req_handler_items(conn: SqlitePool) {
             }),
         ),
         (
-            ReqItem(ItemParams::new().item_id(1)),
+            ReqItem(ItemParams::builder().item_id(1).build()),
             RequestType::Delete,
             DbPayload::AffectedRows(1),
         ),
@@ -87,7 +93,7 @@ async fn test_req_handler_items(conn: SqlitePool) {
 fn test_req_handler_users(conn: SqlitePool) {
     let test_cases = [
         (
-            ReqUser(UserParams::new().user_name("Jon")),
+            ReqUser(UserParams::builder().user_name("Jon").build()),
             RequestType::Post,
             User(StoreUser {
                 name: "Jon".into(),
@@ -95,7 +101,7 @@ fn test_req_handler_users(conn: SqlitePool) {
             }),
         ),
         (
-            ReqUser(UserParams::new().user_id(1)),
+            ReqUser(UserParams::builder().user_id(1).build()),
             RequestType::Get,
             User(StoreUser {
                 name: "Jon".into(),
@@ -103,7 +109,9 @@ fn test_req_handler_users(conn: SqlitePool) {
             }),
         ),
         (
-            ReqUser(UserParams::new().user_id(1).user_name("Noodle")),
+            ReqUser(
+                UserParams::builder().user_id(1).user_name("Noodle").build(),
+            ),
             RequestType::Update,
             User(StoreUser {
                 name: "Noodle".into(),
@@ -111,7 +119,7 @@ fn test_req_handler_users(conn: SqlitePool) {
             }),
         ),
         (
-            ReqUser(UserParams::new().user_id(1)),
+            ReqUser(UserParams::builder().user_id(1).build()),
             RequestType::Delete,
             DbPayload::AffectedRows(1),
         ),
@@ -149,21 +157,27 @@ fn test_req_handler_users(conn: SqlitePool) {
 #[sqlx::test]
 async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
     // init test
-    ItemParams::new()
+    ItemParams::builder()
         .item_name("Slamon")
         .item_price(9.49)
+        .build()
         .post(&conn)
         .await?;
 
-    UserParams::new().user_name("Jon").post(&conn).await?;
+    UserParams::builder()
+        .user_name("Jon")
+        .build()
+        .post(&conn)
+        .await?;
 
     let test_cases = [
         (
             ReqReceipt(
-                JoinedReceiptParams::new()
+                JoinedReceiptParams::builder()
                     .add_user(1)
                     .item_id(1)
-                    .item_qty(1),
+                    .item_qty(1)
+                    .build(),
             ),
             RequestType::Post,
             Receipt(StoreJoinRow {
@@ -180,7 +194,7 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
             }),
         ),
         (
-            ReqReceipt(JoinedReceiptParams::new().r_id(1)),
+            ReqReceipt(JoinedReceiptParams::builder().r_id(1).build()),
             RequestType::Get,
             Receipt(StoreJoinRow {
                 users: vec![StoreUser {
@@ -196,7 +210,9 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
             }),
         ),
         (
-            ReqReceipt(JoinedReceiptParams::new().r_id(1).item_qty(3)),
+            ReqReceipt(
+                JoinedReceiptParams::builder().r_id(1).item_qty(3).build(),
+            ),
             RequestType::Update,
             Receipt(StoreJoinRow {
                 users: vec![StoreUser {
@@ -212,12 +228,12 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
             }),
         ),
         (
-            ReqReceipt(JoinedReceiptParams::new().r_id(1)),
+            ReqReceipt(JoinedReceiptParams::builder().r_id(1).build()),
             RequestType::Delete,
             DbPayload::AffectedRows(1),
         ),
         (
-            ReqReceipt(JoinedReceiptParams::new()),
+            ReqReceipt(JoinedReceiptParams::builder().build()),
             RequestType::Reset,
             DbPayload::AffectedRows(0),
         ),
@@ -268,27 +284,37 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_req_inits(conn: SqlitePool) -> Result<()> {
     // init test
-    ItemParams::new()
+    ItemParams::builder()
         .item_name("Slamon")
         .item_price(9.49)
+        .build()
         .post(&conn)
         .await?;
-    UserParams::new().user_name("Jon").post(&conn).await?;
-    UserParams::new().user_name("Noodle").post(&conn).await?;
-    JoinedReceiptParams::new()
+    UserParams::builder()
+        .user_name("Jon")
+        .build()
+        .post(&conn)
+        .await?;
+    UserParams::builder()
+        .user_name("Noodle")
+        .build()
+        .post(&conn)
+        .await?;
+    JoinedReceiptParams::builder()
         .item_id(1)
         .item_qty(3)
         .add_user(1)
         .add_user(2)
+        .build()
         .post(&conn)
         .await?;
 
     // test cases
     let test_cases = [
-        (ReqUser(UserParams::new()), 2, "users"),
-        (ReqItem(ItemParams::new().offset(0)), 1, "items"),
+        (ReqUser(UserParams::builder().build()), 2, "users"),
+        (ReqItem(ItemParams::builder().offset(0).build()), 1, "items"),
         (
-            ReqReceipt(JoinedReceiptParams::new().offset(0)),
+            ReqReceipt(JoinedReceiptParams::builder().offset(0).build()),
             1,
             "receipts",
         ),
