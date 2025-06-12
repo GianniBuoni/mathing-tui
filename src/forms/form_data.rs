@@ -2,10 +2,7 @@ use std::ops::Deref;
 
 use super::*;
 
-impl<T> Component for Form<T>
-where
-    T: Debug + Default,
-{
+impl Component for Form {
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
         // blocks and areas hard coded to return a len of 2
         let blocks = self.render_block();
@@ -53,10 +50,7 @@ where
     }
 }
 
-impl<T> Form<T>
-where
-    T: Debug + Default,
-{
+impl Form {
     pub fn render_block(&self) -> Rc<[Block]> {
         let popup_block = Block::new().title(self.title.deref());
         let bordered_block = Block::bordered().border_type(BorderType::Rounded);
@@ -80,6 +74,18 @@ where
             .split(area)
     }
 
+    pub fn submit(&mut self) -> Result<()> {
+        if self.fields.is_empty() {
+            return Err(FormErrors::malformed("fields").into());
+        }
+        if self.request_type == RequestType::None {
+            return Err(FormErrors::malformed("request type").into());
+        }
+        self.fields.iter().try_for_each(|f| f.submit())?;
+
+        Ok(())
+    }
+
     pub fn cycle_active(&mut self, add: i32) {
         if self.fields.is_empty() {
             return;
@@ -93,50 +99,5 @@ where
             int if int < 0 => *current_index = max,
             _ => *current_index = (*current_index as i32 + add) as usize,
         }
-    }
-}
-
-impl Form<ItemParams> {
-    pub fn submit(&mut self) -> Result<()> {
-        let _params = ItemParams::new();
-
-        match self.request_type {
-            RequestType::Get => {
-                unimplemented!()
-            }
-            RequestType::Post => {
-                if self.fields.is_empty() {
-                    return Err(FormErrors::malformed("fields").into());
-                }
-                self.fields.iter().try_for_each(|f| f.submit())?;
-            }
-            RequestType::Delete => {
-                unimplemented!()
-            }
-            RequestType::Update => {
-                unimplemented!()
-            }
-            RequestType::None => {
-                if self.fields.is_empty() {
-                    return Err(FormErrors::malformed("fields").into());
-                }
-                return Err(FormErrors::malformed("request type").into());
-            }
-            _ => {}
-        }
-
-        Ok(())
-    }
-}
-
-impl Form<UserParams> {
-    pub fn submit(&mut self) -> Result<()> {
-        todo!()
-    }
-}
-
-impl Form<JoinedReceiptParams> {
-    pub fn submit(&mut self) -> Result<()> {
-        todo!()
     }
 }

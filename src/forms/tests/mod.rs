@@ -11,8 +11,8 @@ fn test_input_rect() -> Rect {
     Rect::new(0, 0, 50, 3)
 }
 
-fn test_form() -> Form<ItemParams> {
-    Form::<ItemParams>::new_builder()
+fn test_form() -> Form {
+    Form::new_builder()
         .add_title("Add New Item")
         .add_rect(Rect::new(0, 0, 50, 9))
         .build()
@@ -32,13 +32,13 @@ struct OutputStruct {
     price: Rc<RefCell<f64>>,
 }
 
-fn test_valid_form(source: &OutputStruct) -> Form<ItemParams> {
+fn test_valid_form(source: &OutputStruct) -> Form {
     let name_field =
         InputField::<String>::new("Item Name").map_value(source.name.clone());
     let price_field =
         InputField::<f64>::new("Item Price").map_value(source.price.clone());
 
-    Form::<ItemParams>::new_builder()
+    Form::new_builder()
         .add_title("Add New Item")
         .add_rect(Rect::new(0, 0, 50, 9))
         .add_field(name_field)
@@ -47,8 +47,8 @@ fn test_valid_form(source: &OutputStruct) -> Form<ItemParams> {
         .build()
 }
 
-fn test_invalid_form_no_fields() -> Form<ItemParams> {
-    Form::<ItemParams>::new_builder()
+fn test_invalid_form_no_fields() -> Form {
+    Form::new_builder()
         .add_title("Add New Item")
         .add_rect(Rect::new(0, 0, 50, 9))
         .build()
