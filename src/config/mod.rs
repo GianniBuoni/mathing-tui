@@ -18,12 +18,13 @@ mod tests;
 
 const DEFAULT_CONFIG_PATH: [&str; 2] = ["mathing", "config.toml"];
 
-const DEFAULT_CONFIG: &[u8; 227] = b"[keymap]
+const DEFAULT_CONFIG: &[u8; 246] = b"[keymap]
 \"CTRL-c\" = \"Quit\"
-\"tab\" = \"SelectForward\"
-\"SHIFT-tab\" = \"SelectBackward\"
 \"ESC\" = \"EnterNormal\"
 \"i\" = \"EnterInsert\"
+\"tab\" = \"SelectForward\"
+\"SHIFT-tab\" = \"SelectBackward\"
+\"ENTER\" = \"Submit\"
 \"j\" = \"TableNavigateDown\"
 \"down\" = \"TableNavigateDown\"
 \"k\" = \"TableNavigateUp\"

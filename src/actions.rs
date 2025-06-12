@@ -7,10 +7,11 @@ pub struct QueryRequest;
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub enum Action {
     Quit,
-    SelectForward,
-    SelectBackward,
     EnterNormal,
     EnterInsert,
+    SelectForward,
+    SelectBackward,
+    Submit,
     TableNavigateDown,
     TableNavigateUp,
     HandleInput(crossterm::event::KeyEvent),

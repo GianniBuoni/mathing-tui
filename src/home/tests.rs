@@ -8,55 +8,65 @@ fn test_key_events() {
     let key_events = [
         (
             KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL),
-            Action::Quit,
+            Some(Action::Quit),
             "Test default quit event.",
         ),
         (
             KeyEvent::new(KeyCode::Tab, none),
-            Action::SelectForward,
+            Some(Action::SelectForward),
             "Test default pane switch.",
         ),
         (
             KeyEvent::new(KeyCode::Tab, KeyModifiers::SHIFT),
-            Action::SelectBackward,
+            Some(Action::SelectBackward),
             "Test pane switch backwards",
         ),
         (
             KeyEvent::new(KeyCode::Char('i'), none),
-            Action::EnterInsert,
+            Some(Action::EnterInsert),
             "Test entering insert mode.",
         ),
         (
             KeyEvent::new(KeyCode::Char('i'), KeyModifiers::SHIFT),
-            Action::HandleInput(KeyEvent::new(
+            Some(Action::HandleInput(KeyEvent::new(
                 KeyCode::Char('i'),
                 KeyModifiers::SHIFT,
-            )),
+            ))),
             "Test entering input in insert mode.",
         ),
         (
+            KeyEvent::new(KeyCode::Enter, none),
+            Some(Action::Submit),
+            "Test submitting in edit mode.",
+        ),
+        (
             KeyEvent::new(KeyCode::Esc, none),
-            Action::EnterNormal,
-            "Test entering normal mode.",
+            Some(Action::EnterNormal),
+            "Test exiting normal mode.",
+        ),
+        (
+            KeyEvent::new(KeyCode::Enter, none),
+            Some(Action::Submit),
+            "Test submitting in normal mode. (Should still retun the submit action)",
         ),
         (
             KeyEvent::new(KeyCode::Char('j'), none),
-            Action::TableNavigateDown,
+            Some(Action::TableNavigateDown),
             "Test navigating table down with j.",
         ),
         (
             KeyEvent::new(KeyCode::Down, none),
-            Action::TableNavigateDown,
+            Some(Action::TableNavigateDown),
             "Test navigating table down with DOWN.",
         ),
         (
             KeyEvent::new(KeyCode::Char('k'), none),
-            Action::TableNavigateUp,
+            Some(Action::TableNavigateUp),
             "Test navigating table up with k.",
         ),
         (
             KeyEvent::new(KeyCode::Up, none),
-            Action::TableNavigateUp,
+            Some(Action::TableNavigateUp),
             "Test navigating table up with UP.",
         ),
     ];
@@ -64,7 +74,7 @@ fn test_key_events() {
     key_events.into_iter().for_each(|(event, want, desc)| {
         let got = app.handle_events(Some(Event::Key(event)));
         app.update(got);
-        assert_eq!(Some(want), got, "{desc}")
+        assert_eq!(want, got, "{desc}")
     });
 }
 
