@@ -1,8 +1,16 @@
 use super::*;
 
 impl HomeBuilder {
-    pub fn add_component(mut self, component: TableTui) -> Self {
+    pub fn add_component(&mut self, component: TableTui) -> &mut Self {
         self.components.push(component);
+        self
+    }
+
+    pub fn add_request_handler(
+        &mut self,
+        req_tx: UnboundedSender<DbRequest>,
+    ) -> &mut Self {
+        self.req_tx = Some(req_tx);
         self
     }
 }
@@ -16,6 +24,7 @@ impl ComponentBuilder<Home> for HomeBuilder {
         );
         Home {
             components: self.components,
+            req_tx: self.req_tx,
             component_tracker: self.component_tracker,
             keymap: self.keymap,
             ..Default::default()
@@ -23,9 +32,9 @@ impl ComponentBuilder<Home> for HomeBuilder {
     }
 
     fn add_key_event_handler(
-        mut self,
+        &mut self,
         keymap: HashMap<KeyEvent, Action>,
-    ) -> Self {
+    ) -> &mut Self {
         self.keymap = keymap;
         self
     }

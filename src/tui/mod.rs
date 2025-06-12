@@ -11,6 +11,7 @@ use tokio::{
 use crate::prelude::*;
 
 pub mod prelude {
+    pub use super::builder::TuiBuilder;
     pub use super::{Event, Tui};
 }
 
@@ -23,11 +24,11 @@ pub enum Event {
     Key(KeyEvent),
 }
 
+#[derive(Debug)]
 pub struct Tui {
     pub terminal: DefaultTerminal,
     event_rx: UnboundedReceiver<Event>,
     res_rx: UnboundedReceiver<DbResponse>,
-    pub req_tx: UnboundedSender<DbRequest>, // clone to app forms
     _event_task: JoinHandle<()>,
     _db_task: JoinHandle<()>,
 }

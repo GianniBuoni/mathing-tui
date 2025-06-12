@@ -1,21 +1,28 @@
 use super::*;
 
+#[derive(Debug)]
 pub struct TuiBuilder {
     event_tx: UnboundedSender<Event>,
     event_rx: UnboundedReceiver<Event>,
     res_tx: UnboundedSender<DbResponse>,
     res_rx: UnboundedReceiver<DbResponse>,
-    req_tx: UnboundedSender<DbRequest>,
+    pub req_tx: UnboundedSender<DbRequest>,
     req_rx: UnboundedReceiver<DbRequest>,
 }
 
 impl Tui {
     pub fn builder() -> TuiBuilder {
+        TuiBuilder::default()
+    }
+}
+
+impl Default for TuiBuilder {
+    fn default() -> Self {
         let (event_tx, event_rx) = tokio::sync::mpsc::unbounded_channel();
         let (res_tx, res_rx) = tokio::sync::mpsc::unbounded_channel();
         let (req_tx, req_rx) = tokio::sync::mpsc::unbounded_channel();
 
-        TuiBuilder {
+        Self {
             event_tx,
             event_rx,
             res_tx,
@@ -41,7 +48,6 @@ impl TuiBuilder {
             }),
             event_rx: self.event_rx,
             res_rx: self.res_rx,
-            req_tx: self.req_tx,
         }
     }
 }

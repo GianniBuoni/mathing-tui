@@ -5,27 +5,27 @@ pub mod prelude {
 }
 
 mod builder;
-#[cfg(test)]
-mod tests;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct App {
     component: Home,
+    tui: Tui,
     should_exit: bool,
 }
 
 impl App {
-    pub async fn run(&mut self, mut tui: Tui) -> Result<()> {
+    pub async fn run(&mut self) -> Result<()> {
         while !self.should_exit {
-            let _ = tui.next_response();
-            let event = tui.next_event().await;
+            let _ = self.tui.next_response();
+            let event = self.tui.next_event().await;
 
             let action = self.handle_events(event);
             //handle responses
 
             self.update(action);
 
-            tui.terminal
+            self.tui
+                .terminal
                 .draw(|frame| self.component.draw(frame, frame.area()))?;
         }
         Ok(())

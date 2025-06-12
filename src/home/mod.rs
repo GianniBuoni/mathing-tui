@@ -28,7 +28,7 @@ pub struct Home {
     form: Option<FormTui>,
     components: Vec<TableTui>,
     component_tracker: Rc<RefCell<usize>>,
-    _req_tx: Option<UnboundedSender<DbRequest>>,
+    req_tx: Option<UnboundedSender<DbRequest>>,
     mode: Mode,
 }
 
@@ -37,7 +37,7 @@ pub struct HomeBuilder {
     keymap: HashMap<KeyEvent, Action>,
     components: Vec<TableTui>,
     component_tracker: Rc<RefCell<usize>>,
-    _req_tx: Option<UnboundedSender<DbRequest>>,
+    req_tx: Option<UnboundedSender<DbRequest>>,
 }
 
 impl Home {

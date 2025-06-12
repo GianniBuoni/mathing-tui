@@ -11,7 +11,10 @@ where
     T: Component,
 {
     fn build(self) -> T;
-    fn add_key_event_handler(self, _keymap: HashMap<KeyEvent, Action>) -> Self {
+    fn add_key_event_handler(
+        &mut self,
+        _keymap: HashMap<KeyEvent, Action>,
+    ) -> &mut Self {
         todo!()
     }
 }
