@@ -64,6 +64,7 @@ where
     rect: Rect,
     cursor_pos: Position,
     request: Option<DbRequest>,
+    request_type: RequestType,
     phantom: PhantomData<T>,
 }
 
@@ -73,4 +74,5 @@ pub struct FormBuilder {
     title: Rc<str>,
     active_field: Rc<RefCell<usize>>,
     rect: Rect,
+    request_type: RequestType,
 }

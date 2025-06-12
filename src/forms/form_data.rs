@@ -80,14 +80,6 @@ where
             .split(area)
     }
 
-    pub fn submit(&self) -> Result<()> {
-        if self.fields.is_empty() {
-            return Err(FormErrors::Malformed.into());
-        }
-
-        self.fields.iter().try_for_each(|f| f.submit())
-    }
-
     pub fn cycle_active(&mut self, add: i32) {
         if self.fields.is_empty() {
             return;
@@ -101,5 +93,50 @@ where
             int if int < 0 => *current_index = max,
             _ => *current_index = (*current_index as i32 + add) as usize,
         }
+    }
+}
+
+impl Form<ItemParams> {
+    pub fn submit(&mut self) -> Result<()> {
+        let _params = ItemParams::new();
+
+        match self.request_type {
+            RequestType::Get => {
+                unimplemented!()
+            }
+            RequestType::Post => {
+                if self.fields.is_empty() {
+                    return Err(FormErrors::malformed("fields").into());
+                }
+                self.fields.iter().try_for_each(|f| f.submit())?;
+            }
+            RequestType::Delete => {
+                unimplemented!()
+            }
+            RequestType::Update => {
+                unimplemented!()
+            }
+            RequestType::None => {
+                if self.fields.is_empty() {
+                    return Err(FormErrors::malformed("fields").into());
+                }
+                return Err(FormErrors::malformed("request type").into());
+            }
+            _ => {}
+        }
+
+        Ok(())
+    }
+}
+
+impl Form<UserParams> {
+    pub fn submit(&mut self) -> Result<()> {
+        todo!()
+    }
+}
+
+impl Form<JoinedReceiptParams> {
+    pub fn submit(&mut self) -> Result<()> {
+        todo!()
     }
 }

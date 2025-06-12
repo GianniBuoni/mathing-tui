@@ -40,6 +40,10 @@ impl FormBuilder {
         self.rect = rect;
         self
     }
+    pub fn add_request_type(mut self, req_type: RequestType) -> Self {
+        self.request_type = req_type;
+        self
+    }
 }
 
 impl<T> ComponentBuilder<Form<T>> for FormBuilder
@@ -58,6 +62,7 @@ where
             fields: self.fields,
             rect: self.rect,
             active_field: self.active_field,
+            request_type: self.request_type,
             ..Default::default()
         }
     }

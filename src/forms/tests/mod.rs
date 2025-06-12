@@ -43,6 +43,7 @@ fn test_valid_form(source: &OutputStruct) -> Form<ItemParams> {
         .add_rect(Rect::new(0, 0, 50, 9))
         .add_field(name_field)
         .add_field(price_field)
+        .add_request_type(RequestType::Post)
         .build()
 }
 
