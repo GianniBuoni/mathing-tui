@@ -28,7 +28,7 @@ pub struct Home {
     form: Option<FormTui>,
     components: Vec<TableTui>,
     component_tracker: Rc<RefCell<usize>>,
-    req_tx: Option<UnboundedSender<DbRequest>>,
+    _req_tx: Option<UnboundedSender<DbRequest>>,
     mode: Mode,
 }
 

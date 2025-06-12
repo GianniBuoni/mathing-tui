@@ -24,7 +24,7 @@ impl ComponentBuilder<Home> for HomeBuilder {
         );
         Home {
             components: self.components,
-            req_tx: self.req_tx,
+            _req_tx: self.req_tx,
             component_tracker: self.component_tracker,
             keymap: self.keymap,
             ..Default::default()

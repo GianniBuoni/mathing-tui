@@ -1,6 +1,9 @@
 use super::*;
 
-impl Form {
+impl<T> Form<T>
+where
+    T: Debug + Default,
+{
     pub fn new_builder() -> FormBuilder {
         FormBuilder::default()
     }
@@ -39,8 +42,11 @@ impl FormBuilder {
     }
 }
 
-impl ComponentBuilder<Form> for FormBuilder {
-    fn build(mut self) -> Form {
+impl<T> ComponentBuilder<Form<T>> for FormBuilder
+where
+    T: Debug + Default,
+{
+    fn build(mut self) -> Form<T> {
         self.fields
             .iter_mut()
             .enumerate()

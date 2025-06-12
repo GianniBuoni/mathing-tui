@@ -2,6 +2,7 @@
 use std::{
     cell::RefCell,
     fmt::{Debug, Display},
+    marker::PhantomData,
     rc::Rc,
     str::FromStr,
 };
@@ -26,8 +27,9 @@ pub mod prelude {
 
 #[derive(Debug)]
 pub enum FormTui {
-    ItemForm(Form),
-    ReceiptForm(Form),
+    UserFrom(Form<UserParams>),
+    ItemForm(Form<ItemParams>),
+    ReceiptForm(Form<JoinedReceiptParams>),
 }
 
 pub trait Field: Component {
@@ -51,13 +53,18 @@ where
 }
 
 #[derive(Default, Debug)]
-pub struct Form {
+pub struct Form<T>
+where
+    T: Debug + Default,
+{
     error: Option<String>,
     fields: Vec<Box<dyn Field>>,
     title: Rc<str>,
     active_field: Rc<RefCell<usize>>,
     rect: Rect,
     cursor_pos: Position,
+    request: Option<DbRequest>,
+    phantom: PhantomData<T>,
 }
 
 #[derive(Debug, Default)]

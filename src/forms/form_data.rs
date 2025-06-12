@@ -2,7 +2,10 @@ use std::ops::Deref;
 
 use super::*;
 
-impl Component for Form {
+impl<T> Component for Form<T>
+where
+    T: Debug + Default,
+{
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
         // blocks and areas hard coded to return a len of 2
         let blocks = self.render_block();
@@ -50,7 +53,10 @@ impl Component for Form {
     }
 }
 
-impl Form {
+impl<T> Form<T>
+where
+    T: Debug + Default,
+{
     pub fn render_block(&self) -> Rc<[Block]> {
         let popup_block = Block::new().title(self.title.deref());
         let bordered_block = Block::bordered().border_type(BorderType::Rounded);
