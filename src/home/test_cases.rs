@@ -5,8 +5,8 @@ pub fn test_home() -> Home {
 
     let mut home = Home::new_builder();
 
-    home.add_component(TableTui::Items(mock_items()))
-        .add_component(TableTui::Receipt(mock_receipts()))
+    home.add_component(mock_items())
+        .add_component(mock_receipts())
         .add_key_event_handler(keymap);
 
     home.build()

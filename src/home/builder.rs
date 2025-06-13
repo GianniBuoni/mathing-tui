@@ -1,8 +1,11 @@
 use super::*;
 
 impl HomeBuilder {
-    pub fn add_component(&mut self, component: TableTui) -> &mut Self {
-        self.components.push(component);
+    pub fn add_component(
+        &mut self,
+        component: impl Component + 'static,
+    ) -> &mut Self {
+        self.components.push(Box::new(component));
         self
     }
 

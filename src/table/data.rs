@@ -9,17 +9,18 @@ where
     pub fn new_builder() -> TableBuilder<T> {
         TableBuilder::default()
     }
-
-    pub fn is_active(&self) -> bool {
-        self.active
-    }
 }
 
 impl<T> Component for TableData<T>
 where
     T: TableDisplay,
 {
-    fn update(&mut self, action: Option<Action>) {
+    fn update(
+        &mut self,
+        action: Option<Action>,
+        response: Option<&DbResponse>,
+    ) {
+        let _ = response;
         match action {
             Some(Action::SelectForward) | Some(Action::SelectBackward) => {
                 self.check_active();
@@ -60,5 +61,9 @@ where
         self.app_index = index;
         self.tracker = tracker;
         self.check_active();
+    }
+
+    fn is_active(&self) -> bool {
+        self.active
     }
 }

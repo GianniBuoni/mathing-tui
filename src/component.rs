@@ -2,7 +2,7 @@ use crate::prelude::*;
 use std::{cell::RefCell, collections::HashMap, fmt::Debug, rc::Rc};
 
 pub mod prelude {
-    pub use super::{Component, ComponentBuilder};
+    pub use super::{Component, ComponentBuilder, Plugin};
 }
 
 pub trait ComponentBuilder<T>
@@ -19,8 +19,14 @@ where
     }
 }
 
+pub trait Plugin: Component + Sized + 'static {
+    fn add_to_app(self, app: &mut AppBuilder) {
+        app.add_component(self);
+    }
+}
+
 pub trait Component: Debug {
-    fn update(&mut self, action: Option<Action>);
+    fn update(&mut self, action: Option<Action>, response: Option<&DbResponse>);
     fn draw(&mut self, frame: &mut Frame, rect: Rect);
 
     fn handle_key_events(&self, _key: KeyEvent) -> Option<Action> {
@@ -35,4 +41,8 @@ pub trait Component: Debug {
     }
 
     fn init(&mut self, _index: usize, _tracker: Rc<RefCell<usize>>) {}
+
+    fn is_active(&self) -> bool {
+        false
+    }
 }

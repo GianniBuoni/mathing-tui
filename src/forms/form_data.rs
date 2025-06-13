@@ -28,21 +28,25 @@ impl Component for Form {
         }
     }
 
-    fn update(&mut self, action: Option<Action>) {
+    fn update(
+        &mut self,
+        action: Option<Action>,
+        response: Option<&DbResponse>,
+    ) {
         match action {
             Some(Action::SelectForward) => {
                 self.cycle_active(1);
-                self.fields.iter_mut().for_each(|f| f.update(action));
+                self.fields.iter_mut().for_each(|f| f.update(action, None));
             }
             Some(Action::SelectBackward) => {
                 self.cycle_active(-1);
-                self.fields.iter_mut().for_each(|f| f.update(action));
+                self.fields.iter_mut().for_each(|f| f.update(action, None));
             }
             Some(_) => {
                 if let Some(active) =
                     self.fields.get_mut(*self.active_field.borrow())
                 {
-                    active.update(action);
+                    active.update(action, response);
                 }
             }
             None => {}

@@ -1,10 +1,11 @@
 use crate::prelude::*;
 
 pub mod prelude {
-    pub use super::App;
+    pub use super::{App, AppBuilder};
 }
 
 mod builder;
+mod plugin;
 
 #[derive(Debug)]
 pub struct App {
@@ -13,16 +14,21 @@ pub struct App {
     should_exit: bool,
 }
 
+#[derive(Default)]
+pub struct AppBuilder {
+    pub component: HomeBuilder,
+    pub tui: TuiBuilder,
+}
+
 impl App {
     pub async fn run(&mut self) -> Result<()> {
         while !self.should_exit {
-            let _ = self.tui.next_response();
+            let res = self.tui.next_response();
             let event = self.tui.next_event().await;
 
             let action = self.handle_events(event);
-            //handle responses
 
-            self.update(action);
+            self.update(action, res.as_ref());
 
             self.tui
                 .terminal
@@ -36,9 +42,6 @@ impl App {
             Some(Event::Quit) => Some(Action::Quit),
             Some(Event::Key(key_event)) => {
                 match (key_event.code, key_event.modifiers) {
-                    (KeyCode::Char('c'), KeyModifiers::CONTROL) => {
-                        Some(Action::Quit)
-                    }
                     _ => self.component.handle_events(event),
                 }
             }
@@ -47,13 +50,17 @@ impl App {
         }
     }
 
-    pub fn update(&mut self, action: Option<Action>) {
+    pub fn update(
+        &mut self,
+        action: Option<Action>,
+        response: Option<&DbResponse>,
+    ) {
         match action {
             Some(Action::Quit) => {
                 self.should_exit = true;
             }
             Some(_) => {
-                self.component.update(action);
+                self.component.update(action, response);
             }
             None => {}
         }

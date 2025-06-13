@@ -1,12 +1,4 @@
-use crate::home::HomeBuilder;
-
 use super::*;
-
-#[derive(Debug, Default)]
-pub struct AppBuilder {
-    pub component: HomeBuilder,
-    pub tui: TuiBuilder,
-}
 
 impl App {
     pub fn builder() -> AppBuilder {
@@ -24,9 +16,20 @@ impl AppBuilder {
             tui: self.tui.build(),
         }
     }
+    pub fn add_component(&mut self, component: impl Component + 'static) {
+        self.component.add_component(component);
+    }
 
-    pub fn add_home(&mut self, home: HomeBuilder) -> &mut Self {
-        self.component = home;
+    pub fn add_to_plugin(&mut self, plugin: impl Plugin) -> &mut Self {
+        plugin.add_to_app(self);
+        self
+    }
+
+    pub(super) fn add_plugins(
+        &mut self,
+        plugin_factory: fn(&mut AppBuilder),
+    ) -> &mut Self {
+        plugin_factory(self);
         self
     }
 }

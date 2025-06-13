@@ -10,7 +10,11 @@ impl Component for Home {
         }
     }
 
-    fn update(&mut self, action: Option<Action>) {
+    fn update(
+        &mut self,
+        action: Option<Action>,
+        response: Option<&DbResponse>,
+    ) {
         match self.mode {
             Mode::Insert => match action {
                 Some(Action::EnterNormal) => {
@@ -24,7 +28,7 @@ impl Component for Home {
                 }
                 Some(_) => {
                     if let Some(form) = &mut self.form {
-                        form.update(action);
+                        form.update(action, response);
                     }
                 }
                 None => {}
@@ -37,15 +41,19 @@ impl Component for Home {
                 }
                 Some(Action::SelectForward) => {
                     self.cycle_active(1);
-                    self.components.iter_mut().for_each(|c| c.update(action));
+                    self.components
+                        .iter_mut()
+                        .for_each(|c| c.update(action, None));
                 }
                 Some(Action::SelectBackward) => {
                     self.cycle_active(-1);
-                    self.components.iter_mut().for_each(|c| c.update(action));
+                    self.components
+                        .iter_mut()
+                        .for_each(|c| c.update(action, None));
                 }
                 Some(_) => {
                     self.components.iter_mut().for_each(|c| {
-                        c.update(action);
+                        c.update(action, response);
                     });
                 }
                 None => {}

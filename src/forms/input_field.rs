@@ -63,7 +63,12 @@ where
         input.render_ref(block.inner(rect), frame.buffer_mut());
     }
 
-    fn update(&mut self, action: Option<Action>) {
+    fn update(
+        &mut self,
+        action: Option<Action>,
+        response: Option<&DbResponse>,
+    ) {
+        let _ = response;
         match action {
             Some(Action::SelectForward) | Some(Action::SelectBackward) => {
                 self.check_active();

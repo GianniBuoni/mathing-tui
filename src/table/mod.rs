@@ -5,26 +5,22 @@ use crate::prelude::*;
 mod builder;
 mod data;
 mod interactions;
+mod plugin;
 mod render;
-mod table_tui;
 #[cfg(test)]
 mod tests;
 
 pub mod prelude {
+    pub(crate) use super::plugin::plugin as table_plugin;
     #[allow(unused_imports)]
-    pub use super::{TableData, TableDisplay, TableTui};
+    pub use super::{TableData, TableDisplay};
 }
 
 pub trait TableDisplay: Debug + Default {
     fn ref_array(&self) -> Vec<Cell>;
 }
 
-#[derive(Debug)]
-pub enum TableTui {
-    Items(TableData<StoreItem>),
-    Receipt(TableData<StoreJoinRow>),
-}
-
+// TODO figure out a way to add rows to items after build time
 #[derive(Debug, Default)]
 pub struct TableData<T>
 where

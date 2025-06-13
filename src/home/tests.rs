@@ -73,7 +73,7 @@ fn test_key_events() {
 
     key_events.into_iter().for_each(|(event, want, desc)| {
         let got = app.handle_events(Some(Event::Key(event)));
-        app.update(got);
+        app.update(got, None);
         assert_eq!(want, got, "{desc}")
     });
 }
@@ -93,7 +93,7 @@ fn test_component_cycling_forward() {
         let want = if i % 2 == 0 { 1 } else { 0 };
 
         let action = test_home.handle_events(Some(Event::Key(key_event)));
-        test_home.update(action);
+        test_home.update(action, None);
         assert_eq!(
             want,
             *test_home.component_tracker.borrow(),
@@ -117,7 +117,7 @@ fn test_component_cycling_backwards() {
         let want = if i % 2 == 0 { 1 } else { 0 };
 
         let action = test_home.handle_events(Some(Event::Key(key_event)));
-        test_home.update(action);
+        test_home.update(action, None);
         assert_eq!(
             want,
             *test_home.component_tracker.borrow(),
@@ -133,7 +133,7 @@ fn test_tracker_sync() {
 
     for i in 0..100 {
         let action = home.handle_events(Some(Event::Key(key_event)));
-        home.update(action);
+        home.update(action, None);
 
         let want = if i % 2 == 0 { false } else { true };
 

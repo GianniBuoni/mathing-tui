@@ -11,9 +11,9 @@ mod test_cases;
 mod tests;
 
 pub(crate) mod prelude {
-    pub(crate) use super::Home;
     #[cfg(test)]
     pub(crate) use super::test_cases::test_home;
+    pub(crate) use super::{Home, HomeBuilder};
 }
 
 #[derive(Default, Debug)]
@@ -28,7 +28,7 @@ pub struct Home {
     form: Option<FormTui>,
     from_params: Option<DbPayloadBuilder>,
     keymap: HashMap<KeyEvent, Action>,
-    components: Vec<TableTui>,
+    components: Vec<Box<dyn Component>>,
     component_tracker: Rc<RefCell<usize>>,
     req_tx: Option<UnboundedSender<DbRequest>>,
     mode: Mode,
@@ -37,7 +37,7 @@ pub struct Home {
 #[derive(Default, Debug)]
 pub struct HomeBuilder {
     keymap: HashMap<KeyEvent, Action>,
-    components: Vec<TableTui>,
+    components: Vec<Box<dyn Component>>,
     component_tracker: Rc<RefCell<usize>>,
     req_tx: Option<UnboundedSender<DbRequest>>,
 }

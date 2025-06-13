@@ -11,18 +11,22 @@ where
     }
 
     pub fn next_row(&mut self) {
-        if self.table_index < self.max() {
-            self.table_index += 1
-        } else {
-            self.table_index = 0
+        if !self.items.is_empty() {
+            if self.table_index < self.max() {
+                self.table_index += 1
+            } else {
+                self.table_index = 0
+            }
         }
     }
 
     pub fn prev_row(&mut self) {
-        if self.table_index > 0 {
-            self.table_index -= 1
-        } else {
-            self.table_index = self.max()
+        if !self.items.is_empty() {
+            if self.table_index > 0 {
+                self.table_index -= 1
+            } else {
+                self.table_index = self.max()
+            }
         }
     }
 
