@@ -18,4 +18,5 @@ pub(crate) fn plugin(app: &mut AppBuilder) {
     app.add_to_plugin(item_table).add_to_plugin(r_table);
 }
 
-impl<T> Plugin for TableData<T> where T: TableDisplay + 'static {}
+impl Plugin for TableData<StoreItem> {}
+impl Plugin for TableData<StoreJoinRow> {}

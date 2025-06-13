@@ -36,7 +36,7 @@ pub struct StoreUser {
     name: String,
 }
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct StoreItem {
     id: i64,
     created_at: i64,
@@ -73,7 +73,7 @@ struct StoreJoinRaw {
     user_count: i64,
 }
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct StoreJoinRow {
     users: Vec<StoreUser>,
     item_name: String,

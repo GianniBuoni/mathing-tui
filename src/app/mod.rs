@@ -40,11 +40,7 @@ impl App {
     pub fn handle_events(&mut self, event: Option<Event>) -> Option<Action> {
         match event {
             Some(Event::Quit) => Some(Action::Quit),
-            Some(Event::Key(key_event)) => {
-                match (key_event.code, key_event.modifiers) {
-                    _ => self.component.handle_events(event),
-                }
-            }
+            Some(Event::Key(_)) => self.component.handle_events(event),
             Some(_) => None,
             None => None,
         }

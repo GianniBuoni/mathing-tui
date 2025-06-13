@@ -20,7 +20,6 @@ pub trait TableDisplay: Debug + Default {
     fn ref_array(&self) -> Vec<Cell>;
 }
 
-// TODO figure out a way to add rows to items after build time
 #[derive(Debug, Default)]
 pub struct TableData<T>
 where

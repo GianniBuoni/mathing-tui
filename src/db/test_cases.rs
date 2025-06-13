@@ -22,14 +22,16 @@ pub fn mock_items() -> TableData<StoreItem> {
         ..Default::default()
     };
 
-    TableData::new_builder()
+    let mut table = TableData::<StoreItem>::new_builder()
         .add_title("Grocery Items")
         .add_heading("Items")
         .add_heading("Price")
-        .add_item(test_1)
-        .add_item(test_2)
-        .add_item(test_3)
-        .build()
+        .build();
+
+    table.add_item(test_1);
+    table.add_item(test_2);
+    table.add_item(test_3);
+    table
 }
 
 pub fn mock_receipts() -> TableData<StoreJoinRow> {
@@ -59,13 +61,15 @@ pub fn mock_receipts() -> TableData<StoreJoinRow> {
         ..Default::default()
     };
 
-    TableData::new_builder()
+    let mut table = TableData::<StoreJoinRow>::new_builder()
         .add_title("Receipt Items")
         .add_heading("Item Name")
         .add_heading("Item Price")
         .add_heading("Item Qty")
         .add_heading("Payees")
-        .add_item(test_1)
-        .add_item(test_2)
-        .build()
+        .build();
+
+    table.add_item(test_1);
+    table.add_item(test_2);
+    table
 }

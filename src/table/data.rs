@@ -9,18 +9,11 @@ where
     pub fn new_builder() -> TableBuilder<T> {
         TableBuilder::default()
     }
-}
+    pub fn add_item(&mut self, item: T) {
+        self.items.push(item);
+    }
 
-impl<T> Component for TableData<T>
-where
-    T: TableDisplay,
-{
-    fn update(
-        &mut self,
-        action: Option<Action>,
-        response: Option<&DbResponse>,
-    ) {
-        let _ = response;
+    fn handle_action(&mut self, action: Option<Action>) {
         match action {
             Some(Action::SelectForward) | Some(Action::SelectBackward) => {
                 self.check_active();
@@ -65,5 +58,55 @@ where
 
     fn is_active(&self) -> bool {
         self.active
+    }
+}
+
+impl Component for TableData<StoreItem> {
+    fn is_active(&self) -> bool {
+        self.is_active()
+    }
+    fn update(
+        &mut self,
+        action: Option<Action>,
+        response: Option<&DbResponse>,
+    ) {
+        if let Some(response) = response {
+            match &response.payload {
+                DbPayload::Item(i) => self.add_item(i.clone()),
+                _ => {}
+            }
+        }
+        self.handle_action(action);
+    }
+    fn draw(&mut self, frame: &mut Frame, rect: Rect) {
+        self.draw(frame, rect);
+    }
+    fn init(&mut self, index: usize, tracker: Rc<RefCell<usize>>) {
+        self.init(index, tracker);
+    }
+}
+
+impl Component for TableData<StoreJoinRow> {
+    fn is_active(&self) -> bool {
+        self.is_active()
+    }
+    fn update(
+        &mut self,
+        action: Option<Action>,
+        response: Option<&DbResponse>,
+    ) {
+        if let Some(response) = response {
+            match &response.payload {
+                DbPayload::Receipt(r) => self.add_item(r.clone()),
+                _ => {}
+            }
+        }
+        self.handle_action(action);
+    }
+    fn draw(&mut self, frame: &mut Frame, rect: Rect) {
+        self.draw(frame, rect);
+    }
+    fn init(&mut self, index: usize, tracker: Rc<RefCell<usize>>) {
+        self.init(index, tracker);
     }
 }

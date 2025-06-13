@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, marker::PhantomData};
 
 use super::*;
 
@@ -9,8 +9,8 @@ where
 {
     title: Rc<str>,
     headings: Vec<Rc<str>>,
-    items: Vec<T>,
     tracker: Rc<RefCell<usize>>,
+    phantom: PhantomData<T>,
 }
 
 impl<T> TableBuilder<T>
@@ -26,21 +26,24 @@ where
         self.headings.push(heading.into());
         self
     }
-    pub fn add_item(mut self, item: T) -> Self {
-        self.items.push(item);
-        self
+}
+
+impl ComponentBuilder<TableData<StoreItem>> for TableBuilder<StoreItem> {
+    fn build(self) -> TableData<StoreItem> {
+        TableData {
+            title: self.title,
+            headings: self.headings.into(),
+            tracker: self.tracker,
+            ..Default::default()
+        }
     }
 }
 
-impl<T> ComponentBuilder<TableData<T>> for TableBuilder<T>
-where
-    T: TableDisplay,
-{
-    fn build(self) -> TableData<T> {
-        TableData::<T> {
+impl ComponentBuilder<TableData<StoreJoinRow>> for TableBuilder<StoreJoinRow> {
+    fn build(self) -> TableData<StoreJoinRow> {
+        TableData {
             title: self.title,
             headings: self.headings.into(),
-            items: self.items,
             tracker: self.tracker,
             ..Default::default()
         }
