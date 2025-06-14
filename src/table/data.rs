@@ -71,9 +71,8 @@ impl Component for TableData<StoreItem> {
         response: Option<&DbResponse>,
     ) {
         if let Some(response) = response {
-            match &response.payload {
-                DbPayload::Item(i) => self.add_item(i.clone()),
-                _ => {}
+            if let DbPayload::Item(i) = &response.payload {
+                self.add_item(i.clone());
             }
         }
         self.handle_action(action);
@@ -96,9 +95,8 @@ impl Component for TableData<StoreJoinRow> {
         response: Option<&DbResponse>,
     ) {
         if let Some(response) = response {
-            match &response.payload {
-                DbPayload::Receipt(r) => self.add_item(r.clone()),
-                _ => {}
+            if let DbPayload::Receipt(r) = &response.payload {
+                self.add_item(r.clone())
             }
         }
         self.handle_action(action);
