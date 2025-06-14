@@ -12,10 +12,10 @@ fn test_input_rect() -> Rect {
 }
 
 fn test_form() -> Form {
-    Form::new_builder()
-        .add_title("Add New Item")
-        .add_rect(Rect::new(0, 0, 50, 9))
-        .build()
+    let mut form = Form::new_builder();
+    form.add_title("Add New Item")
+        .add_rect(Rect::new(0, 0, 50, 9));
+    form.build()
 }
 
 fn test_f64_input<'a>() -> InputField<f64> {
@@ -38,18 +38,18 @@ fn test_valid_form(source: &OutputStruct) -> Form {
     let price_field =
         InputField::<f64>::new("Item Price").map_value(source.price.clone());
 
-    Form::new_builder()
-        .add_title("Add New Item")
+    let mut form = Form::new_builder();
+    form.add_title("Add New Item")
         .add_rect(Rect::new(0, 0, 50, 9))
         .add_field(name_field)
         .add_field(price_field)
-        .add_request_type(RequestType::Post)
-        .build()
+        .add_request_type(RequestType::Post);
+    form.build()
 }
 
 fn test_invalid_form_no_fields() -> Form {
-    Form::new_builder()
-        .add_title("Add New Item")
-        .add_rect(Rect::new(0, 0, 50, 9))
-        .build()
+    let mut form = Form::new_builder();
+    form.add_title("Add New Item")
+        .add_rect(Rect::new(0, 0, 50, 9));
+    form.build()
 }

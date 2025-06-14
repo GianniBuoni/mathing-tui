@@ -18,8 +18,8 @@ impl Component for Home {
         match self.mode {
             Mode::Insert => match action {
                 Some(Action::EnterNormal) => {
-                    self.mode = Mode::Normal;
-                    self.form = None
+                    self.form = None;
+                    self.mode = Mode::Normal
                 }
                 Some(Action::Submit) => {
                     // form submit
@@ -37,7 +37,10 @@ impl Component for Home {
                 Some(Action::EnterInsert) => {
                     self.mode = Mode::Insert;
                     // TODO: replace with appropriate form builder
-                    self.form = Some(FormTui::ItemForm(Form::default()))
+                    let (form, paylod_builder) = Form::new_item_form();
+
+                    self.form = Some(FormTui::ItemForm(form));
+                    self.from_params = Some(paylod_builder);
                 }
                 Some(Action::SelectForward) => {
                     self.cycle_active(1);
@@ -87,5 +90,9 @@ impl Component for Home {
                 component.draw(frame, chunk);
             },
         );
+
+        if let Some(form) = &mut self.form {
+            form.draw(frame, rect);
+        }
     }
 }

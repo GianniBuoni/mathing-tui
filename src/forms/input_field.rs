@@ -92,11 +92,7 @@ where
     }
 
     fn check_active(&mut self) {
-        if self.index == *self.active_field.borrow() {
-            self.active = true
-        } else {
-            self.active = false
-        }
+        self.active = self.index == *self.active_field.borrow()
     }
 
     fn submit(&self) -> Result<()> {

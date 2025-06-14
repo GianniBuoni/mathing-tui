@@ -129,9 +129,11 @@ where
             *inner_value.borrow_mut() = value;
         }
     }
-    pub fn clone_inner(&self) -> Rc<RefCell<T>> {
-        // TODO: handle the option unrwapping
-        self.0.as_ref().unwrap().clone()
+    pub fn clone_inner(&self) -> Result<Rc<RefCell<T>>> {
+        self.0
+            .as_ref()
+            .ok_or(Error::msg("Cloning an unmapped Param Option"))
+            .cloned()
     }
 }
 

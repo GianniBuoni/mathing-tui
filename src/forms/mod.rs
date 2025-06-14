@@ -54,7 +54,7 @@ where
 
 #[derive(Default, Debug)]
 pub struct Form {
-    error: Option<String>,
+    pub error: Option<String>,
     fields: Vec<Box<dyn Field>>,
     title: Rc<str>,
     active_field: Rc<RefCell<usize>>,
