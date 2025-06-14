@@ -3,7 +3,7 @@ use super::*;
 impl Component for Home {
     fn handle_key_events(&self, key: KeyEvent) -> Option<Action> {
         match key.code {
-            KeyCode::Char(_) if self.form.is_some() => {
+            KeyCode::Char(_) | KeyCode::Backspace if self.form.is_some() => {
                 Some(Action::HandleInput(key))
             }
             _ => self.keymap.get(&key).copied(),

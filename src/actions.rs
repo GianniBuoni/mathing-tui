@@ -1,4 +1,3 @@
-// TODO: move to db, connect to FromActions struct
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
