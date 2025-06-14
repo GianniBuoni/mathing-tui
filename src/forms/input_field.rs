@@ -6,11 +6,11 @@ use super::*;
 
 impl<T> InputField<T>
 where
-    T: Debug + FromStr,
+    T: Debug + FromStr + Default + Clone,
     <T as FromStr>::Err: Debug,
 {
     pub fn map_value(mut self, source: Rc<RefCell<T>>) -> Self {
-        self.value = Some(source);
+        self.value.map_value(source);
         self
     }
 
@@ -44,7 +44,7 @@ where
 
 impl<T> Component for InputField<T>
 where
-    T: Debug + FromStr,
+    T: Debug + FromStr + Default + Clone,
     <T as FromStr>::Err: Debug,
 {
     fn init(&mut self, index: usize, tracker: Rc<RefCell<usize>>) {
@@ -84,7 +84,7 @@ where
 
 impl<T> Field for InputField<T>
 where
-    T: Debug + FromStr,
+    T: Debug + FromStr + Default + Clone,
     <T as FromStr>::Err: Debug,
 {
     fn assign_index(&mut self, index: usize) {
@@ -98,11 +98,13 @@ where
     }
 
     fn submit(&self) -> Result<()> {
-        match &self.value {
-            None => Err(FormErrors::unmapped(self.title.deref().trim()).into()),
-            Some(value) => {
+        match &self.value.is_some() {
+            false => {
+                Err(FormErrors::unmapped(self.title.deref().trim()).into())
+            }
+            true => {
                 let new_value = self.validate()?;
-                *value.borrow_mut() = new_value;
+                self.value.submit_value(new_value);
                 Ok(())
             }
         }

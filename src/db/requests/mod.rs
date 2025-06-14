@@ -1,3 +1,4 @@
+use errors::RequestError;
 use sqlx::SqliteExecutor;
 
 use super::*;
@@ -7,7 +8,8 @@ pub mod prelude {
     pub use super::handle_requests::handle_requests;
     pub use super::{
         DbPayload, DbPayloadBuilder, DbRequest, DbResponse, ItemParamsBuilder,
-        JoinParamsBuilder, Request, RequestType, UserParamsBuilder,
+        JoinParamsBuilder, ParamOption, Request, RequestType,
+        UserParamsBuilder,
     };
 }
 
@@ -116,27 +118,42 @@ where
 
         Some(inner_value.to_owned())
     }
+    pub fn map_value(&mut self, value: Rc<RefCell<T>>) {
+        self.0 = Some(value)
+    }
+    pub fn is_some(&self) -> bool {
+        self.0.is_some()
+    }
+    pub fn submit_value(&self, value: T) {
+        if let Some(inner_value) = &self.0 {
+            *inner_value.borrow_mut() = value;
+        }
+    }
+    pub fn clone_inner(&self) -> Rc<RefCell<T>> {
+        // TODO: handle the option unrwapping
+        self.0.as_ref().unwrap().clone()
+    }
 }
 
 #[derive(Debug, Default)]
 pub struct UserParamsBuilder {
-    u_id: ParamOption<i64>,
-    name: ParamOption<String>,
+    pub u_id: ParamOption<i64>,
+    pub name: ParamOption<String>,
 }
 
 #[derive(Debug, Default)]
 pub struct ItemParamsBuilder {
-    offset: Option<i64>,
-    item_id: ParamOption<i64>,
-    item_name: ParamOption<String>,
-    item_price: ParamOption<f64>,
+    pub offset: Option<i64>,
+    pub item_id: ParamOption<i64>,
+    pub item_name: ParamOption<String>,
+    pub item_price: ParamOption<f64>,
 }
 
 #[derive(Debug, Default)]
 pub struct JoinParamsBuilder {
-    offset: Option<i64>,
-    users: Rc<RefCell<Vec<i64>>>,
-    r_id: ParamOption<i64>,
-    item_id: ParamOption<i64>,
-    item_qty: ParamOption<i64>,
+    pub offset: Option<i64>,
+    pub users: Rc<RefCell<Vec<i64>>>,
+    pub r_id: ParamOption<i64>,
+    pub item_id: ParamOption<i64>,
+    pub item_qty: ParamOption<i64>,
 }

@@ -15,6 +15,7 @@ mod errors;
 mod form_data;
 mod form_tui;
 mod input_field;
+mod plugin;
 #[cfg(test)]
 mod tests;
 
@@ -40,13 +41,13 @@ pub trait Field: Component {
 #[derive(Default, Debug)]
 pub struct InputField<T>
 where
-    T: Debug + FromStr,
+    T: Debug + FromStr + Default + Clone,
     <T as FromStr>::Err: Debug,
 {
     input: Input,
     title: Rc<str>,
     active_field: Rc<RefCell<usize>>,
-    value: Option<Rc<RefCell<T>>>,
+    value: ParamOption<T>,
     index: usize,
     active: bool,
 }

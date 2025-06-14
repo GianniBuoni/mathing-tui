@@ -8,7 +8,7 @@ impl Form {
 
 impl<T> InputField<T>
 where
-    T: Debug + Default + FromStr,
+    T: Debug + Default + FromStr + Clone,
     <T as FromStr>::Err: Debug,
 {
     pub fn new(title: impl Display) -> Self {
