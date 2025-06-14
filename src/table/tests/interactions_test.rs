@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn test_table_constuction() {
-    let items = mock_items();
+    let items = mock_items_table();
     let desc = "Test table.active data is constructed correctly";
 
     assert!(!items.active, "{desc}");
@@ -12,7 +12,7 @@ fn test_table_constuction() {
 
 #[test]
 fn test_row_increment() {
-    let mut items = mock_items();
+    let mut items = mock_items_table();
 
     for i in 0..3 {
         let want = match i {
@@ -31,7 +31,7 @@ fn test_row_increment() {
 
 #[test]
 fn test_row_decrement() {
-    let mut items = mock_items();
+    let mut items = mock_items_table();
 
     for i in 0..3 {
         let want = 2 - i;
@@ -57,7 +57,7 @@ fn test_up_down_navigation_input() {
     let home = test_home();
 
     key_codes.into_iter().for_each(|(key, want, desc)| {
-        let mut items = mock_items();
+        let mut items = mock_items_table();
         let action = home.handle_key_events(KeyEvent::from(key));
         items.update(action, None);
 

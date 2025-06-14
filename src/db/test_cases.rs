@@ -3,7 +3,7 @@
 
 use crate::prelude::*;
 
-pub fn mock_items() -> TableData<StoreItem> {
+pub fn mock_items() -> [StoreItem; 3] {
     let test_1 = StoreItem {
         name: "Slamon".into(),
         price: 9.49,
@@ -22,19 +22,10 @@ pub fn mock_items() -> TableData<StoreItem> {
         ..Default::default()
     };
 
-    let mut table = TableData::<StoreItem>::new_builder()
-        .add_title("Grocery Items")
-        .add_heading("Items")
-        .add_heading("Price")
-        .build();
-
-    table.add_item(test_1);
-    table.add_item(test_2);
-    table.add_item(test_3);
-    table
+    [test_1, test_2, test_3]
 }
 
-pub fn mock_receipts() -> TableData<StoreJoinRow> {
+pub fn mock_users() -> [StoreUser; 2] {
     let jon = StoreUser {
         name: "Jon".into(),
         ..Default::default()
@@ -44,6 +35,12 @@ pub fn mock_receipts() -> TableData<StoreJoinRow> {
         name: "Noodle".into(),
         ..Default::default()
     };
+
+    [jon, noodle]
+}
+
+pub fn mock_receipts() -> [StoreJoinRow; 2] {
+    let [jon, noodle] = mock_users();
 
     let test_1 = StoreJoinRow {
         users: vec![jon.clone(), noodle.clone()],
@@ -61,6 +58,24 @@ pub fn mock_receipts() -> TableData<StoreJoinRow> {
         ..Default::default()
     };
 
+    [test_1, test_2]
+}
+
+pub fn mock_items_table() -> TableData<StoreItem> {
+    let mut table = TableData::<StoreItem>::new_builder()
+        .add_title("Grocery Items")
+        .add_heading("Items")
+        .add_heading("Price")
+        .build();
+
+    mock_items()
+        .into_iter()
+        .for_each(|item| table.add_item(item));
+
+    table
+}
+
+pub fn mock_receipts_table() -> TableData<StoreJoinRow> {
     let mut table = TableData::<StoreJoinRow>::new_builder()
         .add_title("Receipt Items")
         .add_heading("Item Name")
@@ -69,7 +84,9 @@ pub fn mock_receipts() -> TableData<StoreJoinRow> {
         .add_heading("Payees")
         .build();
 
-    table.add_item(test_1);
-    table.add_item(test_2);
+    mock_receipts()
+        .into_iter()
+        .for_each(|item| table.add_item(item));
+
     table
 }

@@ -5,7 +5,7 @@ use super::*;
 #[test]
 fn test_render_block() {
     let colors = Into::<AppStyles>::into(AppColors::ACTIVE);
-    let items = mock_receipts();
+    let items = mock_receipts_table();
     let mut buf = Buffer::empty(test_rect());
 
     items
@@ -29,7 +29,7 @@ fn test_render_block() {
 
 #[test]
 fn test_render_rows() {
-    let items = mock_items();
+    let items = mock_items_table();
     let styles: AppStyles = AppColors::ACTIVE.into();
     let got = items.render_rows(styles.row_style);
 
@@ -47,7 +47,7 @@ fn test_render_rows() {
 
 #[test]
 fn test_render_heading() {
-    let items = mock_items();
+    let items = mock_items_table();
     let got = items.render_heading(&AppColors::ACTIVE.into());
 
     let want = Row::new([
@@ -61,7 +61,7 @@ fn test_render_heading() {
 
 #[test]
 fn test_render_table() {
-    let reciepts = mock_receipts();
+    let reciepts = mock_receipts_table();
     let receipts = reciepts.render_table(&AppColors::ACTIVE.into());
 
     let mut state = TableState::new().with_selected(1);
@@ -121,7 +121,7 @@ fn test_render_complete_table() -> Result<()> {
         Terminal::with_options(backend, TerminalOptions { viewport })?;
     let mut frame = term.get_frame();
 
-    let mut test_r = mock_receipts();
+    let mut test_r = mock_receipts_table();
     test_r.active = true;
     let area = &frame.area();
     test_r.draw(&mut frame, *area);
