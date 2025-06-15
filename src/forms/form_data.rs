@@ -104,4 +104,11 @@ impl Form {
             _ => *current_index = (*current_index as i32 + add) as usize,
         }
     }
+
+    pub fn map_err(&mut self, err: Option<FormErrors>) {
+        match err {
+            None => self.error = None,
+            Some(e) => self.error = Some(format!(" {} ", e.to_string())),
+        }
+    }
 }
