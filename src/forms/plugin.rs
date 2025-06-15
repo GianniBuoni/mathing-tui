@@ -1,9 +1,6 @@
 use super::*;
 
 impl Form {
-    const TWO_FIELD_H: u16 = 9;
-    const ONE_FIELD_H: u16 = 6;
-
     fn form_rect(height: u16) -> Rect {
         Rect::new(0, 0, 60, height)
     }

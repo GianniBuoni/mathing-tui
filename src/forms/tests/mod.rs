@@ -4,7 +4,7 @@ mod outputs;
 mod test_form_rendering;
 
 fn test_big_rect() -> Rect {
-    Rect::new(0, 0, 56, 11)
+    Rect::new(0, 0, 56, Form::TWO_FIELD_H)
 }
 
 fn test_input_rect() -> Rect {
@@ -13,8 +13,12 @@ fn test_input_rect() -> Rect {
 
 fn test_form() -> Form {
     let mut form = Form::new_builder();
-    form.add_title("Add New Item")
-        .add_rect(Rect::new(0, 0, 50, 9));
+    form.add_title("Add New Item").add_rect(Rect::new(
+        0,
+        0,
+        52,
+        Form::TWO_FIELD_H,
+    ));
     form.build()
 }
 
@@ -40,7 +44,7 @@ fn test_valid_form(source: &OutputStruct) -> Form {
 
     let mut form = Form::new_builder();
     form.add_title("Add New Item")
-        .add_rect(Rect::new(0, 0, 50, 9))
+        .add_rect(Rect::new(0, 0, 52, 12))
         .add_field(name_field)
         .add_field(price_field)
         .add_request_type(RequestType::Post);

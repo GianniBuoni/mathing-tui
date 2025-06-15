@@ -25,6 +25,11 @@ pub mod prelude {
     pub use super::{Form, FormTui, InputField};
 }
 
+impl Form {
+    const ONE_FIELD_H: u16 = 9;
+    const TWO_FIELD_H: u16 = 12;
+}
+
 #[derive(Debug)]
 pub enum FormTui {
     UserFrom(Form),
@@ -54,7 +59,7 @@ where
 
 #[derive(Default, Debug)]
 pub struct Form {
-    pub error: Option<String>,
+    error: Option<String>,
     fields: Vec<Box<dyn Field>>,
     title: Rc<str>,
     active_field: Rc<RefCell<usize>>,

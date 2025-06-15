@@ -6,19 +6,14 @@ use super::*;
 fn test_form_render_block() {
     let form = test_form();
     let mut got = Buffer::empty(test_big_rect());
-
-    let blocks = form.render_block();
-    let areas = form.render_block_areas(blocks.first().unwrap(), got.area);
-
-    blocks
-        .iter()
-        .zip(areas.iter())
-        .for_each(|(block, area)| block.render(*area, &mut got));
+    let [_, _, form_area, _] = form.get_block_areas(got.area);
+    form.render_block(form_area, &mut got);
 
     let want = Buffer::with_lines(vec![
         "                                                        ",
-        "    Add New Item                                        ",
+        "                                                        ",
         "   ╭────────────────────────────────────────────────╮   ",
+        "   │                                                │   ",
         "   │                                                │   ",
         "   │                                                │   ",
         "   │                                                │   ",
@@ -92,6 +87,7 @@ fn test_input_render_active_block() {
 #[test]
 fn test_form_render() -> Result<()> {
     let mut form = test_valid_form(&OutputStruct::default());
+    form.map_err(FormErrors::malformed("fields").into());
 
     // set up terminal
     let viewport = Viewport::Fixed(test_big_rect());
@@ -114,7 +110,7 @@ fn test_form_render() -> Result<()> {
         "   ││                                              ││   ",
         "   │╰──────────────────────────────────────────────╯│   ",
         "   ╰────────────────────────────────────────────────╯   ",
-        "                                                        ",
+        "    Malformed: form has no fields.                      ",
         "                                                        ",
     ]);
 
@@ -129,44 +125,8 @@ fn test_form_render() -> Result<()> {
         Rect::new(5, 7, 46, 1),
         inactive_block.add_modifier(Modifier::RAPID_BLINK),
     );
+    want.set_style(Rect::new(3, 10, 50, 1), Style::new().fg(Color::Red));
 
     assert_eq!(want, got, "Test form draw method.");
     Ok(())
-}
-
-#[test]
-fn test_form_error_rendering() {
-    let mut form = test_form();
-    form.map_err(Some(FormErrors::malformed("fields")));
-
-    let mut got = Buffer::empty(test_big_rect());
-    let blocks = form.render_block();
-    let areas = form.render_block_areas(blocks.first().unwrap(), got.area);
-
-    blocks
-        .iter()
-        .zip(areas.iter())
-        .for_each(|(block, area)| block.render(*area, &mut got));
-
-    let mut want = Buffer::with_lines(vec![
-        "                                                        ",
-        "    Add New Item                                        ",
-        "   ╭────────────────────────────────────────────────╮   ",
-        "   │                                                │   ",
-        "   │                                                │   ",
-        "   │                                                │   ",
-        "   │                                                │   ",
-        "   │                                                │   ",
-        "   │                                                │   ",
-        "   ╰────────────────────────────────────────────────╯   ",
-        "    Malformed: form has no fields.                      ",
-        "                                                        ",
-    ]);
-
-    want.set_style(
-        Rect::new(4, 9, 61, 1),
-        Into::<AppStyles>::into(AppColors::ACTIVE).error_style,
-    );
-
-    assert_eq!(want, got);
 }
