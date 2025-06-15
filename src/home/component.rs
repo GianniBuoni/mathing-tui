@@ -26,37 +26,27 @@ impl Component for Home {
                     self.mode = Mode::Normal
                 }
                 Some(Action::Submit) => {
-                    // form submit
-                    if let Some(form) = self.form.as_mut() {
-                        if let Err(e) = form.submit() {
-                            form.map_err(Some(e));
-                            return;
-                        }
-                        // TODO: remove this message?
-                        form.map_err(Some(anyhow::Error::msg(
-                            "Valid! Submitting...",
-                        )));
-                    }
-
-                    // formulate request
-                    // ISSUE: form params's build method is consuming
-                    // send request via tx
+                    self.handle_submit();
                 }
                 Some(_) => {
                     if let Some(form) = &mut self.form {
                         form.update(action, response);
                     }
                 }
-                None => {}
+                None => {
+                    if let Some(form) = &mut self.form {
+                        form.update(action, response);
+                    }
+                }
             },
             Mode::Normal => match action {
                 Some(Action::EnterInsert) => {
                     self.mode = Mode::Insert;
                     // TODO: replace with appropriate form builder
-                    let (form, paylod_builder) = Form::new_item_form();
+                    let (form, payload_builder) = Form::new_item_form();
 
                     self.form = Some(FormTui::ItemForm(form));
-                    self.from_params = Some(paylod_builder);
+                    self.from_params = payload_builder;
                 }
                 Some(Action::SelectForward) => {
                     self.cycle_active(1);
@@ -75,7 +65,11 @@ impl Component for Home {
                         c.update(action, response);
                     });
                 }
-                None => {}
+                None => {
+                    self.components.iter_mut().for_each(|c| {
+                        c.update(action, response);
+                    });
+                }
             },
         }
     }

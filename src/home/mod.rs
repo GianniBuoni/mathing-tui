@@ -60,4 +60,30 @@ impl Home {
             _ => *current = (*current as i32 + add) as usize,
         }
     }
+    fn handle_submit(&mut self) {
+        if let Some(form) = self.form.as_mut() {
+            if let Err(e) = form.submit() {
+                form.map_err(Some(e));
+                return;
+            }
+
+            if let Some(params) = self.from_params.as_ref() {
+                let payload = params.build();
+                let req = DbRequest::new()
+                    .req_type(form.get_req_type())
+                    .payload(payload);
+
+                if let Some(tx) = self.req_tx.clone() {
+                    if let Err(err) = tx.send(req) {
+                        let err = anyhow::Error::msg(err.to_string());
+                        form.map_err(Some(err));
+                        return;
+                    }
+                }
+            };
+
+            self.form = None;
+            self.from_params = None;
+        }
+    }
 }
