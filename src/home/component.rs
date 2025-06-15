@@ -2,8 +2,12 @@ use super::*;
 
 impl Component for Home {
     fn handle_key_events(&self, key: KeyEvent) -> Option<Action> {
-        match key.code {
-            KeyCode::Char(_) | KeyCode::Backspace if self.form.is_some() => {
+        match (key.code, key.modifiers) {
+            (KeyCode::Char(_), KeyModifiers::NONE)
+            | (KeyCode::Char(_), KeyModifiers::SHIFT)
+            | (KeyCode::Backspace, KeyModifiers::NONE)
+                if self.form.is_some() =>
+            {
                 Some(Action::HandleInput(key))
             }
             _ => self.keymap.get(&key).copied(),
