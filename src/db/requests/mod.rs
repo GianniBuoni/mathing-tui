@@ -79,10 +79,8 @@ pub enum DbPayload {
     Users(Vec<StoreUser>),
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub enum DbPayloadBuilder {
-    #[default]
-    None,
     ItemParams(ItemParamsBuilder),
     UserParams(UserParamsBuilder),
     ReceiptParams(JoinParamsBuilder),
@@ -112,7 +110,7 @@ where
     pub fn new(value: T) -> Self {
         Self(Some(Rc::new(RefCell::new(value))))
     }
-    pub fn unwrap(self) -> Option<T> {
+    pub fn unwrap(&self) -> Option<T> {
         let inner_value = self.0.as_ref()?;
         let inner_value = inner_value.borrow();
 

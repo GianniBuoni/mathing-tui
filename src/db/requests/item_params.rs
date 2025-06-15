@@ -17,7 +17,7 @@ impl ItemParamsBuilder {
         self.offset = Some(offset);
         self
     }
-    pub fn build(self) -> ItemParams {
+    pub fn build(&self) -> ItemParams {
         ItemParams {
             item_id: self.item_id.unwrap(),
             item_name: self.item_name.unwrap(),
@@ -30,6 +30,13 @@ impl ItemParamsBuilder {
 impl ItemParams {
     pub fn builder() -> ItemParamsBuilder {
         ItemParamsBuilder::default()
+    }
+    pub(super) fn new() -> Self {
+        Self::default()
+    }
+    pub(super) fn item_id(mut self, id: i64) -> Self {
+        self.item_id = Some(id);
+        self
     }
 }
 

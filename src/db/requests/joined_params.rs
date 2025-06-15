@@ -27,7 +27,7 @@ impl JoinParamsBuilder {
         self.offset = Some(offset);
         self
     }
-    pub fn build(self) -> JoinedReceiptParams {
+    pub fn build(&self) -> JoinedReceiptParams {
         let users = self.users.clone();
         let users = users.borrow().to_owned();
 
@@ -44,6 +44,13 @@ impl JoinParamsBuilder {
 impl JoinedReceiptParams {
     pub fn builder() -> JoinParamsBuilder {
         JoinParamsBuilder::default()
+    }
+    fn new() -> Self {
+        Self::default()
+    }
+    fn r_id(mut self, r_id: i64) -> Self {
+        self.r_id = Some(r_id);
+        self
     }
     pub async fn reset(&self, conn: &SqlitePool) -> Result<u64> {
         Ok(sqlx::query!("DELETE FROM receipts")
@@ -94,11 +101,7 @@ impl<'e> Request<'e> for JoinedReceiptParams {
             .ok_or(RequestError::missing_param("item qty"))?;
 
         // check if item exists
-        ItemParams::builder()
-            .item_id(item_id)
-            .build()
-            .get(conn)
-            .await?;
+        ItemParams::new().item_id(item_id).get(conn).await?;
 
         if self.users.is_empty() {
             return Err(RequestError::missing_param("user id(s)").into());
@@ -111,11 +114,7 @@ impl<'e> Request<'e> for JoinedReceiptParams {
             .await?;
 
         for u_id in self.users.clone() {
-            UserParams::builder()
-                .user_id(u_id)
-                .build()
-                .get(conn)
-                .await?;
+            UserParams::new().user_id(u_id).get(conn).await?;
             ReceiptsUsersParams::new()
                 .r_id(receipt.id)
                 .u_id(u_id)
@@ -124,9 +123,8 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         }
 
         tx.commit().await?;
-        Ok(JoinedReceiptParams::builder()
+        Ok(JoinedReceiptParams::new()
             .r_id(receipt.id)
-            .build()
             .get(conn)
             .await?)
     }
@@ -205,10 +203,6 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         }
         tx.commit().await?;
 
-        Ok(JoinedReceiptParams::builder()
-            .r_id(id)
-            .build()
-            .get(conn)
-            .await?)
+        Ok(JoinedReceiptParams::new().r_id(id).get(conn).await?)
     }
 }

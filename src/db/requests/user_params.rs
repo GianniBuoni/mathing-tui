@@ -9,7 +9,7 @@ impl UserParamsBuilder {
         self.name = ParamOption::new(name.to_string());
         self
     }
-    pub fn build(self) -> UserParams {
+    pub fn build(&self) -> UserParams {
         UserParams {
             u_id: self.u_id.unwrap(),
             name: self.name.unwrap(),
@@ -20,6 +20,13 @@ impl UserParamsBuilder {
 impl UserParams {
     pub fn builder() -> UserParamsBuilder {
         UserParamsBuilder::default()
+    }
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn user_id(mut self, id: i64) -> Self {
+        self.u_id = Some(id);
+        self
     }
 }
 

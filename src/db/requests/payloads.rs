@@ -19,3 +19,13 @@ impl Display for DbPayload {
         }
     }
 }
+
+impl DbPayloadBuilder {
+    pub fn build(&self) -> DbPayload {
+        match self {
+            Self::ItemParams(i) => DbPayload::ItemParams(i.build()),
+            Self::UserParams(u) => DbPayload::UserParams(u.build()),
+            Self::ReceiptParams(r) => DbPayload::ReceiptParams(r.build()),
+        }
+    }
+}

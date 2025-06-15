@@ -5,7 +5,7 @@ impl StoreJoinRaw {
         let users = try_join_all(self.user_ids.split(",").map(async |s| {
             Ok::<StoreUser, Error>({
                 let id = s.parse::<i64>()?;
-                UserParams::builder().user_id(id).build().get(conn).await?
+                UserParams::new().user_id(id).get(conn).await?
             })
         }))
         .await?;
