@@ -1,31 +1,36 @@
-use std::ops::Deref;
+use ratatui::text::ToLine;
 
 use super::*;
 
 impl Component for Form {
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
-        // blocks and areas hard coded to return a len of 2
-        let blocks = self.render_block();
-        let areas = self.render_block_areas(blocks.first().unwrap(), rect);
+        // get areas
+        let [centered_area, title, form_block_area, error_area] =
+            self.get_block_areas(rect);
 
-        // clear area before rendering blocks
-        frame.render_widget(Clear, *areas.first().unwrap());
+        // render Clear in centered area
+        frame.render_widget(Clear, centered_area);
 
-        // render blocks
-        blocks.iter().zip(areas.iter()).for_each(|(block, area)| {
-            block.render(*area, frame.buffer_mut());
-        });
+        Line::from(self.title.as_ref()).render(title, frame.buffer_mut());
 
-        if let (Some(block), Some(area)) = (blocks.last(), areas.last()) {
-            let field_areas = self.render_feild_areas(block.inner(*area));
+        let error = match &self.error {
+            Some(e) => e
+                .to_line()
+                .style(Into::<AppStyles>::into(AppColors::ACTIVE).error_style),
+            None => "".to_line(),
+        };
 
-            // render feilds
-            self.fields.iter_mut().zip(field_areas.iter()).for_each(
-                |(field, area)| {
-                    field.draw(frame, *area);
-                },
-            );
-        }
+        error.render(error_area, frame.buffer_mut());
+
+        // render nested field blocks in form block
+        let field_areas =
+            self.render_block(form_block_area, frame.buffer_mut());
+
+        self.fields.iter_mut().zip(field_areas.iter()).for_each(
+            |(field, field_area)| {
+                field.draw(frame, *field_area);
+            },
+        );
     }
 
     fn update(
@@ -55,27 +60,45 @@ impl Component for Form {
 }
 
 impl Form {
-    pub fn render_block(&self) -> Rc<[Block]> {
-        let popup_block = Block::new().title(self.title.deref());
-        let bordered_block = Block::bordered().border_type(BorderType::Rounded);
-        [popup_block, bordered_block].into()
+    pub fn render_block(&self, area: Rect, buf: &mut Buffer) -> Rc<[Rect]> {
+        let block = Block::bordered().border_type(BorderType::Rounded);
+
+        // split inner_area equally and return rects
+        let constraints = self
+            .fields
+            .iter()
+            .map(|_| Constraint::Fill(1))
+            .collect::<Vec<Constraint>>();
+        let areas = Layout::vertical(constraints).split(block.inner(area));
+
+        // render block before returning
+        block.render(area, buf);
+        areas
     }
 
-    pub fn render_block_areas(&self, outer: &Block, area: Rect) -> Rc<[Rect]> {
-        let outer_area = center_widget(
-            area,
+    pub fn get_block_areas(&self, full_area: Rect) -> [Rect; 4] {
+        // center self.rect
+        let centered_area = center_widget(
+            full_area,
             Constraint::Length(self.rect.width),
             Constraint::Length(self.rect.height),
         );
 
-        let inner_area = outer.inner(outer_area);
-        [outer_area, inner_area].into()
-    }
+        // add padding
+        let form_area = Block::new()
+            .padding(Padding::uniform(1))
+            .inner(centered_area);
 
-    pub fn render_feild_areas(&self, area: Rect) -> Rc<[Rect]> {
-        let divisions = self.fields.len();
-        Layout::vertical(Constraint::from_lengths(vec![3; divisions]))
-            .split(area)
+        // split new block into [Line, Block, Line]
+        let [title, form_block_area, error_area]: [Rect; 3] =
+            Layout::vertical([
+                Constraint::Length(1),
+                Constraint::Fill(1),
+                Constraint::Length(1),
+            ])
+            .areas(form_area);
+
+        [centered_area, title, form_block_area, error_area]
     }
 
     pub fn submit(&mut self) -> Result<()> {
