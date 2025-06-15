@@ -37,4 +37,11 @@ impl FormTui {
             Self::ReceiptForm(r) => r.map_err(err),
         }
     }
+    pub fn get_req_type(&self) -> RequestType {
+        match self {
+            Self::UserFrom(u) => u.request_type,
+            Self::ItemForm(i) => i.request_type,
+            Self::ReceiptForm(r) => r.request_type,
+        }
+    }
 }

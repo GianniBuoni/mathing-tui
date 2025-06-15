@@ -5,7 +5,7 @@ impl Form {
         Rect::new(0, 0, 60, height)
     }
 
-    pub fn new_item_form() -> (Self, DbPayloadBuilder) {
+    pub fn new_item_form() -> (Self, Option<DbPayloadBuilder>) {
         let payload_builder =
             ItemParamsBuilder::default().item_name("").item_price(0.);
         let mut form = Self::new_builder();
@@ -21,7 +21,7 @@ impl Form {
         } else {
             let mut form = form.build();
             form.error = Some(FormErrors::unmapped("Item name").to_string());
-            return (form, DbPayloadBuilder::None);
+            return (form, None);
         }
 
         if let Ok(price_value) = payload_builder.item_price.clone_inner() {
@@ -31,13 +31,16 @@ impl Form {
         } else {
             let mut form = form.build();
             form.error = Some(FormErrors::unmapped("Item Price").to_string());
-            return (form, DbPayloadBuilder::None);
+            return (form, None);
         }
 
-        (form.build(), DbPayloadBuilder::ItemParams(payload_builder))
+        (
+            form.build(),
+            Some(DbPayloadBuilder::ItemParams(payload_builder)),
+        )
     }
 
-    pub fn new_user_form() -> (Self, DbPayloadBuilder) {
+    pub fn new_user_form() -> (Self, Option<DbPayloadBuilder>) {
         let payload_builder = UserParamsBuilder::default().user_name("");
         let mut form = Self::new_builder();
 
@@ -52,9 +55,12 @@ impl Form {
         } else {
             let mut form = form.build();
             form.error = Some(FormErrors::unmapped("User Name").to_string());
-            return (form, DbPayloadBuilder::None);
+            return (form, None);
         }
 
-        (form.build(), DbPayloadBuilder::UserParams(payload_builder))
+        (
+            form.build(),
+            Some(DbPayloadBuilder::UserParams(payload_builder)),
+        )
     }
 }
