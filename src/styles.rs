@@ -11,6 +11,7 @@ pub struct AppColors {
     pub row_fg: Color,
     pub selected_row_fg: Color,
     pub input_fg: Color,
+    pub error_fg: Color,
 }
 
 impl AppColors {
@@ -21,6 +22,7 @@ impl AppColors {
         row_fg: Color::Reset,
         selected_row_fg: Color::Red,
         input_fg: Color::Magenta,
+        error_fg: Color::Red,
     };
 
     pub const INACTIVE: Self = Self {
@@ -30,6 +32,7 @@ impl AppColors {
         row_fg: Color::DarkGray,
         selected_row_fg: Color::DarkGray,
         input_fg: Color::DarkGray,
+        error_fg: Color::Red,
     };
     pub fn get(active: bool) -> Self {
         match active {
@@ -45,6 +48,7 @@ pub struct AppStyles {
     pub highlight_style: Style,
     pub input_style: Style,
     pub block_style: Style,
+    pub error_style: Style,
 }
 
 impl From<AppColors> for AppStyles {
@@ -58,6 +62,7 @@ impl From<AppColors> for AppStyles {
             highlight_style: Style::default().fg(value.selected_row_fg),
             input_style: Style::default().fg(value.input_fg),
             block_style: Style::default().fg(value.border_fg),
+            error_style: Style::default().fg(value.error_fg),
         }
     }
 }

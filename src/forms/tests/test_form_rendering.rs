@@ -24,8 +24,8 @@ fn test_form_render_block() {
         "   │                                                │   ",
         "   │                                                │   ",
         "   │                                                │   ",
-        "   │                                                │   ",
         "   ╰────────────────────────────────────────────────╯   ",
+        "                                                        ",
         "                                                        ",
     ]);
 
@@ -115,6 +115,7 @@ fn test_form_render() -> Result<()> {
         "   │╰──────────────────────────────────────────────╯│   ",
         "   ╰────────────────────────────────────────────────╯   ",
         "                                                        ",
+        "                                                        ",
     ]);
 
     let active_input = Style::new()
@@ -131,4 +132,41 @@ fn test_form_render() -> Result<()> {
 
     assert_eq!(want, got, "Test form draw method.");
     Ok(())
+}
+
+#[test]
+fn test_form_error_rendering() {
+    let mut form = test_form();
+    form.map_err(Some(FormErrors::malformed("fields")));
+
+    let mut got = Buffer::empty(test_big_rect());
+    let blocks = form.render_block();
+    let areas = form.render_block_areas(blocks.first().unwrap(), got.area);
+
+    blocks
+        .iter()
+        .zip(areas.iter())
+        .for_each(|(block, area)| block.render(*area, &mut got));
+
+    let mut want = Buffer::with_lines(vec![
+        "                                                        ",
+        "    Add New Item                                        ",
+        "   ╭────────────────────────────────────────────────╮   ",
+        "   │                                                │   ",
+        "   │                                                │   ",
+        "   │                                                │   ",
+        "   │                                                │   ",
+        "   │                                                │   ",
+        "   │                                                │   ",
+        "   ╰────────────────────────────────────────────────╯   ",
+        "    Malformed: form has no fields.                      ",
+        "                                                        ",
+    ]);
+
+    want.set_style(
+        Rect::new(4, 9, 61, 1),
+        Into::<AppStyles>::into(AppColors::ACTIVE).error_style,
+    );
+
+    assert_eq!(want, got);
 }
