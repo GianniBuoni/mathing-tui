@@ -64,7 +64,6 @@ pub struct Form {
     title: Rc<str>,
     active_field: Rc<RefCell<usize>>,
     rect: Rect,
-    cursor_pos: Position,
     request_type: RequestType,
 }
 

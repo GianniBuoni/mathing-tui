@@ -58,9 +58,17 @@ where
 
         let block = self.render_block(style.block_style);
         let input = self.render_input(style.input_style);
+        let input_area = block.inner(rect);
 
         block.render_ref(rect, frame.buffer_mut());
-        input.render_ref(block.inner(rect), frame.buffer_mut());
+        input.render_ref(input_area, frame.buffer_mut());
+
+        if self.active {
+            frame.set_cursor_position((
+                input_area.x + self.input.visual_cursor() as u16,
+                input_area.y,
+            ));
+        }
     }
 
     fn update(
