@@ -87,7 +87,7 @@ fn test_input_render_active_block() {
 #[test]
 fn test_form_render() -> Result<()> {
     let mut form = test_valid_form(&OutputStruct::default());
-    form.map_err(FormErrors::malformed("fields").into());
+    form.map_err(Some(FormErrors::malformed("fields").into()));
 
     // set up terminal
     let viewport = Viewport::Fixed(test_big_rect());

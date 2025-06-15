@@ -128,7 +128,7 @@ impl Form {
         }
     }
 
-    pub fn map_err(&mut self, err: Option<FormErrors>) {
+    pub fn map_err(&mut self, err: Option<anyhow::Error>) {
         match err {
             None => self.error = None,
             Some(e) => self.error = Some(format!(" {} ", e.to_string())),

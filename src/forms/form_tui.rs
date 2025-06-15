@@ -23,23 +23,18 @@ impl Component for FormTui {
 }
 
 impl FormTui {
-    pub fn submit(&mut self) {
+    pub fn submit(&mut self) -> Result<()> {
         match self {
-            Self::UserFrom(u) => {
-                if let Err(e) = u.submit() {
-                    u.error = Some(e.to_string())
-                }
-            }
-            Self::ItemForm(i) => {
-                if let Err(e) = i.submit() {
-                    i.error = Some(e.to_string())
-                }
-            }
-            Self::ReceiptForm(r) => {
-                if let Err(e) = r.submit() {
-                    r.error = Some(e.to_string())
-                }
-            }
+            Self::UserFrom(u) => u.submit(),
+            Self::ItemForm(i) => i.submit(),
+            Self::ReceiptForm(r) => r.submit(),
+        }
+    }
+    pub fn map_err(&mut self, err: Option<anyhow::Error>) {
+        match self {
+            Self::UserFrom(u) => u.map_err(err),
+            Self::ItemForm(i) => i.map_err(err),
+            Self::ReceiptForm(r) => r.map_err(err),
         }
     }
 }

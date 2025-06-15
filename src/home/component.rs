@@ -23,7 +23,19 @@ impl Component for Home {
                 }
                 Some(Action::Submit) => {
                     // form submit
+                    if let Some(form) = self.form.as_mut() {
+                        if let Err(e) = form.submit() {
+                            form.map_err(Some(e));
+                            return;
+                        }
+                        // TODO: remove this message?
+                        form.map_err(Some(anyhow::Error::msg(
+                            "Valid! Submitting...",
+                        )));
+                    }
+
                     // formulate request
+                    // ISSUE: form params's build method is consuming
                     // send request via tx
                 }
                 Some(_) => {
