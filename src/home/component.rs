@@ -88,12 +88,23 @@ impl Component for Home {
 
         let main_block = Block::default().title_bottom(context_menu);
 
-        let chunks: [Rect; 2] = Layout::horizontal([
+        // first split of the ui
+        let [small_chunk, r_chunk]: [Rect; 2] = Layout::horizontal([
             Constraint::Percentage(30),
             Constraint::Percentage(70),
         ])
         .spacing(1)
         .areas(main_block.inner(rect));
+
+        // split the smaller ui element even further
+        let [item_chunk, user_chunk]: [Rect; 2] = Layout::vertical([
+            Constraint::Percentage(70),
+            Constraint::Percentage(30),
+        ])
+        .areas(small_chunk);
+
+        // rearrange the chunks to match the order of the tables plugins
+        let chunks = [item_chunk, r_chunk, user_chunk];
 
         main_block.render(rect, frame.buffer_mut());
 
