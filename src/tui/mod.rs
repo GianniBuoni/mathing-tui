@@ -18,8 +18,6 @@ mod builder;
 
 pub enum Event {
     Init,
-    Quit,
-    Error,
     Key(KeyEvent),
 }
 
@@ -73,7 +71,7 @@ impl Tui {
                     CrosstermEvent::Key(key) if key.kind == KeyEventKind::Press => Event::Key(key),
                     _ => continue,
                 }
-                Some(Err(_)) => Event::Error,
+                Some(Err(_)) => break,
                 None => break,
                 }
             };

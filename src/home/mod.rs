@@ -30,7 +30,7 @@ pub struct Home {
     keymap: HashMap<KeyEvent, Action>,
     components: Vec<Box<dyn Component>>,
     component_tracker: Rc<RefCell<usize>>,
-    req_tx: Option<UnboundedSender<DbRequest>>,
+    pub req_tx: Option<UnboundedSender<DbRequest>>,
     mode: Mode,
 }
 

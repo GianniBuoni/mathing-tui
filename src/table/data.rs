@@ -72,8 +72,12 @@ impl Component for TableData<StoreItem> {
         if res.is_none() {
             return;
         }
-        if let DbPayload::Item(i) = &res.unwrap().payload {
-            self.add_item(i.to_owned())
+        match &res.unwrap().payload {
+            DbPayload::Item(i) => self.add_item(i.to_owned()),
+            DbPayload::Items(i) => {
+                i.iter().for_each(|i| self.add_item(i.to_owned()))
+            }
+            _ => {}
         }
     }
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
