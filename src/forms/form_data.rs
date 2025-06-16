@@ -53,13 +53,6 @@ impl Component for Form {
             None => {}
         }
     }
-
-    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
-        match res {
-            Some(_) => {}
-            None => {}
-        }
-    }
 }
 
 impl Form {

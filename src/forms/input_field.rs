@@ -92,13 +92,6 @@ where
             None => {}
         }
     }
-
-    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
-        match res {
-            Some(_) => {}
-            None => {}
-        }
-    }
 }
 
 impl<T> Field for InputField<T>

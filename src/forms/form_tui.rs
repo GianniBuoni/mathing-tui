@@ -16,13 +16,6 @@ impl Component for FormTui {
             FormTui::ReceiptForm(r) => r.handle_action(action),
         }
     }
-
-    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
-        match res {
-            Some(_) => {}
-            None => {}
-        }
-    }
 }
 
 impl FormTui {
