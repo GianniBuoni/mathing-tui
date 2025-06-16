@@ -11,8 +11,7 @@ use tokio::{
 use crate::prelude::*;
 
 pub mod prelude {
-    pub use super::builder::TuiBuilder;
-    pub use super::{Event, Tui};
+    pub use super::{Event, Tui, TuiBuilder};
 }
 
 mod builder;
@@ -28,9 +27,19 @@ pub enum Event {
 pub struct Tui {
     pub terminal: DefaultTerminal,
     event_rx: Receiver<Event>,
-    res_rx: UnboundedReceiver<DbResponse>,
+    res_rx: Receiver<DbResponse>,
     _event_task: JoinHandle<()>,
     _db_task: JoinHandle<()>,
+}
+
+#[derive(Debug)]
+pub struct TuiBuilder {
+    event_tx: Sender<Event>,
+    event_rx: Receiver<Event>,
+    res_tx: Sender<DbResponse>,
+    res_rx: Receiver<DbResponse>,
+    pub req_tx: UnboundedSender<DbRequest>,
+    req_rx: UnboundedReceiver<DbRequest>,
 }
 
 impl Tui {
@@ -55,7 +64,7 @@ impl Tui {
         event_tx
             .send(Event::Init)
             .await
-            .expect("Failed to send Init event");
+            .expect("Failed to send Init event.");
 
         loop {
             let event = tokio::select! {
@@ -76,22 +85,28 @@ impl Tui {
 
     async fn db_loop(
         mut req_rx: UnboundedReceiver<DbRequest>,
-        res_tx: UnboundedSender<DbResponse>,
+        res_tx: Sender<DbResponse>,
     ) {
-        let conn = get_db().await.unwrap();
-        // async this closure
-        // let res = DbResponse::new()
-        //     .req_type(RequestType::GetAll)
-        //     .error(RequestError::Connection.to_string());
-        // res_tx.send(res)
-        // inital fetch should go here
+        let conn = match get_db().await {
+            Ok(c) => c,
+            Err(_) => {
+                let res = DbResponse::new()
+                    .req_type(RequestType::GetAll)
+                    .error(RequestError::Connection.to_string());
+                res_tx
+                    .send(res)
+                    .await
+                    .expect("Failed to send the Connection Error response.");
+                return;
+            }
+        };
 
         loop {
             let res = tokio::select! {
                 Some(req) = req_rx.recv() => handle_requests(req, conn).await,
                 else => continue,
             };
-            if res_tx.send(res).is_err() {
+            if res_tx.send(res).await.is_err() {
                 break;
             }
         }
