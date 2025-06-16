@@ -6,7 +6,7 @@ use crate::table::TableDisplay;
 impl TableDisplay for StoreItem {
     fn ref_array(&self) -> Vec<Cell> {
         let name = format!(" {} ", self.name);
-        let price = format!(" {} ", self.price);
+        let price = format!(" {:.2} ", self.price);
         vec![name.into(), price.into()]
     }
 }
@@ -14,7 +14,7 @@ impl TableDisplay for StoreItem {
 impl TableDisplay for StoreJoinRow {
     fn ref_array(&self) -> Vec<Cell> {
         let item_name = format!(" {} ", self.item_name);
-        let item_price = format!(" {} ", self.item_price);
+        let item_price = format!(" {:.2} ", self.item_price);
         let item_qty = format!(" {} ", self.item_qty);
         let payees = self
             .users
