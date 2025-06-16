@@ -25,7 +25,7 @@ impl Home {
                 return;
             }
 
-            if let Some(params) = self.from_params.as_ref() {
+            if let Some(params) = self.form_params.as_ref() {
                 let payload = params.build();
                 let req = DbRequest::new()
                     .req_type(form.get_req_type())
@@ -41,7 +41,7 @@ impl Home {
             };
 
             self.form = None;
-            self.from_params = None;
+            self.form_params = None;
             self.mode = Mode::Normal;
         }
     }

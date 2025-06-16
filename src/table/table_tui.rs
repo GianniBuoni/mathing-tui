@@ -41,3 +41,13 @@ impl Component for TableTui {
         }
     }
 }
+
+impl TableTui {
+    pub fn new_form(&self) -> (Option<FormTui>, Option<DbPayloadBuilder>) {
+        match self {
+            TableTui::Items(_) => Form::new_item(),
+            TableTui::Users(_) => Form::new_user(),
+            TableTui::Receipt(_) => (None, None),
+        }
+    }
+}

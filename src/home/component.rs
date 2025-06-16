@@ -38,11 +38,11 @@ impl Component for Home {
             Mode::Normal => match action {
                 Some(Action::EnterInsert) => {
                     self.mode = Mode::Insert;
-                    // TODO: replace with appropriate form builder
-                    let (form, payload_builder) = Form::new_item_form();
-
-                    self.form = Some(FormTui::ItemForm(form));
-                    self.from_params = payload_builder;
+                    if let Some(table) =
+                        self.components.get(*self.component_tracker.borrow())
+                    {
+                        (self.form, self.form_params) = table.new_form();
+                    }
                 }
                 Some(Action::SelectForward) => {
                     self.cycle_active(1);
