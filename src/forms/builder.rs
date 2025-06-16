@@ -1,23 +1,8 @@
 use super::*;
 
 impl Form {
-    pub fn new_builder() -> FormBuilder {
+    pub fn builder() -> FormBuilder {
         FormBuilder::default()
-    }
-}
-
-impl<T> InputField<T>
-where
-    T: Debug + Default + FromStr + Clone,
-    <T as FromStr>::Err: Debug,
-{
-    pub fn new(title: impl Display) -> Self {
-        let title = format!(" {} ", title);
-
-        Self {
-            title: title.into(),
-            ..Default::default()
-        }
     }
 }
 
@@ -40,6 +25,11 @@ impl FormBuilder {
     pub fn add_request_type(&mut self, req_type: RequestType) -> &mut Self {
         self.request_type = req_type;
         self
+    }
+    pub fn build_with_error(self, err: anyhow::Error) -> Form {
+        let mut form = self.build();
+        form.map_err(Some(err));
+        form
     }
 }
 

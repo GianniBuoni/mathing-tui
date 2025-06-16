@@ -30,7 +30,7 @@ pub mod prelude {
 
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct StoreUser {
-    id: i64,
+    pub id: i64,
     created_at: i64,
     updated_at: i64,
     name: String,
@@ -38,7 +38,7 @@ pub struct StoreUser {
 
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct StoreItem {
-    id: i64,
+    pub id: i64,
     created_at: i64,
     updated_at: i64,
     name: String,

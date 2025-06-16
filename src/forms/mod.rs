@@ -1,3 +1,7 @@
+// ISSUE: dyn fields require static lifetimes
+// which is causing problems in form plugins
+// consider introducing a 'form lifetime
+
 #![allow(dead_code)]
 use std::{
     cell::RefCell,
@@ -28,6 +32,7 @@ pub mod prelude {
 impl Form {
     const ONE_FIELD_H: u16 = 9;
     const TWO_FIELD_H: u16 = 12;
+    const THREE_FIELD_H: u16 = 15;
 }
 
 #[derive(Debug)]

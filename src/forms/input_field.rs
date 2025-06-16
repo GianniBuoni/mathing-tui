@@ -9,6 +9,15 @@ where
     T: Debug + FromStr + Default + Clone,
     <T as FromStr>::Err: Debug,
 {
+    pub fn new(title: impl Display) -> Self {
+        let title = format!(" {} ", title);
+
+        Self {
+            title: title.into(),
+            ..Default::default()
+        }
+    }
+
     pub fn map_value(mut self, source: Rc<RefCell<T>>) -> Self {
         self.value.map_value(source);
         self
