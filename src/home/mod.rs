@@ -5,6 +5,7 @@ use crate::prelude::*;
 
 mod builder;
 mod component;
+mod methods;
 #[cfg(test)]
 mod test_cases;
 #[cfg(test)]
@@ -30,7 +31,7 @@ pub struct Home {
     keymap: HashMap<KeyEvent, Action>,
     components: Vec<Box<dyn Component>>,
     component_tracker: Rc<RefCell<usize>>,
-    pub req_tx: Option<UnboundedSender<DbRequest>>,
+    req_tx: Option<UnboundedSender<DbRequest>>,
     mode: Mode,
 }
 
@@ -40,51 +41,4 @@ pub struct HomeBuilder {
     components: Vec<Box<dyn Component>>,
     component_tracker: Rc<RefCell<usize>>,
     req_tx: Option<UnboundedSender<DbRequest>>,
-}
-
-impl Home {
-    pub fn new_builder() -> HomeBuilder {
-        HomeBuilder::default()
-    }
-    fn cycle_active(&mut self, add: i32) {
-        if self.components.is_empty() {
-            return;
-        }
-
-        let max = self.components.len() - 1;
-        let mut current = self.component_tracker.borrow_mut();
-
-        match *current as i32 + add {
-            int if int > max as i32 => *current = 0,
-            int if int < 0 => *current = max,
-            _ => *current = (*current as i32 + add) as usize,
-        }
-    }
-    fn handle_submit(&mut self) {
-        if let Some(form) = self.form.as_mut() {
-            if let Err(e) = form.submit() {
-                form.map_err(Some(e));
-                return;
-            }
-
-            if let Some(params) = self.from_params.as_ref() {
-                let payload = params.build();
-                let req = DbRequest::new()
-                    .req_type(form.get_req_type())
-                    .payload(payload);
-
-                if let Some(tx) = self.req_tx.clone() {
-                    if let Err(err) = tx.send(req) {
-                        let err = anyhow::Error::msg(err.to_string());
-                        form.map_err(Some(err));
-                        return;
-                    }
-                }
-            };
-
-            self.form = None;
-            self.from_params = None;
-            self.mode = Mode::Normal;
-        }
-    }
 }

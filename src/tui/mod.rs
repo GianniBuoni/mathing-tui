@@ -42,17 +42,11 @@ pub struct TuiBuilder {
 
 impl Tui {
     pub fn next_event(&mut self) -> Option<Event> {
-        match self.event_rx.try_recv() {
-            Ok(event) => Some(event),
-            Err(_) => None,
-        }
+        self.event_rx.try_recv().ok()
     }
 
     pub fn next_response(&mut self) -> Option<DbResponse> {
-        match self.res_rx.try_recv() {
-            Ok(res) => Some(res),
-            Err(_) => None,
-        }
+        self.res_rx.try_recv().ok()
     }
 
     async fn event_loop(event_tx: Sender<Event>) {

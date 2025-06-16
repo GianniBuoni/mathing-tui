@@ -42,26 +42,7 @@ impl App {
         match event {
             Some(Event::Key(_)) => self.component.handle_events(event),
             Some(Event::Init) => {
-                // make inital set of requests
-                let item_payload = DbPayload::ItemParams(
-                    ItemParams::builder().offset(0).build(),
-                );
-                let user_payload =
-                    DbPayload::UserParams(UserParams::builder().build());
-                let r_payload = DbPayload::ReceiptParams(
-                    JoinedReceiptParams::builder().offset(0).build(),
-                );
-
-                [item_payload, user_payload, r_payload]
-                    .into_iter()
-                    .for_each(|payload| {
-                        let req = DbRequest::new()
-                            .payload(payload)
-                            .req_type(RequestType::GetAll);
-                        // TODO: add real error handling
-                        let _ =
-                            self.component.req_tx.as_ref().unwrap().send(req);
-                    });
+                self.component.init();
                 None
             }
             None => None,
