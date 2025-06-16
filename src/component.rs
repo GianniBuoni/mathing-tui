@@ -26,9 +26,13 @@ pub trait Plugin: Component + Sized + 'static {
 }
 
 pub trait Component: Debug {
-    fn update(&mut self, action: Option<Action>, response: Option<&DbResponse>);
+    /// required methods
     fn draw(&mut self, frame: &mut Frame, rect: Rect);
+    fn handle_action(&mut self, action: Option<Action>);
+    fn handle_repsonse(&mut self, res: Option<&DbResponse>);
+    fn init(&mut self, _index: usize, _tracker: Rc<RefCell<usize>>) {}
 
+    /// provided methods
     fn handle_key_events(&self, _key: KeyEvent) -> Option<Action> {
         todo!();
     }
@@ -39,8 +43,6 @@ pub trait Component: Debug {
             _ => None,
         }
     }
-
-    fn init(&mut self, _index: usize, _tracker: Rc<RefCell<usize>>) {}
 
     fn is_active(&self) -> bool {
         false

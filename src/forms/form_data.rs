@@ -33,27 +33,30 @@ impl Component for Form {
         );
     }
 
-    fn update(
-        &mut self,
-        action: Option<Action>,
-        response: Option<&DbResponse>,
-    ) {
+    fn handle_action(&mut self, action: Option<Action>) {
         match action {
             Some(Action::SelectForward) => {
                 self.cycle_active(1);
-                self.fields.iter_mut().for_each(|f| f.update(action, None));
+                self.fields.iter_mut().for_each(|f| f.handle_action(action));
             }
             Some(Action::SelectBackward) => {
                 self.cycle_active(-1);
-                self.fields.iter_mut().for_each(|f| f.update(action, None));
+                self.fields.iter_mut().for_each(|f| f.handle_action(action));
             }
             Some(_) => {
                 if let Some(active) =
                     self.fields.get_mut(*self.active_field.borrow())
                 {
-                    active.update(action, response);
+                    active.handle_action(action);
                 }
             }
+            None => {}
+        }
+    }
+
+    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
+        match res {
+            Some(_) => {}
             None => {}
         }
     }

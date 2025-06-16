@@ -9,15 +9,18 @@ impl Component for FormTui {
         }
     }
 
-    fn update(
-        &mut self,
-        action: Option<Action>,
-        response: Option<&DbResponse>,
-    ) {
+    fn handle_action(&mut self, action: Option<Action>) {
         match self {
-            FormTui::UserFrom(u) => u.update(action, response),
-            FormTui::ItemForm(i) => i.update(action, response),
-            FormTui::ReceiptForm(r) => r.update(action, response),
+            FormTui::UserFrom(u) => u.handle_action(action),
+            FormTui::ItemForm(i) => i.handle_action(action),
+            FormTui::ReceiptForm(r) => r.handle_action(action),
+        }
+    }
+
+    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
+        match res {
+            Some(_) => {}
+            None => {}
         }
     }
 }

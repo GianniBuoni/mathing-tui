@@ -65,17 +65,16 @@ impl Component for TableData<StoreItem> {
     fn is_active(&self) -> bool {
         self.is_active()
     }
-    fn update(
-        &mut self,
-        action: Option<Action>,
-        response: Option<&DbResponse>,
-    ) {
-        if let Some(response) = response {
-            if let DbPayload::Item(i) = &response.payload {
-                self.add_item(i.clone());
-            }
-        }
+    fn handle_action(&mut self, action: Option<Action>) {
         self.handle_action(action);
+    }
+    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
+        if res.is_none() {
+            return;
+        }
+        if let DbPayload::Item(i) = &res.unwrap().payload {
+            self.add_item(i.to_owned())
+        }
     }
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
         self.draw(frame, rect);
@@ -89,17 +88,16 @@ impl Component for TableData<StoreJoinRow> {
     fn is_active(&self) -> bool {
         self.is_active()
     }
-    fn update(
-        &mut self,
-        action: Option<Action>,
-        response: Option<&DbResponse>,
-    ) {
-        if let Some(response) = response {
-            if let DbPayload::Receipt(r) = &response.payload {
-                self.add_item(r.clone())
-            }
-        }
+    fn handle_action(&mut self, action: Option<Action>) {
         self.handle_action(action);
+    }
+    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
+        if res.is_none() {
+            return;
+        }
+        if let DbPayload::Receipt(r) = &res.unwrap().payload {
+            self.add_item(r.to_owned())
+        }
     }
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
         self.draw(frame, rect);

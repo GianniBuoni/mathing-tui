@@ -34,13 +34,16 @@ pub struct Tui {
 }
 
 impl Tui {
-    pub async fn next_event(&mut self) -> Option<Event> {
-        self.event_rx.recv().await
+    pub fn next_event(&mut self) -> Option<Event> {
+        match self.event_rx.try_recv() {
+            Ok(event) => Some(event),
+            Err(_) => None,
+        }
     }
 
     pub fn next_response(&mut self) -> Option<DbResponse> {
         match self.res_rx.try_recv() {
-            Ok(_) => None,
+            Ok(res) => Some(res),
             Err(_) => None,
         }
     }
@@ -74,19 +77,18 @@ impl Tui {
         mut req_rx: UnboundedReceiver<DbRequest>,
         res_tx: UnboundedSender<DbResponse>,
     ) {
-        let conn = get_db().await.map_err(|_| {
-            let res = DbResponse::new()
-                .req_type(RequestType::GetAll)
-                .error(RequestError::Connection.to_string());
-            res_tx.send(res)
-        });
-
+        let conn = get_db().await.unwrap();
+        // async this closure
+        // let res = DbResponse::new()
+        //     .req_type(RequestType::GetAll)
+        //     .error(RequestError::Connection.to_string());
+        // res_tx.send(res)
         // inital fetch should go here
 
         loop {
             let res = tokio::select! {
-                Some(req) = req_rx.recv() => handle_requests(req, conn.as_ref().unwrap()).await,
-                else => break,
+                Some(req) = req_rx.recv() => handle_requests(req, conn).await,
+                else => continue,
             };
             if res_tx.send(res).is_err() {
                 break;

@@ -59,7 +59,7 @@ fn test_up_down_navigation_input() {
     key_codes.into_iter().for_each(|(key, want, desc)| {
         let mut items = mock_items_table();
         let action = home.handle_key_events(KeyEvent::from(key));
-        items.update(action, None);
+        items.handle_action(action);
 
         assert_eq!(want, items.table_index.clone(), "{desc}");
     });

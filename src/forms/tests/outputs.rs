@@ -28,7 +28,7 @@ fn test_input_validation_f64() {
     key_events
         .iter_mut()
         .for_each(|(input, action, want, desc)| {
-            input.update(*action, None);
+            input.handle_action(*action);
             let got = input.validate().map_err(|e| e.to_string()).err();
             assert_eq!(*want, got, "{desc}")
         });
@@ -55,7 +55,7 @@ fn test_input_mapping() {
     test_cases.iter_mut().for_each(|(input, want, desc)| {
         let action =
             Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('1'))));
-        input.update(action, None);
+        input.handle_action(action);
 
         let got = match input.submit() {
             Ok(_) => "Ok".to_string(),
@@ -80,7 +80,7 @@ fn test_form_validation() -> Result<()> {
     let mut form = test_valid_form(&OutputStruct::default());
     key_events
         .iter()
-        .for_each(|key| form.update(Some(*key), None));
+        .for_each(|key| form.handle_action(Some(*key)));
     form.fields.iter().try_for_each(|field| field.submit())?;
 
     Ok(())
@@ -103,7 +103,7 @@ fn test_form_submit() -> Result<()> {
     let mut form = test_valid_form(&got);
     key_events
         .iter()
-        .for_each(|key| form.update(Some(*key), None));
+        .for_each(|key| form.handle_action(Some(*key)));
     form.submit()?;
 
     let name = got.name.borrow();
@@ -128,7 +128,7 @@ fn test_malformed_form_error() {
     let mut form = test_invalid_form_no_fields();
     key_events
         .iter()
-        .for_each(|key| form.update(Some(*key), None));
+        .for_each(|key| form.handle_action(Some(*key)));
 
     let want = "Malformed: form has no fields.".to_string();
     let got = match form.submit() {

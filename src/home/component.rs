@@ -14,11 +14,7 @@ impl Component for Home {
         }
     }
 
-    fn update(
-        &mut self,
-        action: Option<Action>,
-        response: Option<&DbResponse>,
-    ) {
+    fn handle_action(&mut self, action: Option<Action>) {
         match self.mode {
             Mode::Insert => match action {
                 Some(Action::EnterNormal) => {
@@ -30,12 +26,12 @@ impl Component for Home {
                 }
                 Some(_) => {
                     if let Some(form) = &mut self.form {
-                        form.update(action, response);
+                        form.handle_action(action);
                     }
                 }
                 None => {
                     if let Some(form) = &mut self.form {
-                        form.update(action, response);
+                        form.handle_action(action);
                     }
                 }
             },
@@ -52,26 +48,32 @@ impl Component for Home {
                     self.cycle_active(1);
                     self.components
                         .iter_mut()
-                        .for_each(|c| c.update(action, None));
+                        .for_each(|c| c.handle_action(action));
                 }
                 Some(Action::SelectBackward) => {
                     self.cycle_active(-1);
                     self.components
                         .iter_mut()
-                        .for_each(|c| c.update(action, None));
+                        .for_each(|c| c.handle_action(action));
                 }
                 Some(_) => {
                     self.components.iter_mut().for_each(|c| {
-                        c.update(action, response);
+                        c.handle_action(action);
                     });
                 }
                 None => {
                     self.components.iter_mut().for_each(|c| {
-                        c.update(action, response);
+                        c.handle_action(action);
                     });
                 }
             },
         }
+    }
+
+    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
+        self.components
+            .iter_mut()
+            .for_each(|component| component.handle_repsonse(res));
     }
 
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {

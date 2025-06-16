@@ -24,11 +24,12 @@ impl App {
     pub async fn run(&mut self) -> Result<()> {
         while !self.should_exit {
             let res = self.tui.next_response();
-            let event = self.tui.next_event().await;
+            let event = self.tui.next_event();
 
             let action = self.handle_events(event);
 
-            self.update(action, res.as_ref());
+            self.handle_action(action);
+            self.handle_response(res.as_ref());
 
             self.tui
                 .terminal
@@ -46,19 +47,19 @@ impl App {
         }
     }
 
-    pub fn update(
-        &mut self,
-        action: Option<Action>,
-        response: Option<&DbResponse>,
-    ) {
+    pub fn handle_action(&mut self, action: Option<Action>) {
         match action {
             Some(Action::Quit) => {
                 self.should_exit = true;
             }
             Some(_) => {
-                self.component.update(action, response);
+                self.component.handle_action(action);
             }
             None => {}
         }
+    }
+
+    pub fn handle_response(&mut self, res: Option<&DbResponse>) {
+        self.component.handle_repsonse(res);
     }
 }

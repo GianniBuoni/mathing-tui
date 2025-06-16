@@ -71,12 +71,7 @@ where
         }
     }
 
-    fn update(
-        &mut self,
-        action: Option<Action>,
-        response: Option<&DbResponse>,
-    ) {
-        let _ = response;
+    fn handle_action(&mut self, action: Option<Action>) {
         match action {
             Some(Action::SelectForward) | Some(Action::SelectBackward) => {
                 self.check_active();
@@ -84,6 +79,13 @@ where
             Some(Action::HandleInput(key)) => {
                 self.input.handle_event(&crossterm::event::Event::Key(key));
             }
+            Some(_) => {}
+            None => {}
+        }
+    }
+
+    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
+        match res {
             Some(_) => {}
             None => {}
         }

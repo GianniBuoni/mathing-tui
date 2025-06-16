@@ -84,6 +84,7 @@ impl Home {
 
             self.form = None;
             self.from_params = None;
+            self.mode = Mode::Normal;
         }
     }
 }

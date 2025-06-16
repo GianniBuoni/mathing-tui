@@ -17,7 +17,7 @@ fn test_response_handling_items() {
 
     test_cases
         .iter()
-        .for_each(|res| table.update(None, Some(res)));
+        .for_each(|res| table.handle_repsonse(Some(res)));
 
     assert_eq!(
         table.items.len(),
@@ -42,7 +42,7 @@ fn test_response_handling_receits() {
 
     test_cases
         .iter()
-        .for_each(|res| table.update(None, Some(res)));
+        .for_each(|res| table.handle_repsonse(Some(res)));
 
     assert_eq!(
         table.items.len(),
