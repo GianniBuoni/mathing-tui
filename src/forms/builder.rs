@@ -33,8 +33,10 @@ impl FormBuilder {
     }
 }
 
-impl ComponentBuilder<Form> for FormBuilder {
-    fn build(mut self) -> Form {
+impl ComponentBuilder for FormBuilder {
+    type Output = Form;
+
+    fn build(mut self) -> Self::Output {
         self.fields
             .iter_mut()
             .enumerate()

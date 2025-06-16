@@ -15,8 +15,22 @@ pub(crate) fn plugin(app: &mut AppBuilder) {
         .add_heading("Payees")
         .build();
 
-    app.add_to_plugin(item_table).add_to_plugin(r_table);
+    let user_table = TableData::<StoreUser>::new_builder()
+        .add_title("Users")
+        .add_heading("User Name")
+        .build();
+
+    app.add_to_plugin(TableTui::Items(item_table))
+        .add_to_plugin(TableTui::Receipt(r_table))
+        .add_to_plugin(TableTui::Users(user_table));
 }
 
-impl Plugin for TableData<StoreItem> {}
-impl Plugin for TableData<StoreJoinRow> {}
+impl Plugin for TableTui {
+    fn add_to_app(self, app: &mut AppBuilder) {
+        match self {
+            Self::Items(_) => app.add_component(self),
+            Self::Receipt(_) => app.add_component(self),
+            Self::Users(_) => app.add_component(self),
+        }
+    }
+}

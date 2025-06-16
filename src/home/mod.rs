@@ -29,7 +29,7 @@ pub struct Home {
     form: Option<FormTui>,
     from_params: Option<DbPayloadBuilder>,
     keymap: HashMap<KeyEvent, Action>,
-    components: Vec<Box<dyn Component>>,
+    components: Vec<TableTui>,
     component_tracker: Rc<RefCell<usize>>,
     req_tx: Option<UnboundedSender<DbRequest>>,
     mode: Mode,
@@ -38,7 +38,7 @@ pub struct Home {
 #[derive(Default, Debug)]
 pub struct HomeBuilder {
     keymap: HashMap<KeyEvent, Action>,
-    components: Vec<Box<dyn Component>>,
+    components: Vec<TableTui>,
     component_tracker: Rc<RefCell<usize>>,
     req_tx: Option<UnboundedSender<DbRequest>>,
 }

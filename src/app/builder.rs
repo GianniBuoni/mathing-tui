@@ -16,7 +16,7 @@ impl AppBuilder {
             tui: self.tui.build(),
         }
     }
-    pub fn add_component(&mut self, component: impl Component + 'static) {
+    pub fn add_component(&mut self, component: TableTui) {
         self.component.add_component(component);
     }
 

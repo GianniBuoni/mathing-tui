@@ -5,12 +5,13 @@ pub mod prelude {
     pub use super::{Component, ComponentBuilder, Plugin};
 }
 
-pub trait ComponentBuilder<T>
+pub trait ComponentBuilder
 where
     Self: Sized,
-    T: Component,
 {
-    fn build(self) -> T;
+    type Output: Component;
+
+    fn build(self) -> Self::Output;
     fn add_key_event_handler(
         &mut self,
         _keymap: HashMap<KeyEvent, Action>,
@@ -19,10 +20,9 @@ where
     }
 }
 
-pub trait Plugin: Component + Sized + 'static {
-    fn add_to_app(self, app: &mut AppBuilder) {
-        app.add_component(self);
-    }
+pub trait Plugin: Component + Sized {
+    // required method
+    fn add_to_app(self, app: &mut AppBuilder);
 }
 
 pub trait Component: Debug {

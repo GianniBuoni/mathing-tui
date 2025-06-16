@@ -99,8 +99,39 @@ impl Component for TableData<StoreJoinRow> {
         if res.is_none() {
             return;
         }
-        if let DbPayload::Receipt(r) = &res.unwrap().payload {
-            self.add_item(r.to_owned())
+        match &res.unwrap().payload {
+            DbPayload::Receipt(r) => self.add_item(r.to_owned()),
+            DbPayload::Receipts(r) => {
+                r.iter().for_each(|r| self.add_item(r.to_owned()))
+            }
+            _ => {}
+        }
+    }
+    fn draw(&mut self, frame: &mut Frame, rect: Rect) {
+        self.draw(frame, rect);
+    }
+    fn init(&mut self, index: usize, tracker: Rc<RefCell<usize>>) {
+        self.init(index, tracker);
+    }
+}
+
+impl Component for TableData<StoreUser> {
+    fn is_active(&self) -> bool {
+        self.is_active()
+    }
+    fn handle_action(&mut self, action: Option<Action>) {
+        self.handle_action(action);
+    }
+    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
+        if res.is_none() {
+            return;
+        }
+        match &res.unwrap().payload {
+            DbPayload::User(u) => self.add_item(u.to_owned()),
+            DbPayload::Users(u) => {
+                u.iter().for_each(|u| self.add_item(u.to_owned()))
+            }
+            _ => {}
         }
     }
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {

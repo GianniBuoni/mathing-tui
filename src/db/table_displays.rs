@@ -32,3 +32,10 @@ impl TableDisplay for StoreJoinRow {
         ]
     }
 }
+
+impl TableDisplay for StoreUser {
+    fn ref_array(&self) -> Vec<Cell> {
+        let user_name = Cell::from(format!(" {} ", self.name));
+        vec![user_name]
+    }
+}

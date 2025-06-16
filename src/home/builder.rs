@@ -1,11 +1,8 @@
 use super::*;
 
 impl HomeBuilder {
-    pub fn add_component(
-        &mut self,
-        component: impl Component + 'static,
-    ) -> &mut Self {
-        self.components.push(Box::new(component));
+    pub fn add_component(&mut self, component: TableTui) -> &mut Self {
+        self.components.push(component);
         self
     }
 
@@ -18,8 +15,10 @@ impl HomeBuilder {
     }
 }
 
-impl ComponentBuilder<Home> for HomeBuilder {
-    fn build(mut self) -> Home {
+impl ComponentBuilder for HomeBuilder {
+    type Output = Home;
+
+    fn build(mut self) -> Self::Output {
         self.components.iter_mut().enumerate().for_each(
             |(index, component)| {
                 component.init(index, self.component_tracker.clone());

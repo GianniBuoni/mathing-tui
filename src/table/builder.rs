@@ -26,10 +26,7 @@ where
         self.headings.push(heading.into());
         self
     }
-}
-
-impl ComponentBuilder<TableData<StoreItem>> for TableBuilder<StoreItem> {
-    fn build(self) -> TableData<StoreItem> {
+    fn build(self) -> TableData<T> {
         TableData {
             title: self.title,
             headings: self.headings.into(),
@@ -39,13 +36,26 @@ impl ComponentBuilder<TableData<StoreItem>> for TableBuilder<StoreItem> {
     }
 }
 
-impl ComponentBuilder<TableData<StoreJoinRow>> for TableBuilder<StoreJoinRow> {
-    fn build(self) -> TableData<StoreJoinRow> {
-        TableData {
-            title: self.title,
-            headings: self.headings.into(),
-            tracker: self.tracker,
-            ..Default::default()
-        }
+impl ComponentBuilder for TableBuilder<StoreItem> {
+    type Output = TableData<StoreItem>;
+
+    fn build(self) -> Self::Output {
+        self.build()
+    }
+}
+
+impl ComponentBuilder for TableBuilder<StoreJoinRow> {
+    type Output = TableData<StoreJoinRow>;
+
+    fn build(self) -> Self::Output {
+        self.build()
+    }
+}
+
+impl ComponentBuilder for TableBuilder<StoreUser> {
+    type Output = TableData<StoreUser>;
+
+    fn build(self) -> Self::Output {
+        self.build()
     }
 }
