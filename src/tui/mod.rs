@@ -4,7 +4,7 @@ use crossterm::event::{EventStream, KeyEventKind};
 use futures::{FutureExt, StreamExt};
 use ratatui::DefaultTerminal;
 use tokio::{
-    sync::mpsc::{UnboundedReceiver, UnboundedSender},
+    sync::mpsc::{Receiver, Sender, UnboundedReceiver, UnboundedSender},
     task::JoinHandle,
 };
 
@@ -27,7 +27,7 @@ pub enum Event {
 #[derive(Debug)]
 pub struct Tui {
     pub terminal: DefaultTerminal,
-    event_rx: UnboundedReceiver<Event>,
+    event_rx: Receiver<Event>,
     res_rx: UnboundedReceiver<DbResponse>,
     _event_task: JoinHandle<()>,
     _db_task: JoinHandle<()>,
@@ -48,12 +48,13 @@ impl Tui {
         }
     }
 
-    async fn event_loop(event_tx: UnboundedSender<Event>) {
+    async fn event_loop(event_tx: Sender<Event>) {
         let mut event_stream = EventStream::new();
 
         // if this fails, then it's likely a bug in the calling code
         event_tx
             .send(Event::Init)
+            .await
             .expect("Failed to send Init event");
 
         loop {
@@ -67,7 +68,7 @@ impl Tui {
                 None => break,
                 }
             };
-            if event_tx.send(event).is_err() {
+            if event_tx.send(event).await.is_err() {
                 break;
             }
         }
