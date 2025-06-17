@@ -21,8 +21,10 @@ where
 }
 
 pub trait Plugin: Component + Sized {
+    type Parent;
+
     // required method
-    fn add_to_app(self, app: &mut AppBuilder);
+    fn add_to_parent(self, parent: &mut Self::Parent);
 }
 
 pub trait Component: Debug {

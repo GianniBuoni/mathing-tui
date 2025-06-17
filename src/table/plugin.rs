@@ -26,7 +26,9 @@ pub(crate) fn plugin(app: &mut AppBuilder) {
 }
 
 impl Plugin for TableTui {
-    fn add_to_app(self, app: &mut AppBuilder) {
+    type Parent = AppBuilder;
+
+    fn add_to_parent(self, app: &mut Self::Parent) {
         match self {
             Self::Items(_) => app.add_component(self),
             Self::Receipt(_) => app.add_component(self),

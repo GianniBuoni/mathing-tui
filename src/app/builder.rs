@@ -20,14 +20,17 @@ impl AppBuilder {
         self.component.add_component(component);
     }
 
-    pub fn add_to_plugin(&mut self, plugin: impl Plugin) -> &mut Self {
-        plugin.add_to_app(self);
+    pub fn add_to_plugin(
+        &mut self,
+        plugin: impl Plugin<Parent = Self>,
+    ) -> &mut Self {
+        plugin.add_to_parent(self);
         self
     }
 
     pub(super) fn add_plugins(
         &mut self,
-        plugin_factory: fn(&mut AppBuilder),
+        plugin_factory: fn(&mut Self),
     ) -> &mut Self {
         plugin_factory(self);
         self
