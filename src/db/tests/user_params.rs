@@ -3,9 +3,11 @@ use super::*;
 async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreUser>> {
     Ok(try_join_all(TEST_USERS.into_iter().map(async |user_name| {
         Ok::<StoreUser, Error>({
-            let param = UserParams::builder().user_name(user_name);
-            let user = param.build().post(conn).await?;
-            user
+            UserParams::builder()
+                .user_name(ParamOption::new().map_value(user_name).clone())
+                .build()
+                .post(conn)
+                .await?
         })
     }))
     .await?
@@ -48,7 +50,7 @@ async fn test_get_user(conn: SqlitePool) -> Result<()> {
     try_join_all(init_test(&conn).await?.into_iter().map(async |want| {
         anyhow::Ok::<()>({
             let got = UserParams::builder()
-                .user_id(want.id)
+                .user_id(ParamOption::new().map_value(want.id).clone())
                 .build()
                 .get(&conn)
                 .await?;
@@ -67,7 +69,11 @@ async fn test_get_user(conn: SqlitePool) -> Result<()> {
 async fn test_delete_user(conn: SqlitePool) -> Result<()> {
     let original = init_test(&conn).await?;
     let params = UserParams::builder()
-        .user_id(original.get(0).unwrap().id)
+        .user_id(
+            ParamOption::new()
+                .map_value(original.get(0).unwrap().id)
+                .clone(),
+        )
         .build();
 
     params.delete(&conn).await?;
@@ -99,8 +105,8 @@ async fn test_update_user(conn: SqlitePool) -> Result<()> {
         .zip(want)
         .map(|(user, name)| {
             UserParams::builder()
-                .user_id(user.id)
-                .user_name(name)
+                .user_id(ParamOption::new().map_value(user.id).clone())
+                .user_name(ParamOption::new().map_value(name).clone())
                 .build()
         })
         .collect::<Vec<UserParams>>();
@@ -136,7 +142,9 @@ async fn test_update_user(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_invalid_params(conn: SqlitePool) -> Result<()> {
     let no_id = UserParams::builder().build();
-    let no_name = UserParams::builder().user_id(0).build();
+    let no_name = UserParams::builder()
+        .user_id(ParamOption::new().map_value(0).clone())
+        .build();
 
     match no_id.delete(&conn).await {
         Ok(_) => panic!("Test user delete suceeded, but expected an error."),

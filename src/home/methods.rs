@@ -20,28 +20,26 @@ impl Home {
     }
     pub(super) fn handle_submit(&mut self) {
         if let Some(form) = self.form.as_mut() {
-            if let Err(e) = form.submit() {
-                form.map_err(Some(e));
+            if let Err(e) = form.try_mut_inner(|f| f.submit()) {
+                form.mut_inner(|f| f.map_err(Some(e)));
                 return;
             }
 
-            if let Some(params) = self.form_params.as_ref() {
-                let payload = params.build();
+            if let Some(payload) = form.get_inner(|f| f.get_payload()) {
                 let req = DbRequest::new()
-                    .req_type(form.get_req_type())
+                    .req_type(form.get_inner(|f| f.get_req_type()))
                     .payload(payload);
 
                 if let Some(tx) = self.req_tx.clone() {
                     if let Err(err) = tx.send(req) {
                         let err = anyhow::Error::msg(err.to_string());
-                        form.map_err(Some(err));
+                        form.mut_inner(|f| f.map_err(Some(err)));
                         return;
                     }
                 }
             };
 
             self.form = None;
-            self.form_params = None;
             self.mode = Mode::Normal;
         }
     }

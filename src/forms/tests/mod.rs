@@ -12,14 +12,14 @@ fn test_input_rect() -> Rect {
 }
 
 fn test_form() -> Form {
-    let mut form = Form::builder();
+    let mut form = Form::new();
     form.add_title("Add New Item").add_rect(Rect::new(
         0,
         0,
         52,
         Form::TWO_FIELD_H,
     ));
-    form.build()
+    form
 }
 
 fn test_f64_input<'a>() -> InputField<f64> {
@@ -36,24 +36,22 @@ struct OutputStruct {
     price: Rc<RefCell<f64>>,
 }
 
-fn test_valid_form(source: &OutputStruct) -> Form {
-    let name_field =
-        InputField::<String>::new("Item Name").map_value(source.name.clone());
-    let price_field =
-        InputField::<f64>::new("Item Price").map_value(source.price.clone());
-
-    let mut form = Form::builder();
+fn test_valid_form() -> FormTui {
+    let mut form = Form::new();
     form.add_title("Add New Item")
         .add_rect(Rect::new(0, 0, 52, 12))
-        .add_field(name_field)
-        .add_field(price_field)
         .add_request_type(RequestType::Post);
-    form.build()
+    let mut form = FormTui::ItemForm(form);
+
+    InputField::<String>::new("Item Name").plugin(&mut form);
+    InputField::<f64>::new("Item Price").plugin(&mut form);
+
+    form.map(|f| f.init())
 }
 
 fn test_invalid_form_no_fields() -> Form {
-    let mut form = Form::builder();
+    let mut form = Form::new();
     form.add_title("Add New Item")
         .add_rect(Rect::new(0, 0, 50, 9));
-    form.build()
+    form
 }

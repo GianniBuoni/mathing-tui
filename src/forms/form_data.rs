@@ -130,4 +130,20 @@ impl Form {
             Some(e) => self.error = Some(format!(" {} ", e)),
         }
     }
+
+    pub fn get_payload(&self) -> Option<DbPayload> {
+        self.payload.as_ref().map(|payload| payload.build())
+    }
+
+    pub fn get_req_type(&self) -> RequestType {
+        self.request_type
+    }
+
+    pub fn init(mut self) -> Self {
+        self.fields.iter_mut().enumerate().for_each(|(index, f)| {
+            f.init(index, self.active_field.clone());
+            f.check_active();
+        });
+        self
+    }
 }

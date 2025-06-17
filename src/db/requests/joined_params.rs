@@ -3,19 +3,19 @@ use anyhow::Ok;
 use super::*;
 
 impl JoinParamsBuilder {
-    pub fn r_id(mut self, r_id: i64) -> Self {
-        self.r_id = ParamOption::new(r_id);
+    pub fn r_id(&mut self, r_id: ParamOption<i64>) -> &mut Self {
+        self.r_id = r_id;
         self
     }
-    pub fn item_id(mut self, item_id: i64) -> Self {
-        self.item_id = ParamOption::new(item_id);
+    pub fn item_id(&mut self, item_id: ParamOption<i64>) -> &mut Self {
+        self.item_id = item_id;
         self
     }
-    pub fn item_qty(mut self, item_qty: i64) -> Self {
-        self.item_qty = ParamOption::new(item_qty);
+    pub fn item_qty(&mut self, item_qty: ParamOption<i64>) -> &mut Self {
+        self.item_qty = item_qty;
         self
     }
-    pub fn add_user(self, u_id: i64) -> Self {
+    pub fn add_user(&mut self, u_id: i64) -> &mut Self {
         let users = self.users.clone();
         {
             let mut users = users.borrow_mut();
@@ -23,7 +23,7 @@ impl JoinParamsBuilder {
         }
         self
     }
-    pub fn offset(mut self, offset: i64) -> Self {
+    pub fn offset(&mut self, offset: i64) -> &mut Self {
         self.offset = Some(offset);
         self
     }

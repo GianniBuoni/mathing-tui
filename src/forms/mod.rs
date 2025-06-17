@@ -70,13 +70,5 @@ pub struct Form {
     active_field: Rc<RefCell<usize>>,
     rect: Rect,
     request_type: RequestType,
-}
-
-#[derive(Debug, Default)]
-pub struct FormBuilder {
-    fields: Vec<Box<dyn Field>>,
-    title: Rc<str>,
-    active_field: Rc<RefCell<usize>>,
-    rect: Rect,
-    request_type: RequestType,
+    payload: Option<DbPayloadBuilder>,
 }

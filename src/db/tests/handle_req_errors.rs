@@ -54,7 +54,11 @@ async fn test_req_errors(conn: SqlitePool) {
             "Test invalid request params.",
         ),
         (
-            DbPayload::ItemParams(ItemParams::builder().item_id(1).build()),
+            DbPayload::ItemParams(
+                ItemParams::builder()
+                    .item_id(ParamOption::new().map_value(1).clone())
+                    .build(),
+            ),
             RequestType::Get,
             RequestError::not_found(1, "items"),
             "Test vaild params with DB error.",

@@ -9,8 +9,8 @@ fn test_items() -> Rc<[ItemParams]> {
         .iter()
         .map(|(name, price, _)| {
             ItemParams::builder()
-                .item_name(*name)
-                .item_price(*price)
+                .item_name(ParamOption::new().map_value(*name).clone())
+                .item_price(ParamOption::new().map_value(*price).clone())
                 .build()
         })
         .collect()
@@ -76,7 +76,9 @@ async fn test_add_items(conn: SqlitePool) -> Result<()> {
 async fn test_get_item_single(conn: SqlitePool) -> Result<()> {
     try_join_all(init_test(&conn).await?.into_iter().map(async |want| {
         Ok::<()>({
-            let param = ItemParams::builder().item_id(want.id).build();
+            let param = ItemParams::builder()
+                .item_id(ParamOption::new().map_value(want.id).clone())
+                .build();
             let got = param.get(&conn).await?;
             assert_eq!(want.name, got.name);
         })
@@ -90,7 +92,11 @@ async fn test_get_item_single(conn: SqlitePool) -> Result<()> {
 async fn test_delete_item(conn: SqlitePool) -> Result<()> {
     let originals = init_test(&conn).await?;
     let param = ItemParams::builder()
-        .item_id(originals.get(0).unwrap().id)
+        .item_id(
+            ParamOption::new()
+                .map_value(originals.get(0).unwrap().id)
+                .clone(),
+        )
         .build();
 
     param.delete(&conn).await?;
@@ -126,14 +132,15 @@ async fn test_update_item(conn: SqlitePool) -> Result<()> {
         .iter()
         .zip(update_params.into_iter())
         .map(|(original, (new_name, new_price))| {
-            let mut param = ItemParams::builder().item_id(original.id);
+            let mut param = ItemParams::builder();
+            param.item_id(ParamOption::new().map_value(original.id).clone());
 
             if let Some(name) = new_name {
-                param = param.item_name(name);
+                param.item_name(ParamOption::new().map_value(name).clone());
             }
 
             if let Some(price) = new_price {
-                param = param.item_price(price);
+                param.item_price(ParamOption::new().map_value(price).clone());
             }
             param.build()
         })
@@ -172,7 +179,11 @@ async fn test_update_item(conn: SqlitePool) -> Result<()> {
 async fn test_blank_item_update(conn: SqlitePool) -> Result<()> {
     let originals = init_test(&conn).await?;
     let params = ItemParams::builder()
-        .item_id(originals.get(0).unwrap().id)
+        .item_id(
+            ParamOption::new()
+                .map_value(originals.get(0).unwrap().id)
+                .clone(),
+        )
         .build();
 
     match params.update(&conn).await {

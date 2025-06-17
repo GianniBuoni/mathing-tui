@@ -18,11 +18,6 @@ where
         }
     }
 
-    pub fn map_value(mut self, source: Rc<RefCell<T>>) -> Self {
-        self.value.map_value(source);
-        self
-    }
-
     pub fn render_block(&self, style: Style) -> Block {
         Block::bordered()
             .border_type(BorderType::Rounded)
@@ -108,15 +103,8 @@ where
     }
 
     fn submit(&self) -> Result<()> {
-        match &self.value.is_some() {
-            false => {
-                Err(FormErrors::unmapped(self.title.deref().trim()).into())
-            }
-            true => {
-                let new_value = self.validate()?;
-                self.value.submit_value(new_value);
-                Ok(())
-            }
-        }
+        let new_value = self.validate()?;
+        self.value.map_value(new_value);
+        Ok(())
     }
 }

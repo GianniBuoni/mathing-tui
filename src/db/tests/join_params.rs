@@ -10,20 +10,21 @@ async fn join_init_test(conn: &SqlitePool) -> Result<Vec<StoreJoinRow>> {
 
     for (index, r) in items.into_iter().enumerate() {
         sleep_until(Instant::now() + Duration::from_secs(1)).await;
-        let mut param = JoinedReceiptParams::builder()
-            .item_id(r.0.id)
-            .item_qty(r.1)
+        let mut param = JoinedReceiptParams::builder();
+        param
+            .item_id(ParamOption::new().map_value(r.0.id).clone())
+            .item_qty(ParamOption::new().map_value(r.1).clone())
             .offset(0);
 
         match index {
             0 => {
-                param = param.add_user(users.get(2).unwrap().id);
+                param.add_user(users.get(2).unwrap().id);
             }
             1 => {
-                param = param.add_user(users.get(1).unwrap().id);
+                param.add_user(users.get(1).unwrap().id);
             }
             2 => {
-                param = param
+                param
                     .add_user(users.get(1).unwrap().id)
                     .add_user(users.get(2).unwrap().id);
             }
@@ -59,7 +60,11 @@ async fn test_join_get_all(conn: SqlitePool) -> Result<()> {
 async fn test_join_get(conn: SqlitePool) -> Result<()> {
     let want = join_init_test(&conn).await?;
     let got = JoinedReceiptParams::builder()
-        .r_id(want.get(0).unwrap().receipt_id)
+        .r_id(
+            ParamOption::new()
+                .map_value(want.get(0).unwrap().receipt_id)
+                .clone(),
+        )
         .build()
         .get(&conn)
         .await?;
@@ -74,7 +79,11 @@ async fn test_join_delete(conn: SqlitePool) -> Result<()> {
     let initial = join_init_test(&conn).await?;
 
     JoinedReceiptParams::builder()
-        .r_id(initial.get(0).unwrap().receipt_id)
+        .r_id(
+            ParamOption::new()
+                .map_value(initial.get(0).unwrap().receipt_id)
+                .clone(),
+        )
         .build()
         .delete(&conn)
         .await?;
@@ -93,7 +102,7 @@ async fn test_join_delete(conn: SqlitePool) -> Result<()> {
 async fn test_delete_cascade(conn: SqlitePool) -> Result<()> {
     join_init_test(&conn).await?;
     UserParams::builder()
-        .user_id(3)
+        .user_id(ParamOption::new().map_value(3).clone())
         .build()
         .delete(&conn)
         .await?;
@@ -115,21 +124,37 @@ async fn test_joined_update(conn: SqlitePool) -> Result<()> {
     let params = [
         (
             JoinedReceiptParams::builder()
-                .r_id(init.get(0).unwrap().receipt_id)
-                .item_qty(1)
+                .r_id(
+                    ParamOption::new()
+                        .map_value(init.get(0).unwrap().receipt_id)
+                        .clone(),
+                )
+                .item_qty(ParamOption::new().map_value(1).clone())
                 .build(),
             "ID 1, changed qty to 1",
         ),
         (
             JoinedReceiptParams::builder()
-                .r_id(init.get(1).unwrap().receipt_id)
-                .item_id(init.get(0).unwrap().item_id)
+                .r_id(
+                    ParamOption::new()
+                        .map_value(init.get(1).unwrap().receipt_id)
+                        .clone(),
+                )
+                .item_id(
+                    ParamOption::new()
+                        .map_value(init.get(0).unwrap().item_id)
+                        .clone(),
+                )
                 .build(),
             "ID 2, to a differnt item.",
         ),
         (
             JoinedReceiptParams::builder()
-                .r_id(init.get(2).unwrap().receipt_id)
+                .r_id(
+                    ParamOption::new()
+                        .map_value(init.get(2).unwrap().receipt_id)
+                        .clone(),
+                )
                 .add_user(3)
                 .build(),
             "ID 3, Remove user Noodle from receipt.",
@@ -172,24 +197,32 @@ async fn test_joined_errors(conn: SqlitePool) -> Result<()> {
     let test_cases = [
         (
             JoinedReceiptParams::builder()
-                .item_id(0)
+                .item_id(ParamOption::new().map_value(0).clone())
                 .add_user(0)
                 .build(),
             RequestType::Get,
             RequestError::missing_param("receipt id"),
         ),
         (
-            JoinedReceiptParams::builder().r_id(0).build(),
+            JoinedReceiptParams::builder()
+                .r_id(ParamOption::new().map_value(0).clone())
+                .build(),
             RequestType::GetAll,
             RequestError::missing_param("offset"),
         ),
         (
-            JoinedReceiptParams::builder().r_id(0).item_id(0).build(),
+            JoinedReceiptParams::builder()
+                .r_id(ParamOption::new().map_value(0).clone())
+                .item_id(ParamOption::new().map_value(0).clone())
+                .build(),
             RequestType::Post,
             RequestError::missing_param("item qty"),
         ),
         (
-            JoinedReceiptParams::builder().r_id(0).item_qty(0).build(),
+            JoinedReceiptParams::builder()
+                .r_id(ParamOption::new().map_value(0).clone())
+                .item_qty(ParamOption::new().map_value(0).clone())
+                .build(),
             RequestType::Post,
             RequestError::missing_param("item id"),
         ),
@@ -199,7 +232,9 @@ async fn test_joined_errors(conn: SqlitePool) -> Result<()> {
             RequestError::missing_param("receipt id"),
         ),
         (
-            JoinedReceiptParams::builder().r_id(0).build(),
+            JoinedReceiptParams::builder()
+                .r_id(ParamOption::new().map_value(0).clone())
+                .build(),
             RequestType::Delete,
             RequestError::not_found(0, "receipts"),
         ),
@@ -209,12 +244,17 @@ async fn test_joined_errors(conn: SqlitePool) -> Result<()> {
             RequestError::missing_param("receipt id"),
         ),
         (
-            JoinedReceiptParams::builder().r_id(0).build(),
+            JoinedReceiptParams::builder()
+                .r_id(ParamOption::new().map_value(0).clone())
+                .build(),
             RequestType::Update,
             RequestError::missing_param("item id, item qty, or users"),
         ),
         (
-            JoinedReceiptParams::builder().r_id(0).add_user(0).build(),
+            JoinedReceiptParams::builder()
+                .r_id(ParamOption::new().map_value(0).clone())
+                .add_user(0)
+                .build(),
             RequestType::Update,
             RequestError::not_found(0, "receipts_users"),
         ),

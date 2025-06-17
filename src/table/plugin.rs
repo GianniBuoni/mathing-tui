@@ -20,19 +20,7 @@ pub(crate) fn plugin(app: &mut AppBuilder) {
         .add_heading("User Name")
         .build();
 
-    app.add_to_plugin(TableTui::Items(item_table))
-        .add_to_plugin(TableTui::Receipt(r_table))
-        .add_to_plugin(TableTui::Users(user_table));
-}
-
-impl Plugin for TableTui {
-    type Parent = AppBuilder;
-
-    fn add_to_parent(self, app: &mut Self::Parent) {
-        match self {
-            Self::Items(_) => app.add_component(self),
-            Self::Receipt(_) => app.add_component(self),
-            Self::Users(_) => app.add_component(self),
-        }
-    }
+    app.add_component(TableTui::Items(item_table))
+        .add_component(TableTui::Receipt(r_table))
+        .add_component(TableTui::Users(user_table));
 }

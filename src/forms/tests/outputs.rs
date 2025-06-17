@@ -1,4 +1,4 @@
-use std::ops::Deref;
+use core::panic;
 
 use super::*;
 
@@ -35,38 +35,6 @@ fn test_input_validation_f64() {
 }
 
 #[test]
-fn test_input_mapping() {
-    let test_float = Rc::new(RefCell::new(0. as f64));
-
-    let mut test_cases = [
-        (
-            Box::new(test_f64_input().map_value(test_float.clone()))
-                as Box<dyn Field>,
-            "Ok",
-            "Test valid float field.",
-        ),
-        (
-            Box::new(test_f64_input()) as Box<dyn Field>,
-            "Item Price is not mapped to any value.",
-            "Test unmapped float field.",
-        ),
-    ];
-
-    test_cases.iter_mut().for_each(|(input, want, desc)| {
-        let action =
-            Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('1'))));
-        input.handle_action(action);
-
-        let got = match input.submit() {
-            Ok(_) => "Ok".to_string(),
-            Err(e) => e.to_string(),
-        };
-
-        assert_eq!(want.to_string(), got, "{desc}")
-    });
-}
-
-#[test]
 fn test_form_validation() -> Result<()> {
     let key_events = [
         Action::HandleInput(KeyEvent::from(KeyCode::Char('a'))),
@@ -77,11 +45,11 @@ fn test_form_validation() -> Result<()> {
         Action::HandleInput(KeyEvent::from(KeyCode::Char('9'))),
     ];
 
-    let mut form = test_valid_form(&OutputStruct::default());
+    let mut form = test_valid_form();
     key_events
         .iter()
         .for_each(|key| form.handle_action(Some(*key)));
-    form.fields.iter().try_for_each(|field| field.submit())?;
+    form.try_mut_inner(|f| f.submit())?;
 
     Ok(())
 }
@@ -99,19 +67,33 @@ fn test_form_submit() -> Result<()> {
 
     let want = ("a", 1.99 as f64);
 
-    let got = OutputStruct::default();
-    let mut form = test_valid_form(&got);
+    let mut form = test_valid_form();
     key_events
         .iter()
         .for_each(|key| form.handle_action(Some(*key)));
-    form.submit()?;
+    form.try_mut_inner(|f| f.submit())?;
 
-    let name = got.name.borrow();
-    let got = (name.deref().deref(), *got.price.borrow());
+    // check if from values changed
+    let panic_msg = "Test is not testing the expected kind of form.";
+    let desc = "Test if submitting with input values produces the correct resulting value.";
 
-    assert_eq!(want, got, "Test if valid form creates expected output");
+    match form {
+        FormTui::ItemForm(form) => {
+            if let DbPayloadBuilder::ItemParams(params) = form.payload.unwrap()
+            {
+                let name = params.item_name.unwrap().unwrap();
+                let price = params.item_price.unwrap().unwrap();
 
-    Ok(())
+                assert_eq!(want.0, name, "{desc}");
+                assert_eq!(want.1, price, "{desc}");
+
+                Ok(())
+            } else {
+                panic!("{panic_msg}")
+            }
+        }
+        _ => panic!("{panic_msg}"),
+    }
 }
 
 #[test]

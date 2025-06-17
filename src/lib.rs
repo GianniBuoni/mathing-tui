@@ -8,6 +8,7 @@ pub mod prelude {
     #[allow(unused_imports)]
     pub(crate) use crate::forms::prelude::*;
     pub(crate) use crate::home::prelude::*;
+    pub(crate) use crate::plugin::prelude::*;
     pub(crate) use crate::styles::prelude::*;
     pub(crate) use crate::table::prelude::*;
     pub use crate::tui::prelude::*;
@@ -26,6 +27,7 @@ mod config;
 mod db;
 mod forms;
 mod home;
+mod plugin;
 mod styles;
 mod table;
 mod tui;

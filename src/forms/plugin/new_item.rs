@@ -1,30 +1,39 @@
 use super::*;
 
 impl Form {
-    pub fn new_item() -> (Option<FormTui>, Option<DbPayloadBuilder>) {
-        let payload_builder =
-            ItemParamsBuilder::default().item_name("").item_price(0.);
-        let mut form = Self::builder();
+    pub fn new_item() -> Option<FormTui> {
+        let mut form = Self::new();
 
         form.add_title("New Item")
             .add_rect(Self::form_rect(Self::TWO_FIELD_H))
             .add_request_type(RequestType::Post);
 
-        if let Err(err) = form
-            .try_map_input::<String>(&payload_builder.item_name, "Item Name")
-        {
-            return (Some(FormTui::ItemForm(form.build_with_error(err))), None);
-        }
+        let mut form = FormTui::ItemForm(form);
 
-        if let Err(err) =
-            form.try_map_input(&payload_builder.item_price, "Item Price")
-        {
-            return (Some(FormTui::ItemForm(form.build_with_error(err))), None);
-        }
+        InputField::<String>::new("Item Name").plugin(&mut form);
+        InputField::<f64>::new("Item Price").plugin(&mut form);
 
-        (
-            Some(FormTui::ItemForm(form.build())),
-            Some(DbPayloadBuilder::ItemParams(payload_builder)),
-        )
+        Some(form.map(|i| i.init()))
+    }
+    pub fn update_item(item: &StoreItem) -> FormTui {
+        let _ = item;
+        let mut form = Self::new();
+
+        form.add_title("Update Item")
+            .add_rect(Self::form_rect(Self::TWO_FIELD_H))
+            .add_request_type(RequestType::Update);
+
+        let mut form = FormTui::ItemForm(form);
+
+        // TODO:: make new field for id's. SHOULD NOT BE EDITABLE.
+        // TOOD:: make with value method for input values
+        InputField::<String>::new("Item Name").plugin(&mut form);
+        InputField::<f64>::new("Item Price").plugin(&mut form);
+
+        todo!()
+    }
+    pub fn delete_item(item: &StoreItem) -> FormTui {
+        let _ = item;
+        todo!()
     }
 }

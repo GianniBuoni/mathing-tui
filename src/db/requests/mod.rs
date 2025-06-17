@@ -100,7 +100,7 @@ pub enum RequestType {
     Reset,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ParamOption<T>(Rc<RefCell<Option<T>>>)
 where
     T: Default + Debug;
@@ -115,15 +115,18 @@ where
     pub fn unwrap(&self) -> Option<T> {
         self.0.borrow().deref().clone()
     }
-    pub fn map_value(&mut self, value: T) {
-        *self.0.borrow_mut() = Some(value)
+    pub fn map_value(&self, value: impl Into<T>) -> &Self {
+        {
+            *self.0.borrow_mut() = Some(value.into());
+        }
+        self
     }
 }
 
 #[derive(Debug, Default)]
 pub struct UserParamsBuilder {
     pub u_id: ParamOption<i64>,
-    pub name: Rc<RefCell<String>>,
+    pub name: ParamOption<String>,
 }
 
 #[derive(Debug, Default)]

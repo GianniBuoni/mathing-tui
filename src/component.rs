@@ -2,7 +2,7 @@ use crate::prelude::*;
 use std::{cell::RefCell, collections::HashMap, fmt::Debug, rc::Rc};
 
 pub mod prelude {
-    pub use super::{Component, ComponentBuilder, Plugin};
+    pub use super::{Component, ComponentBuilder};
 }
 
 pub trait ComponentBuilder
@@ -18,13 +18,6 @@ where
     ) -> &mut Self {
         todo!()
     }
-}
-
-pub trait Plugin: Component + Sized {
-    type Parent;
-
-    // required method
-    fn add_to_parent(self, parent: &mut Self::Parent);
 }
 
 pub trait Component: Debug {

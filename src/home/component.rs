@@ -37,11 +37,11 @@ impl Component for Home {
             },
             Mode::Normal => match action {
                 Some(Action::EnterInsert) => {
-                    self.mode = Mode::Insert;
                     if let Some(table) =
                         self.components.get(*self.component_tracker.borrow())
                     {
-                        (self.form, self.form_params) = table.new_form();
+                        self.mode = Mode::Insert;
+                        self.form = table.new_form();
                     }
                 }
                 Some(Action::SelectForward) => {

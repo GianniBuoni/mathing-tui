@@ -1,16 +1,16 @@
 use super::{errors::RequestError, *};
 
 impl ItemParamsBuilder {
-    pub fn item_id(mut self, id: i64) -> Self {
-        self.item_id = ParamOption::new(id);
+    pub fn item_id(&mut self, id: ParamOption<i64>) -> &mut Self {
+        self.item_id = id;
         self
     }
-    pub fn item_name(mut self, name: impl ToString) -> Self {
-        self.item_name = ParamOption::new(name.to_string());
+    pub fn item_name(&mut self, name: ParamOption<String>) -> &mut Self {
+        self.item_name = name;
         self
     }
-    pub fn item_price(mut self, price: f64) -> Self {
-        self.item_price = ParamOption::new(price);
+    pub fn item_price(&mut self, price: ParamOption<f64>) -> &mut Self {
+        self.item_price = price;
         self
     }
     pub fn offset(mut self, offset: i64) -> Self {

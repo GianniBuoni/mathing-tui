@@ -13,8 +13,8 @@ async fn test_req_handler_items(conn: SqlitePool) {
         (
             ReqItem(
                 ItemParams::builder()
-                    .item_name("Slamon")
-                    .item_price(9.49)
+                    .item_name(ParamOption::new().map_value("Slamon").clone())
+                    .item_price(ParamOption::new().map_value(9.49).clone())
                     .build(),
             ),
             RequestType::Post,
@@ -25,7 +25,11 @@ async fn test_req_handler_items(conn: SqlitePool) {
             }),
         ),
         (
-            ReqItem(ItemParams::builder().item_id(1).build()),
+            ReqItem(
+                ItemParams::builder()
+                    .item_id(ParamOption::new().map_value(1).clone())
+                    .build(),
+            ),
             RequestType::Get,
             Item(StoreItem {
                 name: "Slamon".into(),
@@ -36,9 +40,9 @@ async fn test_req_handler_items(conn: SqlitePool) {
         (
             ReqItem(
                 ItemParams::builder()
-                    .item_id(1)
-                    .item_name("New name")
-                    .item_price(0.)
+                    .item_id(ParamOption::new().map_value(1).clone())
+                    .item_name(ParamOption::new().map_value("New name").clone())
+                    .item_price(ParamOption::new().map_value(0.).clone())
                     .build(),
             ),
             RequestType::Update,
@@ -49,7 +53,11 @@ async fn test_req_handler_items(conn: SqlitePool) {
             }),
         ),
         (
-            ReqItem(ItemParams::builder().item_id(1).build()),
+            ReqItem(
+                ItemParams::builder()
+                    .item_id(ParamOption::new().map_value(1).clone())
+                    .build(),
+            ),
             RequestType::Delete,
             DbPayload::AffectedRows(1),
         ),
@@ -93,7 +101,11 @@ async fn test_req_handler_items(conn: SqlitePool) {
 fn test_req_handler_users(conn: SqlitePool) {
     let test_cases = [
         (
-            ReqUser(UserParams::builder().user_name("Jon").build()),
+            ReqUser(
+                UserParams::builder()
+                    .user_name(ParamOption::new().map_value("Jon").clone())
+                    .build(),
+            ),
             RequestType::Post,
             User(StoreUser {
                 name: "Jon".into(),
@@ -101,7 +113,11 @@ fn test_req_handler_users(conn: SqlitePool) {
             }),
         ),
         (
-            ReqUser(UserParams::builder().user_id(1).build()),
+            ReqUser(
+                UserParams::builder()
+                    .user_id(ParamOption::new().map_value(1).clone())
+                    .build(),
+            ),
             RequestType::Get,
             User(StoreUser {
                 name: "Jon".into(),
@@ -110,7 +126,10 @@ fn test_req_handler_users(conn: SqlitePool) {
         ),
         (
             ReqUser(
-                UserParams::builder().user_id(1).user_name("Noodle").build(),
+                UserParams::builder()
+                    .user_id(ParamOption::new().map_value(1).clone())
+                    .user_name(ParamOption::new().map_value("Noodle").clone())
+                    .build(),
             ),
             RequestType::Update,
             User(StoreUser {
@@ -119,7 +138,11 @@ fn test_req_handler_users(conn: SqlitePool) {
             }),
         ),
         (
-            ReqUser(UserParams::builder().user_id(1).build()),
+            ReqUser(
+                UserParams::builder()
+                    .user_id(ParamOption::new().map_value(1).clone())
+                    .build(),
+            ),
             RequestType::Delete,
             DbPayload::AffectedRows(1),
         ),
@@ -158,14 +181,14 @@ fn test_req_handler_users(conn: SqlitePool) {
 async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
     // init test
     ItemParams::builder()
-        .item_name("Slamon")
-        .item_price(9.49)
+        .item_name(ParamOption::new().map_value("Slamon").clone())
+        .item_price(ParamOption::new().map_value(9.49).clone())
         .build()
         .post(&conn)
         .await?;
 
     UserParams::builder()
-        .user_name("Jon")
+        .user_name(ParamOption::new().map_value("Jon").clone())
         .build()
         .post(&conn)
         .await?;
@@ -175,8 +198,8 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
             ReqReceipt(
                 JoinedReceiptParams::builder()
                     .add_user(1)
-                    .item_id(1)
-                    .item_qty(1)
+                    .item_id(ParamOption::new().map_value(1).clone())
+                    .item_qty(ParamOption::new().map_value(1).clone())
                     .build(),
             ),
             RequestType::Post,
@@ -194,7 +217,11 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
             }),
         ),
         (
-            ReqReceipt(JoinedReceiptParams::builder().r_id(1).build()),
+            ReqReceipt(
+                JoinedReceiptParams::builder()
+                    .r_id(ParamOption::new().map_value(1).clone())
+                    .build(),
+            ),
             RequestType::Get,
             Receipt(StoreJoinRow {
                 users: vec![StoreUser {
@@ -211,7 +238,10 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
         ),
         (
             ReqReceipt(
-                JoinedReceiptParams::builder().r_id(1).item_qty(3).build(),
+                JoinedReceiptParams::builder()
+                    .r_id(ParamOption::new().map_value(1).clone())
+                    .item_qty(ParamOption::new().map_value(3).clone())
+                    .build(),
             ),
             RequestType::Update,
             Receipt(StoreJoinRow {
@@ -228,7 +258,11 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
             }),
         ),
         (
-            ReqReceipt(JoinedReceiptParams::builder().r_id(1).build()),
+            ReqReceipt(
+                JoinedReceiptParams::builder()
+                    .r_id(ParamOption::new().map_value(1).clone())
+                    .build(),
+            ),
             RequestType::Delete,
             DbPayload::AffectedRows(1),
         ),
@@ -285,24 +319,24 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
 async fn test_req_inits(conn: SqlitePool) -> Result<()> {
     // init test
     ItemParams::builder()
-        .item_name("Slamon")
-        .item_price(9.49)
+        .item_name(ParamOption::new().map_value("Slamon").clone())
+        .item_price(ParamOption::new().map_value(9.49).clone())
         .build()
         .post(&conn)
         .await?;
     UserParams::builder()
-        .user_name("Jon")
+        .user_name(ParamOption::new().map_value("Jon").clone())
         .build()
         .post(&conn)
         .await?;
     UserParams::builder()
-        .user_name("Noodle")
+        .user_name(ParamOption::new().map_value("Noodle").clone())
         .build()
         .post(&conn)
         .await?;
     JoinedReceiptParams::builder()
-        .item_id(1)
-        .item_qty(3)
+        .item_id(ParamOption::new().map_value(1).clone())
+        .item_qty(ParamOption::new().map_value(3).clone())
         .add_user(1)
         .add_user(2)
         .build()
