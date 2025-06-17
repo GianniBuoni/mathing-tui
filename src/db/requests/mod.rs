@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use errors::RequestError;
 use sqlx::SqliteExecutor;
 
@@ -99,7 +101,7 @@ pub enum RequestType {
 }
 
 #[derive(Debug, Default)]
-pub struct ParamOption<T>(Option<Rc<RefCell<T>>>)
+pub struct ParamOption<T>(Rc<RefCell<Option<T>>>)
 where
     T: Default + Debug;
 
@@ -107,38 +109,21 @@ impl<T> ParamOption<T>
 where
     T: Default + Debug + Clone,
 {
-    pub fn new(value: T) -> Self {
-        Self(Some(Rc::new(RefCell::new(value))))
+    pub fn new() -> Self {
+        Self::default()
     }
     pub fn unwrap(&self) -> Option<T> {
-        let inner_value = self.0.as_ref()?;
-        let inner_value = inner_value.borrow();
-
-        Some(inner_value.to_owned())
+        self.0.borrow().deref().clone()
     }
-    pub fn map_value(&mut self, value: Rc<RefCell<T>>) {
-        self.0 = Some(value)
-    }
-    pub fn is_some(&self) -> bool {
-        self.0.is_some()
-    }
-    pub fn submit_value(&self, value: T) {
-        if let Some(inner_value) = &self.0 {
-            *inner_value.borrow_mut() = value;
-        }
-    }
-    pub fn clone_inner(&self) -> Result<Rc<RefCell<T>>> {
-        self.0
-            .as_ref()
-            .ok_or(Error::msg("Cloning an unmapped Param Option"))
-            .cloned()
+    pub fn map_value(&mut self, value: T) {
+        *self.0.borrow_mut() = Some(value)
     }
 }
 
 #[derive(Debug, Default)]
 pub struct UserParamsBuilder {
     pub u_id: ParamOption<i64>,
-    pub name: ParamOption<String>,
+    pub name: Rc<RefCell<String>>,
 }
 
 #[derive(Debug, Default)]
