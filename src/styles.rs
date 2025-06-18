@@ -5,34 +5,28 @@ pub mod prelude {
 }
 
 pub struct AppColors {
-    pub border_fg: Color,
-    pub header_bg: Color,
-    pub header_fg: Color,
-    pub row_fg: Color,
-    pub selected_row_fg: Color,
-    pub input_fg: Color,
-    pub error_fg: Color,
+    pub base: Color,
+    pub ground: Color,
+    pub primary: Color,
+    pub secondary: Color,
+    pub warning: Color,
 }
 
 impl AppColors {
     pub const ACTIVE: Self = Self {
-        border_fg: Color::Reset,
-        header_bg: Color::Magenta,
-        header_fg: Color::Black,
-        row_fg: Color::Reset,
-        selected_row_fg: Color::Red,
-        input_fg: Color::Magenta,
-        error_fg: Color::Red,
+        base: Color::Reset,
+        ground: Color::Magenta,
+        primary: Color::Black,
+        secondary: Color::Green,
+        warning: Color::Red,
     };
 
     pub const INACTIVE: Self = Self {
-        border_fg: Color::DarkGray,
-        header_bg: Color::DarkGray,
-        header_fg: Color::Black,
-        row_fg: Color::DarkGray,
-        selected_row_fg: Color::DarkGray,
-        input_fg: Color::DarkGray,
-        error_fg: Color::Red,
+        base: Color::DarkGray,
+        ground: Color::DarkGray,
+        primary: Color::Reset,
+        secondary: Color::DarkGray,
+        warning: Color::Red,
     };
     pub fn get(active: bool) -> Self {
         match active {
@@ -55,14 +49,14 @@ impl From<AppColors> for AppStyles {
     fn from(value: AppColors) -> Self {
         Self {
             header_style: Style::default()
-                .fg(value.header_fg)
-                .bg(value.header_bg)
+                .fg(value.primary)
+                .bg(value.ground)
                 .bold(),
-            row_style: Style::default().fg(value.row_fg),
-            highlight_style: Style::default().fg(value.selected_row_fg),
-            input_style: Style::default().fg(value.input_fg),
-            block_style: Style::default().fg(value.border_fg),
-            error_style: Style::default().fg(value.error_fg),
+            row_style: Style::default().fg(value.base),
+            highlight_style: Style::default().fg(value.secondary).bold(),
+            input_style: Style::default().fg(value.ground),
+            block_style: Style::default().fg(value.base),
+            error_style: Style::default().fg(value.warning),
         }
     }
 }
