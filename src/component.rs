@@ -2,7 +2,19 @@ use crate::prelude::*;
 use std::{cell::RefCell, collections::HashMap, fmt::Debug, rc::Rc};
 
 pub mod prelude {
-    pub use super::{Component, ComponentBuilder};
+    pub use super::{Component, ComponentBuilder, ComponentTracker};
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct ComponentTracker(Rc<RefCell<usize>>);
+
+impl ComponentTracker {
+    pub fn go_to(&self, index: usize) {
+        *self.0.borrow_mut() = index;
+    }
+    pub fn inner(&self) -> usize {
+        *self.0.borrow()
+    }
 }
 
 pub trait ComponentBuilder
@@ -21,12 +33,18 @@ where
 }
 
 pub trait Component: Debug {
-    /// required methods
+    // required methods
     fn draw(&mut self, frame: &mut Frame, rect: Rect);
     fn handle_action(&mut self, action: Option<Action>);
-    fn init(&mut self, _index: usize, _tracker: Rc<RefCell<usize>>) {}
 
-    /// provided methods
+    // provided methods
+    fn handle_events(&mut self, event: Option<Event>) -> Option<Action> {
+        match event {
+            Some(Event::Key(key_event)) => self.handle_key_events(key_event),
+            _ => None,
+        }
+    }
+    // optional methods
     fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
         let _ = res;
         todo!()
@@ -35,13 +53,7 @@ pub trait Component: Debug {
         let _ = key;
         todo!();
     }
-    fn handle_events(&mut self, event: Option<Event>) -> Option<Action> {
-        match event {
-            Some(Event::Key(key_event)) => self.handle_key_events(key_event),
-            _ => None,
-        }
-    }
     fn is_active(&self) -> bool {
-        false
+        todo!();
     }
 }
