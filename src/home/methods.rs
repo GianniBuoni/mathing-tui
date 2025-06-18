@@ -19,29 +19,43 @@ impl Home {
         }
     }
     pub(super) fn handle_submit(&mut self) {
-        if let Some(form) = self.form.as_mut() {
-            if let Err(e) = form.try_mut_inner(|f| f.submit()) {
-                form.mut_inner(|f| f.map_err(Some(e)));
-                return;
-            }
-
-            if let Some(payload) = form.get_inner(|f| f.get_payload()) {
-                let req = DbRequest::new()
-                    .req_type(form.get_inner(|f| f.get_req_type()))
-                    .payload(payload);
-
-                if let Some(tx) = self.req_tx.clone() {
-                    if let Err(err) = tx.send(req) {
-                        let err = anyhow::Error::msg(err.to_string());
-                        form.mut_inner(|f| f.map_err(Some(err)));
-                        return;
-                    }
-                }
-            };
-
-            self.form = None;
-            self.mode = Mode::Normal;
+        // return early if there is no form
+        let Some(form) = self.form.as_mut() else {
+            return;
+        };
+        // unwrap the payload; if none map an err to the form
+        let Some(payload) = form.get_inner(|f| f.get_payload()) else {
+            form.mut_inner(|f| {
+                f.map_err(Some(FormErrors::malformed("payload").into()))
+            });
+            return;
+        };
+        // unwrap tx; if none map err
+        let Some(tx) = self.req_tx.clone() else {
+            form.mut_inner(|f| {
+                f.map_err(Some(FormErrors::malformed("req tx").into()))
+            });
+            return;
+        };
+        // try a submit; if there is an err, map it to the form
+        if let Err(e) = form.try_mut_inner(|f| f.submit()) {
+            form.mut_inner(|f| f.map_err(Some(e)));
+            return;
         }
+        // no errors -> start building req
+        let req = DbRequest::new()
+            .req_type(form.get_inner(|f| f.get_req_type()))
+            .payload(payload);
+
+        // send req; if err map err
+        if let Err(err) = tx.send(req) {
+            let err = anyhow::Error::msg(err.to_string());
+            form.mut_inner(|f| f.map_err(Some(err)));
+            return;
+        }
+        // reset mode
+        self.form = None;
+        self.mode = Mode::Normal;
     }
 
     /// [`Home`]'s init method is responsible for making all the initial
