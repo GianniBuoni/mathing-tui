@@ -1,7 +1,9 @@
 use super::*;
 
+mod choice_rendering;
+mod form_rendering;
+mod input_rendering;
 mod outputs;
-mod test_form_rendering;
 
 fn test_big_rect() -> Rect {
     Rect::new(0, 0, 56, Form::TWO_FIELD_H)

@@ -88,7 +88,7 @@ fn test_render_table() {
         Style::new().black().on_magenta().bold(),
     );
     want.set_style(Rect::new(0, 1, 50, 1), Style::new().fg(Color::Reset));
-    want.set_style(Rect::new(0, 2, 50, 1), Style::new().red());
+    want.set_style(Rect::new(0, 2, 50, 1), Style::new().green().bold());
 
     assert_eq!(
         want, got,
@@ -110,7 +110,7 @@ fn test_render_complete_table() -> Result<()> {
     ]);
 
     let heading_style = Style::new().fg(Color::Black).bg(Color::Magenta).bold();
-    let highlight_style = Style::new().red();
+    let highlight_style = Style::new().green().bold();
 
     want.set_style(Rect::new(2, 2, 46, 1), heading_style);
     want.set_style(Rect::new(2, 3, 46, 1), highlight_style);
