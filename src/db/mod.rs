@@ -26,7 +26,7 @@ pub mod prelude {
     };
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub enum DbTable {
     #[default]
     None,

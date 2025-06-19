@@ -38,7 +38,7 @@ impl Component for Home {
             Mode::Normal => match action {
                 Some(Action::EnterInsert) => {
                     if let Some(table) =
-                        self.components.get(*self.component_tracker.borrow())
+                        self.components.get(self.component_tracker.inner())
                     {
                         self.mode = Mode::Insert;
                         self.form = table.new_form();
@@ -70,10 +70,10 @@ impl Component for Home {
         }
     }
 
-    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
+    fn handle_response(&mut self, res: Option<&DbResponse>) {
         self.components
             .iter_mut()
-            .for_each(|component| component.handle_repsonse(res));
+            .for_each(|component| component.handle_response(res));
     }
 
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {

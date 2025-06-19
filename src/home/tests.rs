@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn test_key_events() {
-    let mut app = test_home();
+    let mut home = Home::mock();
 
     let none = KeyModifiers::NONE;
     let key_events = [
@@ -72,19 +72,19 @@ fn test_key_events() {
     ];
 
     key_events.into_iter().for_each(|(event, want, desc)| {
-        let got = app.handle_events(Some(Event::Key(event)));
-        app.handle_action(got);
+        let got = home.handle_events(Some(Event::Key(event)));
+        home.handle_action(got);
         assert_eq!(want, got, "{desc}")
     });
 }
 
 #[test]
 fn test_component_cycling_forward() {
-    let mut test_home = test_home();
+    let mut test_home = Home::mock();
     let key_event = KeyEvent::from(KeyCode::Tab);
 
     assert_eq!(
-        *test_home.component_tracker.borrow(),
+        test_home.component_tracker.inner(),
         0,
         "Test if current model is properly initialized",
     );
@@ -96,7 +96,7 @@ fn test_component_cycling_forward() {
         test_home.handle_action(action);
         assert_eq!(
             want,
-            *test_home.component_tracker.borrow(),
+            test_home.component_tracker.inner(),
             "Test if current view changes with repeated input"
         );
     }
@@ -104,11 +104,11 @@ fn test_component_cycling_forward() {
 
 #[test]
 fn test_component_cycling_backwards() {
-    let mut test_home = test_home();
+    let mut test_home = Home::mock();
     let key_event = KeyEvent::new(KeyCode::Tab, KeyModifiers::SHIFT);
 
     assert_eq!(
-        *test_home.component_tracker.borrow(),
+        test_home.component_tracker.inner(),
         0,
         "Test if current model is properly initialized",
     );
@@ -120,7 +120,7 @@ fn test_component_cycling_backwards() {
         test_home.handle_action(action);
         assert_eq!(
             want,
-            *test_home.component_tracker.borrow(),
+            test_home.component_tracker.inner(),
             "Test if current view changes with repeated input"
         );
     }
@@ -128,7 +128,7 @@ fn test_component_cycling_backwards() {
 
 #[test]
 fn test_tracker_sync() {
-    let mut home = test_home();
+    let mut home = Home::mock();
     let key_event = KeyEvent::from(KeyCode::Tab);
 
     for i in 0..100 {

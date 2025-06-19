@@ -1,43 +1,39 @@
 use super::*;
 
 impl Component for TableTui {
-    fn init(&mut self, index: usize, tracker: Rc<RefCell<usize>>) {
-        match self {
-            TableTui::Items(i) => i.init(index, tracker),
-            TableTui::Receipt(r) => r.init(index, tracker),
-            TableTui::Users(u) => u.init(index, tracker),
-        }
-    }
-
     fn handle_action(&mut self, action: Option<Action>) {
-        match self {
-            TableTui::Items(i) => i.handle_action(action),
-            TableTui::Receipt(r) => r.handle_action(action),
-            TableTui::Users(u) => u.handle_action(action),
-        }
+        self.mut_inner(|f| f.handle_action(action));
     }
 
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
-        match self {
-            TableTui::Items(i) => i.draw(frame, rect),
-            TableTui::Receipt(r) => r.draw(frame, rect),
-            TableTui::Users(u) => u.draw(frame, rect),
-        }
+        self.mut_inner(|f| f.draw(frame, rect));
     }
 
-    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
-        match self {
-            TableTui::Items(i) => i.handle_repsonse(res),
-            TableTui::Receipt(r) => r.handle_repsonse(res),
-            TableTui::Users(u) => u.handle_repsonse(res),
+    fn handle_response(&mut self, res: Option<&DbResponse>) {
+        let Some(response) = res else {
+            return;
+        };
+
+        match (self, &response.payload) {
+            (TableTui::Items(i), DbPayload::Item(_) | DbPayload::Items(_)) => {
+                i.handle_response(res)
+            }
+            (
+                TableTui::Receipt(r),
+                DbPayload::Receipt(_) | DbPayload::Receipts(_),
+            ) => r.handle_response(res),
+            (TableTui::Users(u), DbPayload::User(_) | DbPayload::Users(_)) => {
+                u.handle_response(res)
+            }
+            _ => {}
         }
     }
 
     fn is_active(&self) -> bool {
         match self {
-            TableTui::Items(i) => i.active,
-            TableTui::Receipt(r) => r.active,
-            TableTui::Users(u) => u.active,
+            TableTui::Items(i) => i.is_active(),
+            TableTui::Receipt(r) => r.is_active(),
+            TableTui::Users(u) => u.is_active(),
         }
     }
 }
@@ -48,6 +44,26 @@ impl TableTui {
             TableTui::Items(_) => Form::new_item(),
             TableTui::Users(_) => Form::new_user(),
             TableTui::Receipt(_) => None,
+        }
+    }
+    pub fn get_inner<F, T>(&self, f: F) -> T
+    where
+        F: FnOnce(&TableData) -> T,
+    {
+        match self {
+            TableTui::Users(u) => f(u),
+            TableTui::Items(i) => f(i),
+            TableTui::Receipt(r) => f(r),
+        }
+    }
+    pub fn mut_inner<F>(&mut self, f: F)
+    where
+        F: FnOnce(&mut TableData),
+    {
+        match self {
+            TableTui::Items(i) => f(i),
+            TableTui::Users(u) => f(u),
+            TableTui::Receipt(r) => f(r),
         }
     }
 }

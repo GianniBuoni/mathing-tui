@@ -1,61 +1,38 @@
-use std::{fmt::Display, marker::PhantomData};
+use std::fmt::Display;
 
 use super::*;
 
-#[derive(Default)]
-pub struct TableBuilder<T>
-where
-    T: TableDisplay,
-{
-    title: Rc<str>,
-    headings: Vec<Rc<str>>,
-    tracker: Rc<RefCell<usize>>,
-    phantom: PhantomData<T>,
-}
-
-impl<T> TableBuilder<T>
-where
-    T: TableDisplay,
-{
-    pub fn add_title(mut self, title: impl Into<Rc<str>>) -> Self {
+impl TableBuilder {
+    pub fn with_title(&mut self, title: impl Into<Rc<str>>) -> &mut Self {
         self.title = title.into();
         self
     }
-    pub fn add_heading(mut self, heading: impl Display) -> Self {
+    pub fn with_heading(&mut self, heading: impl Display) -> &mut Self {
         let heading = format!(" {heading} ");
         self.headings.push(heading.into());
         self
     }
-    fn build(self) -> TableData<T> {
+    pub fn with_table_type(&mut self, app_arm: AppArm) -> &mut Self {
+        self.table_type = Some(app_arm);
+        self
+    }
+}
+
+impl ComponentBuilder for TableBuilder {
+    type Output = TableData;
+    fn build(self) -> Self::Output {
+        let Some(table_type) = self.table_type else {
+            let mut malformed = TableData::default();
+            malformed.error =
+                Some("Malformed table: built w/o a table type defined.".into());
+            return malformed;
+        };
+
         TableData {
             title: self.title,
             headings: self.headings.into(),
-            tracker: self.tracker,
+            table_type: Some(table_type),
             ..Default::default()
         }
-    }
-}
-
-impl ComponentBuilder for TableBuilder<StoreItem> {
-    type Output = TableData<StoreItem>;
-
-    fn build(self) -> Self::Output {
-        self.build()
-    }
-}
-
-impl ComponentBuilder for TableBuilder<StoreJoinRow> {
-    type Output = TableData<StoreJoinRow>;
-
-    fn build(self) -> Self::Output {
-        self.build()
-    }
-}
-
-impl ComponentBuilder for TableBuilder<StoreUser> {
-    type Output = TableData<StoreUser>;
-
-    fn build(self) -> Self::Output {
-        self.build()
     }
 }

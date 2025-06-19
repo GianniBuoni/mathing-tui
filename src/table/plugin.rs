@@ -1,26 +1,42 @@
 use super::*;
 
-pub(crate) fn plugin(app: &mut AppBuilder) {
-    let item_table = TableData::<StoreItem>::new_builder()
-        .add_title("Store Items")
-        .add_heading("Item Name")
-        .add_heading("Item Price")
-        .build();
+impl PluginInit for TableData {
+    fn init(&mut self, index: usize, tracker: ComponentTracker) {
+        self.app_index = index;
+        self.tracker = tracker;
+    }
+}
 
-    let r_table = TableData::<StoreJoinRow>::new_builder()
-        .add_title("Receipts")
-        .add_heading("Item Name")
-        .add_heading("Item Price")
-        .add_heading("Item Qty")
-        .add_heading("Payees")
-        .build();
+impl Plugin for TableData {
+    type Parent = HomeBuilder;
 
-    let user_table = TableData::<StoreUser>::new_builder()
-        .add_title("Users")
-        .add_heading("User Name")
-        .build();
+    fn plugin(self, parent: &mut Self::Parent) {
+        parent.add_component(self);
+    }
 
-    app.add_component(TableTui::Items(item_table))
-        .add_component(TableTui::Receipt(r_table))
-        .add_component(TableTui::Users(user_table));
+    fn plugin_group(parent: &mut Self::Parent) {
+        let mut item_table = TableData::new_builder();
+        item_table
+            .with_title("Store Items")
+            .with_heading("Item Name")
+            .with_heading("Item Price")
+            .with_table_type(AppArm::Items);
+        let item_table = item_table.build();
+        item_table.plugin(parent);
+
+        let mut r_table = TableData::new_builder();
+        r_table
+            .with_title("Receipts")
+            .with_heading("Item Name")
+            .with_heading("Item Price")
+            .with_heading("Item Qty")
+            .with_heading("Payees");
+        let r_table = r_table.build();
+        r_table.plugin(parent);
+
+        let mut user_table = TableData::new_builder();
+        user_table.with_title("Users").with_heading("User Name");
+        let user_table = user_table.build();
+        user_table.plugin(parent);
+    }
 }

@@ -2,10 +2,7 @@ use std::ops::Deref;
 
 use super::*;
 
-impl<T> TableData<T>
-where
-    T: TableDisplay,
-{
+impl TableData {
     pub(super) fn render_block<'a>(&'a self, style: Style) -> Block<'a> {
         Block::bordered()
             .border_style(style)

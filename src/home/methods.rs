@@ -10,12 +10,12 @@ impl Home {
         }
 
         let max = self.components.len() - 1;
-        let mut current = self.component_tracker.borrow_mut();
+        let new_index = self.component_tracker.inner() as i32 + add;
 
-        match *current as i32 + add {
-            int if int > max as i32 => *current = 0,
-            int if int < 0 => *current = max,
-            _ => *current = (*current as i32 + add) as usize,
+        match new_index {
+            int if int > max as i32 => self.component_tracker.go_to(0),
+            int if int < 0 => self.component_tracker.go_to(max),
+            _ => self.component_tracker.go_to(new_index as usize),
         }
     }
     pub(super) fn handle_submit(&mut self) {
@@ -24,33 +24,29 @@ impl Home {
             return;
         };
         // unwrap the payload; if none map an err to the form
-        let Some(payload) = form.get_inner(|f| f.get_payload()) else {
-            form.mut_inner(|f| {
-                f.map_err(Some(FormErrors::malformed("payload").into()))
-            });
+        let Some(payload) = form.get_payload() else {
+            form.map_err(Some(FormErrors::malformed("payload").into()));
             return;
         };
         // unwrap tx; if none map err
         let Some(tx) = self.req_tx.clone() else {
-            form.mut_inner(|f| {
-                f.map_err(Some(FormErrors::malformed("req tx").into()))
-            });
+            form.map_err(Some(FormErrors::malformed("req tx").into()));
             return;
         };
         // try a submit; if there is an err, map it to the form
-        if let Err(e) = form.try_mut_inner(|f| f.submit()) {
-            form.mut_inner(|f| f.map_err(Some(e)));
+        if let Err(e) = form.submit() {
+            form.map_err(Some(e));
             return;
         }
         // no errors -> start building req
         let req = DbRequest::new()
-            .req_type(form.get_inner(|f| f.get_req_type()))
+            .req_type(form.get_req_type())
             .payload(payload);
 
         // send req; if err map err
         if let Err(err) = tx.send(req) {
             let err = anyhow::Error::msg(err.to_string());
-            form.mut_inner(|f| f.map_err(Some(err)));
+            form.map_err(Some(err));
             return;
         }
         // reset mode
@@ -60,7 +56,7 @@ impl Home {
 
     /// [`Home`]'s init method is responsible for making all the initial
     /// requests to the Db
-    pub fn init(&mut self) {
+    pub fn fetch_all(&mut self) {
         let item_payload =
             DbPayload::ItemParams(ItemParams::builder().offset(0).build());
         let user_payload = DbPayload::UserParams(UserParams::builder().build());
@@ -79,3 +75,5 @@ impl Home {
             });
     }
 }
+
+impl PluginParent for HomeBuilder {}

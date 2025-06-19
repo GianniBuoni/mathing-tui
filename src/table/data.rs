@@ -1,36 +1,46 @@
 use super::*;
 
-use builder::TableBuilder;
-
-impl<T> TableData<T>
-where
-    T: TableDisplay,
-{
-    pub fn new_builder() -> TableBuilder<T> {
+impl TableData {
+    pub fn new_builder() -> TableBuilder {
         TableBuilder::default()
     }
-    pub fn add_item(&mut self, item: T) {
-        self.items.push(item);
+    pub fn max(&self) -> usize {
+        self.items.len() - 1
     }
-
-    fn handle_action(&mut self, action: Option<Action>) {
-        match action {
-            Some(Action::SelectForward) | Some(Action::SelectBackward) => {
-                self.check_active();
+    pub fn add_items(&mut self, items: Vec<DbTable>) {
+        match items.len() {
+            1 => {
+                self.items.push(items.get(0).unwrap().clone());
             }
-            Some(Action::TableNavigateDown) => {
-                self.next_row();
-            }
-            Some(Action::TableNavigateUp) => {
-                self.prev_row();
-            }
-            Some(_) => {}
-            None => {}
+            _ => self.items = items,
         }
     }
+    pub fn new_form(&self) -> Option<Form> {
+        todo!()
+    }
+    pub(super) fn next_row(&mut self) {
+        if !self.items.is_empty() {
+            if self.table_index < self.max() {
+                self.table_index += 1
+            } else {
+                self.table_index = 0
+            }
+        }
+    }
+    pub(super) fn prev_row(&mut self) {
+        if !self.items.is_empty() {
+            if self.table_index > 0 {
+                self.table_index -= 1
+            } else {
+                self.table_index = self.max()
+            }
+        }
+    }
+}
 
+impl Component for TableData {
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
-        let styles = Into::<AppStyles>::into(AppColors::get(self.active));
+        let styles = Into::<AppStyles>::into(AppColors::get(self.is_active()));
 
         let block = self
             .render_block(styles.block_style)
@@ -49,95 +59,42 @@ where
 
         block.render(rect, frame.buffer_mut())
     }
-
-    fn init(&mut self, index: usize, tracker: Rc<RefCell<usize>>) {
-        self.app_index = index;
-        self.tracker = tracker;
-        self.check_active();
-    }
-
     fn is_active(&self) -> bool {
-        self.active
-    }
-}
-
-impl Component for TableData<StoreItem> {
-    fn is_active(&self) -> bool {
-        self.is_active()
+        self.tracker.inner() == self.app_index
     }
     fn handle_action(&mut self, action: Option<Action>) {
-        self.handle_action(action);
-    }
-    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
-        if res.is_none() {
-            return;
+        match action {
+            Some(Action::TableNavigateDown) => {
+                self.next_row();
+            }
+            Some(Action::TableNavigateUp) => {
+                self.prev_row();
+            }
+            Some(_) => {}
+            None => {}
         }
-        match &res.unwrap().payload {
-            DbPayload::Item(i) => self.add_item(i.to_owned()),
-            DbPayload::Items(i) => {
-                i.iter().for_each(|i| self.add_item(i.to_owned()))
+    }
+    fn handle_response(&mut self, res: Option<&DbResponse>) {
+        let Some(res) = res else {
+            return;
+        };
+        let Some(table_type) = &self.table_type else {
+            return;
+        };
+        match (table_type, &res.payload) {
+            (AppArm::Items, DbPayload::Item(_) | DbPayload::Items(_)) => {
+                self.add_items(res.payload.clone().into());
+            }
+            (
+                AppArm::Receipts,
+                DbPayload::Receipt(_) | DbPayload::Receipts(_),
+            ) => {
+                self.add_items(res.payload.clone().into());
+            }
+            (AppArm::Users, DbPayload::User(_) | DbPayload::Users(_)) => {
+                self.add_items(res.payload.clone().into());
             }
             _ => {}
         }
-    }
-    fn draw(&mut self, frame: &mut Frame, rect: Rect) {
-        self.draw(frame, rect);
-    }
-    fn init(&mut self, index: usize, tracker: Rc<RefCell<usize>>) {
-        self.init(index, tracker);
-    }
-}
-
-impl Component for TableData<StoreJoinRow> {
-    fn is_active(&self) -> bool {
-        self.is_active()
-    }
-    fn handle_action(&mut self, action: Option<Action>) {
-        self.handle_action(action);
-    }
-    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
-        if res.is_none() {
-            return;
-        }
-        match &res.unwrap().payload {
-            DbPayload::Receipt(r) => self.add_item(r.to_owned()),
-            DbPayload::Receipts(r) => {
-                r.iter().for_each(|r| self.add_item(r.to_owned()))
-            }
-            _ => {}
-        }
-    }
-    fn draw(&mut self, frame: &mut Frame, rect: Rect) {
-        self.draw(frame, rect);
-    }
-    fn init(&mut self, index: usize, tracker: Rc<RefCell<usize>>) {
-        self.init(index, tracker);
-    }
-}
-
-impl Component for TableData<StoreUser> {
-    fn is_active(&self) -> bool {
-        self.is_active()
-    }
-    fn handle_action(&mut self, action: Option<Action>) {
-        self.handle_action(action);
-    }
-    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
-        if res.is_none() {
-            return;
-        }
-        match &res.unwrap().payload {
-            DbPayload::User(u) => self.add_item(u.to_owned()),
-            DbPayload::Users(u) => {
-                u.iter().for_each(|u| self.add_item(u.to_owned()))
-            }
-            _ => {}
-        }
-    }
-    fn draw(&mut self, frame: &mut Frame, rect: Rect) {
-        self.draw(frame, rect);
-    }
-    fn init(&mut self, index: usize, tracker: Rc<RefCell<usize>>) {
-        self.init(index, tracker);
     }
 }

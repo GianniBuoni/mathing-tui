@@ -1,7 +1,7 @@
 use super::*;
 
 impl HomeBuilder {
-    pub fn add_component(&mut self, component: TableTui) -> &mut Self {
+    pub fn add_component(&mut self, component: TableData) -> &mut Self {
         self.components.push(component);
         self
     }
@@ -21,7 +21,7 @@ impl ComponentBuilder for HomeBuilder {
     fn build(mut self) -> Self::Output {
         self.components.iter_mut().enumerate().for_each(
             |(index, component)| {
-                component.init(index, self.component_tracker.clone());
+                component.init(index, self.component_tracker.clone())
             },
         );
         Home {

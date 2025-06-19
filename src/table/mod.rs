@@ -1,43 +1,38 @@
-use std::{cell::RefCell, fmt::Debug, rc::Rc};
+use std::{fmt::Debug, rc::Rc};
 
 use crate::prelude::*;
 
 mod builder;
 mod data;
-mod interactions;
 mod plugin;
 mod render;
-mod table_tui;
 #[cfg(test)]
 mod tests;
 
 pub mod prelude {
-    pub(crate) use super::plugin::plugin as table_plugin;
     #[allow(unused_imports)]
-    pub use super::{TableData, TableDisplay, TableTui};
+    pub use super::{TableData, TableDisplay};
 }
 
-pub trait TableDisplay: Debug + Default {
+pub trait TableDisplay: Debug {
     fn ref_array(&self) -> Vec<Cell>;
 }
 
-#[derive(Debug)]
-pub enum TableTui {
-    Items(TableData<StoreItem>),
-    Receipt(TableData<StoreJoinRow>),
-    Users(TableData<StoreUser>),
-}
-
 #[derive(Debug, Default)]
-pub struct TableData<T>
-where
-    T: TableDisplay,
-{
+pub struct TableData {
     title: Rc<str>,
-    items: Vec<T>,
+    items: Vec<DbTable>,
     headings: Rc<[Rc<str>]>,
     table_index: usize,
     app_index: usize,
-    tracker: Rc<RefCell<usize>>,
-    active: bool,
+    tracker: ComponentTracker,
+    table_type: Option<AppArm>,
+    error: Option<String>,
+}
+
+#[derive(Debug, Default)]
+pub struct TableBuilder {
+    title: Rc<str>,
+    headings: Vec<Rc<str>>,
+    table_type: Option<AppArm>,
 }

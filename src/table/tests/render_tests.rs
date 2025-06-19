@@ -5,8 +5,8 @@ use super::*;
 #[test]
 fn test_render_block() {
     let colors = Into::<AppStyles>::into(AppColors::ACTIVE);
-    let items = mock_receipts_table();
-    let mut buf = Buffer::empty(test_rect());
+    let items = TableData::mock_receipts();
+    let mut buf = Buffer::empty(TableData::test_rect());
 
     items
         .render_block(colors.block_style)
@@ -23,13 +23,13 @@ fn test_render_block() {
         "╰────────────────────────────────────────────────╯",
     ]);
 
-    want.set_style(test_rect(), Style::default());
+    want.set_style(TableData::test_rect(), Style::default());
     assert_eq!(want, buf, "Test if table renders block widget correctly");
 }
 
 #[test]
 fn test_render_rows() {
-    let items = mock_items_table();
+    let items = TableData::mock_items();
     let styles: AppStyles = AppColors::ACTIVE.into();
     let got = items.render_rows(styles.row_style);
 
@@ -47,7 +47,7 @@ fn test_render_rows() {
 
 #[test]
 fn test_render_heading() {
-    let items = mock_items_table();
+    let items = TableData::mock_items();
     let got = items.render_heading(&AppColors::ACTIVE.into());
 
     let want = Row::new([
@@ -61,11 +61,11 @@ fn test_render_heading() {
 
 #[test]
 fn test_render_table() {
-    let reciepts = mock_receipts_table();
+    let reciepts = TableData::mock_receipts();
     let receipts = reciepts.render_table(&AppColors::ACTIVE.into());
 
     let mut state = TableState::new().with_selected(1);
-    let mut got = Buffer::empty(test_rect());
+    let mut got = Buffer::empty(TableData::test_rect());
 
     {
         use ratatui::widgets::StatefulWidget;
@@ -115,14 +115,13 @@ fn test_render_complete_table() -> Result<()> {
     want.set_style(Rect::new(2, 2, 46, 1), heading_style);
     want.set_style(Rect::new(2, 3, 46, 1), highlight_style);
 
-    let viewport = Viewport::Fixed(test_rect());
+    let viewport = Viewport::Fixed(TableData::test_rect());
     let backend = CrosstermBackend::new(std::io::stdout());
     let mut term =
         Terminal::with_options(backend, TerminalOptions { viewport })?;
     let mut frame = term.get_frame();
 
-    let mut test_r = mock_receipts_table();
-    test_r.active = true;
+    let mut test_r = TableData::mock_receipts();
     let area = &frame.area();
     test_r.draw(&mut frame, *area);
 
