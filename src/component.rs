@@ -45,7 +45,7 @@ pub trait Component: Debug {
         }
     }
     // optional methods
-    fn handle_repsonse(&mut self, res: Option<&DbResponse>) {
+    fn handle_response(&mut self, res: Option<&DbResponse>) {
         let _ = res;
         todo!()
     }

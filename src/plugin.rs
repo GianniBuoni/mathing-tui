@@ -13,6 +13,10 @@ pub trait Plugin: Component + PluginInit + Sized {
     /// parent component. Any other pieces that the child has that
     /// the parent needs are called and handled here as well.
     fn plugin(self, parent: &mut Self::Parent);
+
+    /// plugin_group() can batch plug in several plugins of the same
+    /// type into the parent.
+    fn plugin_group(parent: &mut Self::Parent);
 }
 
 pub trait PluginInit {

@@ -1,11 +1,18 @@
 use crate::prelude::*;
 
 pub mod prelude {
-    pub use super::{App, AppBuilder};
+    pub use super::{App, AppArm, AppBuilder};
 }
 
 mod builder;
-mod plugin;
+mod component;
+
+#[derive(Debug)]
+pub enum AppArm {
+    Items,
+    Receipts,
+    Users,
+}
 
 #[derive(Debug)]
 pub struct App {
@@ -16,7 +23,7 @@ pub struct App {
 
 #[derive(Default)]
 pub struct AppBuilder {
-    pub component: HomeBuilder,
+    pub component: Home,
     pub tui: TuiBuilder,
 }
 
@@ -36,32 +43,5 @@ impl App {
                 .draw(|frame| self.component.draw(frame, frame.area()))?;
         }
         Ok(())
-    }
-
-    pub fn handle_events(&mut self, event: Option<Event>) -> Option<Action> {
-        match event {
-            Some(Event::Key(_)) => self.component.handle_events(event),
-            Some(Event::Init) => {
-                self.component.init();
-                None
-            }
-            None => None,
-        }
-    }
-
-    pub fn handle_action(&mut self, action: Option<Action>) {
-        match action {
-            Some(Action::Quit) => {
-                self.should_exit = true;
-            }
-            Some(_) => {
-                self.component.handle_action(action);
-            }
-            None => {}
-        }
-    }
-
-    pub fn handle_response(&mut self, res: Option<&DbResponse>) {
-        self.component.handle_repsonse(res);
     }
 }
