@@ -1,41 +1,52 @@
+use std::borrow::Cow;
+
 use ratatui::widgets::Cell;
 
-use super::*;
+use super::{prelude::DbPayload, *};
 use crate::table::TableDisplay;
 
-impl TableDisplay for StoreItem {
+impl TableDisplay for DbTable {
     fn ref_array(&self) -> Vec<Cell> {
-        let name = format!(" {} ", self.name);
-        let price = format!(" {:.2} ", self.price);
-        vec![name.into(), price.into()]
+        match self {
+            DbTable::Item(i) => {
+                let name = format!(" {} ", i.name);
+                let price = format!(" {} ", i.price);
+                vec![name.into(), price.into()]
+            }
+            DbTable::User(u) => {
+                let name = format!(" {} ", u.name);
+                vec![name.into()]
+            }
+            DbTable::Receipt(r) => {
+                let name = format!(" {} ", r.item_name);
+                let price = format!(" {} ", r.item_price);
+                let qty = format!(" {} ", r.item_qty);
+                let payees = r
+                    .users
+                    .iter()
+                    .map(|user| Cow::Borrowed(user.name.as_str()))
+                    .collect::<Vec<Cow<str>>>();
+                let payees = payees.join(", ");
+                let payees = format!(" {payees} ");
+                vec![name.into(), price.into(), qty.into(), payees.into()]
+            }
+            _ => vec![],
+        }
     }
 }
 
-impl TableDisplay for StoreJoinRow {
-    fn ref_array(&self) -> Vec<Cell> {
-        let item_name = format!(" {} ", self.item_name);
-        let item_price = format!(" {:.2} ", self.item_price);
-        let item_qty = format!(" {} ", self.item_qty);
-        let payees = self
-            .users
-            .iter()
-            .map(|user| user.name.to_owned())
-            .collect::<Vec<String>>()
-            .join(", ");
-        let payees = format!(" {payees} ");
-
-        vec![
-            item_name.into(),
-            item_price.into(),
-            item_qty.into(),
-            payees.into(),
-        ]
-    }
-}
-
-impl TableDisplay for StoreUser {
-    fn ref_array(&self) -> Vec<Cell> {
-        let user_name = Cell::from(format!(" {} ", self.name));
-        vec![user_name]
+impl From<DbPayload> for Vec<DbTable> {
+    fn from(value: DbPayload) -> Self {
+        match value {
+            DbPayload::Item(i) => vec![DbTable::Item(i)],
+            DbPayload::Receipt(r) => vec![DbTable::Receipt(r)],
+            DbPayload::User(u) => vec![DbTable::User(u)],
+            DbPayload::Items(i) => i.into_iter().map(DbTable::Item).collect(),
+            DbPayload::Receipts(r) => {
+                r.into_iter().map(DbTable::Receipt).collect()
+            }
+            DbPayload::Users(u) => u.into_iter().map(DbTable::User).collect(),
+            _ => vec![],
+        }
     }
 }

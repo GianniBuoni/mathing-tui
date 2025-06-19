@@ -65,7 +65,7 @@ pub struct DbRequest {
     pub payload: DbPayload,
 }
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub enum DbPayload {
     #[default]
     None,
