@@ -23,11 +23,6 @@ impl Home {
         let Some(form) = self.form.as_mut() else {
             return;
         };
-        // unwrap the payload; if none map an err to the form
-        let Some(payload) = form.get_payload() else {
-            form.map_err(Some(FormErrors::malformed("payload").into()));
-            return;
-        };
         // unwrap tx; if none map err
         let Some(tx) = self.req_tx.clone() else {
             form.map_err(Some(FormErrors::malformed("req tx").into()));
@@ -38,6 +33,11 @@ impl Home {
             form.map_err(Some(e));
             return;
         }
+        // unwrap the payload; if none map an err to the form
+        let Some(payload) = form.get_payload() else {
+            form.map_err(Some(FormErrors::malformed("payload").into()));
+            return;
+        };
         // no errors -> start building req
         let req = DbRequest::new()
             .req_type(form.get_req_type())

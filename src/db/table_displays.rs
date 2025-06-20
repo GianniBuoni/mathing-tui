@@ -10,7 +10,7 @@ impl TableDisplay for DbTable {
         match self {
             DbTable::Item(i) => {
                 let name = format!(" {} ", i.name);
-                let price = format!(" {} ", i.price);
+                let price = format!(" {:.2} ", i.price);
                 vec![name.into(), price.into()]
             }
             DbTable::User(u) => {
@@ -19,7 +19,7 @@ impl TableDisplay for DbTable {
             }
             DbTable::Receipt(r) => {
                 let name = format!(" {} ", r.item_name);
-                let price = format!(" {} ", r.item_price);
+                let price = format!(" {:.2} ", r.item_price);
                 let qty = format!(" {} ", r.item_qty);
                 let payees = r
                     .users
