@@ -13,9 +13,10 @@ impl TableData {
         table
             .with_title("Grocery Items")
             .with_heading("Items")
-            .with_heading("Price");
-        let mut table = table.build();
+            .with_heading("Price")
+            .with_table_type(AppArm::Items);
 
+        let mut table = table.build();
         let items = StoreItem::mock().into_iter().map(DbTable::Item).collect();
         table.add_items(items);
 
@@ -29,7 +30,9 @@ impl TableData {
             .with_heading("Item Name")
             .with_heading("Item Price")
             .with_heading("Item Qty")
-            .with_heading("Payees");
+            .with_heading("Payees")
+            .with_table_type(AppArm::Receipts);
+
         let mut table = table.build();
 
         let items = StoreJoinRow::mock()

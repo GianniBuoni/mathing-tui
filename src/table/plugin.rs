@@ -30,12 +30,16 @@ impl Plugin for TableData {
             .with_heading("Item Name")
             .with_heading("Item Price")
             .with_heading("Item Qty")
-            .with_heading("Payees");
+            .with_heading("Payees")
+            .with_table_type(AppArm::Receipts);
         let r_table = r_table.build();
         r_table.plugin(parent);
 
         let mut user_table = TableData::new_builder();
-        user_table.with_title("Users").with_heading("User Name");
+        user_table
+            .with_title("Users")
+            .with_heading("User Name")
+            .with_table_type(AppArm::Users);
         let user_table = user_table.build();
         user_table.plugin(parent);
     }

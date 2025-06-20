@@ -16,7 +16,14 @@ impl TableData {
         }
     }
     pub fn new_form(&self) -> Option<Form> {
-        todo!()
+        let Some(table_type) = &self.table_type else {
+            return None;
+        };
+        match table_type {
+            AppArm::Items => Form::new_item(),
+            AppArm::Users => Form::new_user(),
+            AppArm::Receipts => None,
+        }
     }
     pub(super) fn next_row(&mut self) {
         if !self.items.is_empty() {

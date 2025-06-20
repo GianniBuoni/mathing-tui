@@ -5,7 +5,7 @@ fn test_table_constuction() {
     let items = TableData::mock_items();
     let desc = "Test table.active data is constructed correctly";
 
-    assert!(!items.is_active(), "{desc}");
+    assert!(items.is_active(), "{desc}");
     assert_eq!(items.app_index, 0, "{desc}");
     assert_eq!(items.table_index, 0, "{desc}")
 }

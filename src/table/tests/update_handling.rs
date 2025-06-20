@@ -14,7 +14,9 @@ fn test_response_handling_items() {
 
     test_cases.append(&mut mock_receipts);
 
-    let mut table = TableData::new_builder().build();
+    let mut table = TableData::new_builder();
+    table.with_table_type(AppArm::Items);
+    let mut table = table.build();
 
     test_cases
         .iter()
@@ -40,7 +42,9 @@ fn test_response_handling_receits() {
         .collect::<Vec<DbResponse>>();
     test_cases.append(&mut mock_receipts);
 
-    let mut table = TableData::new_builder().build();
+    let mut table = TableData::new_builder();
+    table.with_table_type(AppArm::Receipts);
+    let mut table = table.build();
 
     test_cases
         .iter()
