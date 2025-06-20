@@ -5,6 +5,14 @@ pub mod prelude {
 }
 
 pub fn new_item_inputs(parent: &mut FormBuilder) -> Result<()> {
+    let Some(form_type) = &parent.form_type else {
+        let e = FormErrors::malformed("form type").into();
+        return Err(e);
+    };
+    if !(*form_type == AppArm::Items) {
+        let e = FormErrors::mapping(AppArm::Users, *form_type).into();
+        return Err(e);
+    }
     let Some(DbPayloadBuilder::ItemParams(params)) = &mut parent.payload else {
         let e = FormErrors::malformed("payload").into();
         return Err(e);
@@ -31,6 +39,14 @@ pub fn new_item_inputs(parent: &mut FormBuilder) -> Result<()> {
 }
 
 pub fn new_user_inputs(parent: &mut FormBuilder) -> Result<()> {
+    let Some(form_type) = &parent.form_type else {
+        let e = FormErrors::malformed("form type").into();
+        return Err(e);
+    };
+    if !(*form_type == AppArm::Users) {
+        let e = FormErrors::mapping(AppArm::Users, *form_type).into();
+        return Err(e);
+    }
     let Some(DbPayloadBuilder::UserParams(params)) = &mut parent.payload else {
         let e = FormErrors::malformed("payload").into();
         return Err(e);
