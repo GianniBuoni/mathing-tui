@@ -37,12 +37,16 @@ impl Component for Home {
             },
             Mode::Normal => match action {
                 Some(Action::EnterInsert) => {
-                    if let Some(table) =
+                    let Some(table) =
                         self.components.get(self.component_tracker.inner())
-                    {
-                        self.mode = Mode::Insert;
-                        self.form = table.new_form();
-                    }
+                    else {
+                        return;
+                    };
+                    let Some(form) = table.new_form() else {
+                        return;
+                    };
+                    self.form = Some(form);
+                    self.mode = Mode::Insert;
                 }
                 Some(Action::SelectForward) => {
                     self.cycle_active(1);
