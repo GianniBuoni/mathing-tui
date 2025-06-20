@@ -26,21 +26,29 @@ impl TableData {
         }
     }
     pub(super) fn next_row(&mut self) {
-        if !self.items.is_empty() {
-            if self.table_index < self.max() {
-                self.table_index += 1
-            } else {
-                self.table_index = 0
-            }
+        if !self.is_active() {
+            return;
+        }
+        if self.items.is_empty() {
+            return;
+        }
+        if self.table_index < self.max() {
+            self.table_index += 1
+        } else {
+            self.table_index = 0
         }
     }
     pub(super) fn prev_row(&mut self) {
-        if !self.items.is_empty() {
-            if self.table_index > 0 {
-                self.table_index -= 1
-            } else {
-                self.table_index = self.max()
-            }
+        if !self.is_active() {
+            return;
+        }
+        if self.items.is_empty() {
+            return;
+        }
+        if self.table_index > 0 {
+            self.table_index -= 1
+        } else {
+            self.table_index = self.max()
         }
     }
 }
