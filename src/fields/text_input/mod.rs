@@ -7,10 +7,6 @@ use super::*;
 mod component;
 mod plugin;
 
-pub mod prelude {
-    pub use super::plugin::new_item;
-}
-
 impl<T> InputField<T>
 where
     T: Debug + FromStr + Default + Clone,

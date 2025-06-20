@@ -11,12 +11,13 @@ use tui_input::Input;
 
 pub mod prelude {
     pub use super::Field;
+    pub use super::plugin::prelude::*;
     #[cfg(test)]
     pub use super::tests::test_text_inputs;
-    pub use super::text_input::prelude::new_item;
 }
 
 mod choice;
+mod plugin;
 #[cfg(test)]
 mod tests;
 mod text_input;
