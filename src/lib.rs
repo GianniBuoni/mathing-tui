@@ -5,6 +5,7 @@ pub mod prelude {
     pub use crate::component::prelude::*;
     pub use crate::config::prelude::*;
     pub use crate::db::prelude::*;
+    pub(crate) use crate::fields::prelude::*;
     #[allow(unused_imports)]
     pub(crate) use crate::forms::prelude::*;
     pub(crate) use crate::home::prelude::*;
@@ -25,6 +26,7 @@ mod center_widget;
 mod component;
 mod config;
 mod db;
+mod fields;
 mod forms;
 mod home;
 mod plugin;

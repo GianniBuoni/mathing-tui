@@ -2,23 +2,17 @@
 // which is causing problems in form plugins
 // consider introducing a 'form lifetime
 
-#![allow(dead_code)]
 use std::{
-    cell::RefCell,
     fmt::{Debug, Display},
     rc::Rc,
-    str::FromStr,
 };
-
-use tui_input::Input;
 
 use crate::prelude::*;
 
 mod builder;
+mod component;
 mod errors;
 mod form_data;
-mod form_tui;
-mod input_field;
 mod plugin;
 #[cfg(test)]
 mod tests;
@@ -26,40 +20,12 @@ mod tests;
 pub mod prelude {
     pub use super::errors::FormErrors;
     #[allow(unused_imports)]
-    pub use super::{Form, FormTui, InputField};
+    pub use super::{Form, FormBuilder};
 }
 
 impl Form {
-    const ONE_FIELD_H: u16 = 9;
-    const TWO_FIELD_H: u16 = 12;
-    const THREE_FIELD_H: u16 = 15;
-}
-
-#[derive(Debug)]
-pub enum FormTui {
-    UserFrom(Form),
-    ItemForm(Form),
-    ReceiptForm(Form),
-}
-
-pub trait Field: Component {
-    fn check_active(&mut self);
-    fn assign_index(&mut self, index: usize);
-    fn submit(&self) -> Result<()>;
-}
-
-#[derive(Default, Debug)]
-pub struct InputField<T>
-where
-    T: Debug + FromStr + Default + Clone,
-    <T as FromStr>::Err: Debug,
-{
-    input: Input,
-    title: Rc<str>,
-    active_field: Rc<RefCell<usize>>,
-    value: ParamOption<T>,
-    index: usize,
-    active: bool,
+    const HEIGHT: u16 = 6;
+    const WIDTH: u16 = 100;
 }
 
 #[derive(Default, Debug)]
@@ -67,8 +33,18 @@ pub struct Form {
     error: Option<String>,
     fields: Vec<Box<dyn Field>>,
     title: Rc<str>,
-    active_field: Rc<RefCell<usize>>,
+    active_field: ComponentTracker,
     rect: Rect,
     request_type: RequestType,
     payload: Option<DbPayloadBuilder>,
+}
+
+#[derive(Default, Debug)]
+pub struct FormBuilder {
+    fields: Vec<Box<dyn Field>>,
+    title: Rc<str>,
+    active_field: ComponentTracker,
+    request_type: RequestType,
+    pub payload: Option<DbPayloadBuilder>,
+    pub form_type: Option<AppArm>,
 }

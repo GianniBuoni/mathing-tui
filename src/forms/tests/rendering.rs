@@ -4,8 +4,8 @@ use super::*;
 
 #[test]
 fn test_form_render_block() {
-    let form = test_form();
-    let mut got = Buffer::empty(test_big_rect());
+    let form = Form::test_no_fields();
+    let mut got = Buffer::empty(Form::test_rect_buffer());
     let [_, _, form_area, _] = form.get_block_areas(got.area);
     form.render_block(form_area, &mut got);
 
@@ -29,17 +29,17 @@ fn test_form_render_block() {
 
 #[test]
 fn test_form_render() -> Result<()> {
-    let mut form = test_valid_form();
-    form.mut_inner(|f| f.map_err(Some(FormErrors::malformed("fields").into())));
+    let mut form = Form::test_valid();
+    form.map_err(Some(FormErrors::malformed("fields").into()));
 
     // set up terminal
-    let viewport = Viewport::Fixed(test_big_rect());
+    let viewport = Viewport::Fixed(Form::test_rect_buffer());
     let backend = CrosstermBackend::new(std::io::stdout());
     let mut term =
         Terminal::with_options(backend, TerminalOptions { viewport })?;
     let mut frame = term.get_frame();
 
-    form.draw(&mut frame, test_big_rect());
+    form.draw(&mut frame, Form::test_rect_buffer());
     let got = frame.buffer_mut().clone();
 
     let mut want = Buffer::with_lines(vec![

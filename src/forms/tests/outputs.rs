@@ -3,38 +3,6 @@ use core::panic;
 use super::*;
 
 #[test]
-fn test_input_validation_f64() {
-    let mut key_events = [
-        (
-            test_f64_input(),
-            Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('1')))),
-            None,
-            "Test valid float input.",
-        ),
-        (
-            test_f64_input(),
-            Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('a')))),
-            Some(FormErrors::validation("a", "f64").to_string()),
-            "Test invalid input.",
-        ),
-        (
-            test_f64_input(),
-            None,
-            Some(FormErrors::no_data("Item Price").to_string()),
-            "Test unset data.",
-        ),
-    ];
-
-    key_events
-        .iter_mut()
-        .for_each(|(input, action, want, desc)| {
-            input.handle_action(*action);
-            let got = input.validate().map_err(|e| e.to_string()).err();
-            assert_eq!(*want, got, "{desc}")
-        });
-}
-
-#[test]
 fn test_form_validation() -> Result<()> {
     let key_events = [
         Action::HandleInput(KeyEvent::from(KeyCode::Char('a'))),
@@ -45,11 +13,11 @@ fn test_form_validation() -> Result<()> {
         Action::HandleInput(KeyEvent::from(KeyCode::Char('9'))),
     ];
 
-    let mut form = test_valid_form();
+    let mut form = Form::test_valid();
     key_events
         .iter()
         .for_each(|key| form.handle_action(Some(*key)));
-    form.try_mut_inner(|f| f.submit())?;
+    form.submit()?;
 
     Ok(())
 }
@@ -67,35 +35,29 @@ fn test_form_submit() -> Result<()> {
 
     let want = ("a", 1.99 as f64);
 
-    let mut form = test_valid_form();
+    let mut form = Form::test_valid();
     key_events
         .iter()
         .for_each(|key| form.handle_action(Some(*key)));
-    form.try_mut_inner(|f| f.submit())?;
+    form.submit()?;
 
     // check if from values changed
-    let panic_msg = "Test is not testing the expected kind of form.";
+    let Some(DbPayloadBuilder::ItemParams(params)) = form.payload else {
+        let panic_msg = "Test is not testing the expected kind of form.";
+        panic!("{panic_msg}")
+    };
+
     let desc = "Test if submitting with input values produces the correct resulting value.";
+    let got_name = params.item_name.unwrap().unwrap();
+    let got_price = params.item_price.unwrap().unwrap();
 
-    match form {
-        FormTui::ItemForm(form) => {
-            if let DbPayloadBuilder::ItemParams(params) = form.payload.unwrap()
-            {
-                let name = params.item_name.unwrap().unwrap();
-                let price = params.item_price.unwrap().unwrap();
+    assert_eq!(want.0, got_name, "{desc}");
+    assert_eq!(want.1, got_price, "{desc}");
 
-                assert_eq!(want.0, name, "{desc}");
-                assert_eq!(want.1, price, "{desc}");
-
-                Ok(())
-            } else {
-                panic!("{panic_msg}")
-            }
-        }
-        _ => panic!("{panic_msg}"),
-    }
+    Ok(())
 }
 
+// TODO test every step of the builder process.
 #[test]
 fn test_malformed_form_error() {
     let key_events = [
@@ -107,7 +69,7 @@ fn test_malformed_form_error() {
         Action::HandleInput(KeyEvent::from(KeyCode::Char('9'))),
     ];
 
-    let mut form = test_invalid_form_no_fields();
+    let mut form = Form::test_no_fields();
     key_events
         .iter()
         .for_each(|key| form.handle_action(Some(*key)));

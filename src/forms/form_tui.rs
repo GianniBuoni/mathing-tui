@@ -4,7 +4,6 @@ impl Component for FormTui {
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
         self.mut_inner(|f| f.draw(frame, rect));
     }
-
     fn handle_action(&mut self, action: Option<Action>) {
         self.mut_inner(|f| f.handle_action(action));
     }

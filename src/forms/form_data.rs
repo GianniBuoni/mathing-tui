@@ -1,61 +1,9 @@
-use ratatui::text::ToLine;
-
 use super::*;
 
-impl Component for Form {
-    fn draw(&mut self, frame: &mut Frame, rect: Rect) {
-        // get areas
-        let [centered_area, title, form_block_area, error_area] =
-            self.get_block_areas(rect);
-
-        // render Clear in centered area
-        frame.render_widget(Clear, centered_area);
-
-        Line::from(self.title.as_ref()).render(title, frame.buffer_mut());
-
-        let error = match &self.error {
-            Some(e) => e
-                .to_line()
-                .style(Into::<AppStyles>::into(AppColors::ACTIVE).error_style),
-            None => "".to_line(),
-        };
-
-        error.render(error_area, frame.buffer_mut());
-
-        // render nested field blocks in form block
-        let field_areas =
-            self.render_block(form_block_area, frame.buffer_mut());
-
-        self.fields.iter_mut().zip(field_areas.iter()).for_each(
-            |(field, field_area)| {
-                field.draw(frame, *field_area);
-            },
-        );
-    }
-
-    fn handle_action(&mut self, action: Option<Action>) {
-        match action {
-            Some(Action::SelectForward) => {
-                self.cycle_active(1);
-                self.fields.iter_mut().for_each(|f| f.handle_action(action));
-            }
-            Some(Action::SelectBackward) => {
-                self.cycle_active(-1);
-                self.fields.iter_mut().for_each(|f| f.handle_action(action));
-            }
-            Some(_) => {
-                if let Some(active) =
-                    self.fields.get_mut(*self.active_field.borrow())
-                {
-                    active.handle_action(action);
-                }
-            }
-            None => {}
-        }
-    }
-}
-
 impl Form {
+    pub fn builder() -> FormBuilder {
+        FormBuilder::default()
+    }
     pub fn render_block(&self, area: Rect, buf: &mut Buffer) -> Rc<[Rect]> {
         let block = Block::bordered().border_type(BorderType::Rounded);
 
@@ -98,12 +46,6 @@ impl Form {
     }
 
     pub fn submit(&mut self) -> Result<()> {
-        if self.fields.is_empty() {
-            return Err(FormErrors::malformed("fields").into());
-        }
-        if self.request_type == RequestType::None {
-            return Err(FormErrors::malformed("request type").into());
-        }
         self.fields.iter().try_for_each(|f| f.submit())?;
 
         Ok(())
@@ -113,14 +55,13 @@ impl Form {
         if self.fields.is_empty() {
             return;
         }
-
         let max = self.fields.len() - 1;
-        let mut current_index = self.active_field.borrow_mut();
+        let new_index = self.active_field.inner() as i32 + add;
 
-        match *current_index as i32 + add {
-            int if int > max as i32 => *current_index = 0,
-            int if int < 0 => *current_index = max,
-            _ => *current_index = (*current_index as i32 + add) as usize,
+        match new_index {
+            int if int > max as i32 => self.active_field.go_to(0),
+            int if int < 0 => self.active_field.go_to(max),
+            _ => self.active_field.go_to(new_index as usize),
         }
     }
 
@@ -137,13 +78,5 @@ impl Form {
 
     pub fn get_req_type(&self) -> RequestType {
         self.request_type
-    }
-
-    pub fn init(mut self) -> Self {
-        self.fields.iter_mut().enumerate().for_each(|(index, f)| {
-            f.init(index, self.active_field.clone());
-            f.check_active();
-        });
-        self
     }
 }
