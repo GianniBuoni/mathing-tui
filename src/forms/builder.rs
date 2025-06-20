@@ -57,6 +57,7 @@ impl ComponentBuilder for FormBuilder {
     type Output = Form;
     fn build(mut self) -> Self::Output {
         let mut malformed = Form::default();
+        malformed.rect = Rect::new(0, 0, 50, 9);
 
         if self.request_type == RequestType::None {
             let err = FormErrors::malformed("request type").into();
