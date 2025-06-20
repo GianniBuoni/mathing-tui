@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use anyhow::Result;
 use std::{cell::RefCell, collections::HashMap, fmt::Debug, rc::Rc};
 
 pub mod prelude {
@@ -23,7 +24,7 @@ where
 {
     type Output: Component;
 
-    fn build(self) -> Self::Output;
+    fn build(self) -> Result<Self::Output>;
     fn add_key_event_handler(
         &mut self,
         _keymap: HashMap<KeyEvent, Action>,

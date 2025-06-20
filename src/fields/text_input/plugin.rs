@@ -18,18 +18,23 @@ where
 {
     type Parent = FormBuilder;
 
-    fn plugin(self, parent: &mut Self::Parent) {
-        let Some(field_type) = &self.field_type else {
-            return;
+    fn plugin(self, parent: &mut Self::Parent) -> Result<()> {
+        let Some(input) = &self.field_type else {
+            let e = FormErrors::malformed("field type").into();
+            return Err(e);
         };
-        let Some(form_type) = &parent.form_type else {
-            return;
+        let Some(form) = &parent.form_type else {
+            let e = FormErrors::malformed("form type").into();
+            return Err(e);
         };
-        if field_type == form_type {
-            parent.with_field(self);
+        if !(input == form) {
+            let e = FormErrors::mapping(*input, *form).into();
+            return Err(e);
         }
+        parent.with_field(self);
+        Ok(())
     }
-    fn plugin_group(parent: &mut Self::Parent) {
+    fn plugin_group(parent: &mut Self::Parent) -> Result<()> {
         let _ = parent;
         todo!()
     }

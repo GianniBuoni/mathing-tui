@@ -16,7 +16,7 @@ impl TableData {
             .with_heading("Price")
             .with_table_type(AppArm::Items);
 
-        let mut table = table.build();
+        let mut table = table.build().unwrap();
         let items = StoreItem::mock().into_iter().map(DbTable::Item).collect();
         table.add_items(items);
 
@@ -33,7 +33,7 @@ impl TableData {
             .with_heading("Payees")
             .with_table_type(AppArm::Receipts);
 
-        let mut table = table.build();
+        let mut table = table.build().unwrap();
 
         let items = StoreJoinRow::mock()
             .into_iter()

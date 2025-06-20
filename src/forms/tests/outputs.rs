@@ -57,28 +57,34 @@ fn test_form_submit() -> Result<()> {
     Ok(())
 }
 
-// TODO test every step of the builder process.
 #[test]
 fn test_malformed_form_error() {
-    let key_events = [
-        Action::HandleInput(KeyEvent::from(KeyCode::Char('a'))),
-        Action::SelectForward,
-        Action::HandleInput(KeyEvent::from(KeyCode::Char('1'))),
-        Action::HandleInput(KeyEvent::from(KeyCode::Char('.'))),
-        Action::HandleInput(KeyEvent::from(KeyCode::Char('9'))),
-        Action::HandleInput(KeyEvent::from(KeyCode::Char('9'))),
+    let mut test_case = Form::builder();
+    test_case.with_request_type(RequestType::Get);
+
+    let mut test_case_1 = Form::builder();
+    test_case_1
+        .with_request_type(RequestType::Post)
+        .with_form_type(AppArm::Items);
+
+    let test_cases = [
+        (Form::builder(), FormErrors::malformed("request type")),
+        (test_case, FormErrors::malformed("form type")),
+        (test_case_1, FormErrors::malformed("fields")),
     ];
 
-    let mut form = Form::test_no_fields();
-    key_events
-        .iter()
-        .for_each(|key| form.handle_action(Some(*key)));
+    test_cases.into_iter().for_each(|(form, want)| {
+        let res = form.build();
 
-    let want = "Malformed: form has no fields.".to_string();
-    let got = match form.submit() {
-        Ok(_) => panic!("Expected an error!"),
-        Err(e) => e.to_string(),
-    };
+        if let Ok(unexpected) = &res {
+            dbg!(unexpected);
+            panic!("Expected an error");
+        }
 
-    assert_eq!(want, got, "Test malformed form");
+        if let Err(got) = &res {
+            let got = got.to_string();
+            let want = want.to_string();
+            assert_eq!(want, got, "Test malformed form");
+        }
+    });
 }

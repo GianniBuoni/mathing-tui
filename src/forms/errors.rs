@@ -5,7 +5,7 @@ pub enum FormErrors {
     Malformed(String),
     Validation(String, String),
     NoData(String),
-    Unmapped(String),
+    Mapping(AppArm, AppArm),
 }
 
 impl Display for FormErrors {
@@ -23,8 +23,8 @@ impl Display for FormErrors {
             Self::NoData(input_value) => {
                 write!(f, "No data: {input_value} field is empty.")
             }
-            Self::Unmapped(input) => {
-                write!(f, "{input} is not mapped to any value.")
+            Self::Mapping(input, form) => {
+                write!(f, "{input:?} input is not mappable to {form:?} form.")
             }
         }
     }
@@ -42,7 +42,7 @@ impl FormErrors {
     pub fn no_data(input_value: impl ToString) -> Self {
         Self::NoData(input_value.to_string())
     }
-    pub fn unmapped(input: impl ToString) -> Self {
-        Self::Unmapped(input.to_string())
+    pub fn mapping(input: AppArm, form: AppArm) -> Self {
+        Self::Mapping(input, form)
     }
 }

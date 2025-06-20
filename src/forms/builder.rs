@@ -42,11 +42,8 @@ impl FormBuilder {
             .fields
             .iter()
             .map(|f| f.get_rect_height())
-            .reduce(|acc, f| acc + f);
+            .reduce(|acc, f| acc + f)?;
 
-        let Some(height) = height else {
-            return None;
-        };
         Some(Rect::new(0, 0, Form::WIDTH, height + Form::HEIGHT))
     }
 }
@@ -55,34 +52,26 @@ impl PluginParent for FormBuilder {}
 
 impl ComponentBuilder for FormBuilder {
     type Output = Form;
-    fn build(mut self) -> Self::Output {
-        let mut malformed = Form::default();
-        malformed.rect = Rect::new(0, 0, 50, 9);
-
+    fn build(mut self) -> Result<Self::Output> {
         if self.request_type == RequestType::None {
             let err = FormErrors::malformed("request type").into();
-            malformed.map_err(Some(err));
-            return malformed;
+            return Err(err);
         }
         let Some(_) = self.form_type else {
             let err = FormErrors::malformed("form type").into();
-            malformed.map_err(Some(err));
-            return malformed;
+            return Err(err);
         };
         let Some(_) = self.payload else {
             let err = FormErrors::malformed("payload").into();
-            malformed.map_err(Some(err));
-            return malformed;
+            return Err(err);
         };
         if self.fields.is_empty() {
             let err = FormErrors::malformed("fields").into();
-            malformed.map_err(Some(err));
-            return malformed;
+            return Err(err);
         }
         let Some(rect) = self.calc_rect() else {
-            let err = FormErrors::malformed("").into();
-            malformed.map_err(Some(err));
-            return malformed;
+            let err = FormErrors::malformed("rect").into();
+            return Err(err);
         };
 
         self.fields
@@ -90,7 +79,7 @@ impl ComponentBuilder for FormBuilder {
             .enumerate()
             .for_each(|(index, f)| f.init(index, self.active_field.clone()));
 
-        Form {
+        Ok(Form {
             error: None,
             fields: self.fields,
             title: self.title,
@@ -98,6 +87,6 @@ impl ComponentBuilder for FormBuilder {
             rect,
             request_type: self.request_type,
             payload: self.payload,
-        }
+        })
     }
 }

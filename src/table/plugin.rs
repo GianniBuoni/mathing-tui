@@ -10,19 +10,19 @@ impl PluginInit for TableData {
 impl Plugin for TableData {
     type Parent = HomeBuilder;
 
-    fn plugin(self, parent: &mut Self::Parent) {
+    fn plugin(self, parent: &mut Self::Parent) -> Result<()> {
         parent.add_component(self);
+        Ok(())
     }
 
-    fn plugin_group(parent: &mut Self::Parent) {
+    fn plugin_group(parent: &mut Self::Parent) -> Result<()> {
         let mut item_table = TableData::new_builder();
         item_table
             .with_title("Store Items")
             .with_heading("Item Name")
             .with_heading("Item Price")
             .with_table_type(AppArm::Items);
-        let item_table = item_table.build();
-        item_table.plugin(parent);
+        let item_table = item_table.build()?;
 
         let mut r_table = TableData::new_builder();
         r_table
@@ -32,15 +32,19 @@ impl Plugin for TableData {
             .with_heading("Item Qty")
             .with_heading("Payees")
             .with_table_type(AppArm::Receipts);
-        let r_table = r_table.build();
-        r_table.plugin(parent);
+        let r_table = r_table.build()?;
 
         let mut user_table = TableData::new_builder();
         user_table
             .with_title("Users")
             .with_heading("User Name")
             .with_table_type(AppArm::Users);
-        let user_table = user_table.build();
-        user_table.plugin(parent);
+        let user_table = user_table.build()?;
+
+        item_table.plugin(parent)?;
+        r_table.plugin(parent)?;
+        user_table.plugin(parent)?;
+
+        Ok(())
     }
 }

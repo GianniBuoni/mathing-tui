@@ -3,14 +3,11 @@ use super::*;
 mod outputs;
 mod rendering;
 
-pub fn test_text_inputs(parent: &mut FormBuilder) {
-    let Some(payload) = &mut parent.payload else {
-        return;
+pub fn test_text_inputs(parent: &mut FormBuilder) -> Result<()> {
+    let Some(DbPayloadBuilder::ItemParams(params)) = &mut parent.payload else {
+        let e = FormErrors::malformed("payload").into();
+        return Err(e);
     };
-    let DbPayloadBuilder::ItemParams(params) = payload else {
-        return;
-    };
-
     let string_input = InputField::<String>::test_item_name();
     let name = string_input.value.clone();
 
@@ -19,8 +16,10 @@ pub fn test_text_inputs(parent: &mut FormBuilder) {
 
     params.item_name(name);
     params.item_price(price);
-    string_input.plugin(parent);
-    float_input.plugin(parent);
+    string_input.plugin(parent)?;
+    float_input.plugin(parent)?;
+
+    Ok(())
 }
 
 impl<T> Choice<T>

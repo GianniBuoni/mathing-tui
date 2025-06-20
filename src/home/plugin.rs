@@ -11,23 +11,21 @@ impl PluginInit for Home {
 impl Plugin for Home {
     type Parent = AppBuilder;
 
-    fn plugin(self, parent: &mut Self::Parent) {
-        parent.component = self
+    fn plugin(self, parent: &mut Self::Parent) -> Result<()> {
+        parent.component = self;
+        Ok(())
     }
 
-    fn plugin_group(parent: &mut Self::Parent) {
+    fn plugin_group(parent: &mut Self::Parent) -> Result<()> {
         let mut home = Self::builder();
-
-        let Ok(keymap) = Config::new() else {
-            home.build().error =
-                Some("Config could not be made or parsed".to_string());
-            return;
-        };
+        let keymap = Config::new()?;
 
         home.add_key_event_handler(keymap.keymap.0)
             .add_request_handler(parent.tui.req_tx.clone())
-            .add_plugins(TableData::plugin_group);
+            .add_plugins(TableData::plugin_group)?;
 
-        home.build().plugin(parent);
+        home.build()?.plugin(parent)?;
+
+        Ok(())
     }
 }

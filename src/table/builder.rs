@@ -20,19 +20,20 @@ impl TableBuilder {
 
 impl ComponentBuilder for TableBuilder {
     type Output = TableData;
-    fn build(self) -> Self::Output {
+    fn build(self) -> Result<Self::Output> {
         let Some(table_type) = self.table_type else {
-            let mut malformed = TableData::default();
-            malformed.error =
-                Some("Malformed table: built w/o a table type defined.".into());
-            return malformed;
+            let message = format!(
+                "Malformed table: {} has no defined table type.",
+                self.title
+            );
+            return Err(anyhow::Error::msg(message));
         };
 
-        TableData {
+        Ok(TableData {
             title: self.title,
             headings: self.headings.into(),
             table_type: Some(table_type),
             ..Default::default()
-        }
+        })
     }
 }

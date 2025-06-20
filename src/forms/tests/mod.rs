@@ -22,9 +22,10 @@ impl Form {
         form.with_title("Add New Item")
             .with_request_type(RequestType::Post)
             .with_form_type(AppArm::Items)
-            .add_plugins(test_text_inputs);
+            .add_plugins(test_text_inputs)
+            .unwrap();
 
-        let mut form = form.build();
+        let mut form = form.build().unwrap();
         form.rect = Self::test_rect();
         form
     }

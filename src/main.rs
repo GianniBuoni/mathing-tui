@@ -2,7 +2,7 @@ use mathing_tui::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let mut app = App::new();
+    let mut app = App::new()?;
     let app_result = app.run().await;
 
     ratatui::restore();

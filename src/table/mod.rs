@@ -27,7 +27,6 @@ pub struct TableData {
     app_index: usize,
     tracker: ComponentTracker,
     table_type: Option<AppArm>,
-    error: Option<String>,
 }
 
 #[derive(Debug, Default)]

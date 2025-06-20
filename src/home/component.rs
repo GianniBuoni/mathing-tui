@@ -45,8 +45,15 @@ impl Component for Home {
                     let Some(form) = table.new_form() else {
                         return;
                     };
-                    self.form = Some(form);
-                    self.mode = Mode::Insert;
+                    match form {
+                        Ok(form) => {
+                            self.form = Some(form);
+                            self.mode = Mode::Insert;
+                        }
+                        Err(e) => {
+                            self.error = Some(e.to_string());
+                        }
+                    }
                 }
                 Some(Action::SelectForward) => {
                     self.cycle_active(1);
@@ -120,6 +127,13 @@ impl Component for Home {
 
         if let Some(form) = &mut self.form {
             form.draw(frame, rect);
+        }
+
+        if let Some(error) = &mut self.error {
+            Line::from(error.as_str())
+                .bold()
+                .red()
+                .render(frame.area(), frame.buffer_mut());
         }
     }
 }

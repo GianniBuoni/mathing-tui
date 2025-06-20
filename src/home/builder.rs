@@ -18,19 +18,19 @@ impl HomeBuilder {
 impl ComponentBuilder for HomeBuilder {
     type Output = Home;
 
-    fn build(mut self) -> Self::Output {
+    fn build(mut self) -> Result<Self::Output> {
         self.components.iter_mut().enumerate().for_each(
             |(index, component)| {
                 component.init(index, self.component_tracker.clone())
             },
         );
-        Home {
+        Ok(Home {
             components: self.components,
             req_tx: self.req_tx,
             component_tracker: self.component_tracker,
             keymap: self.keymap,
             ..Default::default()
-        }
+        })
     }
 
     fn add_key_event_handler(

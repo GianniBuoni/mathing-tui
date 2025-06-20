@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn test_response_handling_items() {
+fn test_response_handling_items() -> Result<()> {
     let mut test_cases = StoreItem::mock()
         .into_iter()
         .map(|item| DbResponse::new().payload(DbPayload::Item(item)))
@@ -16,7 +16,7 @@ fn test_response_handling_items() {
 
     let mut table = TableData::new_builder();
     table.with_table_type(AppArm::Items);
-    let mut table = table.build();
+    let mut table = table.build()?;
 
     test_cases
         .iter()
@@ -26,11 +26,13 @@ fn test_response_handling_items() {
         3,
         table.items.len(),
         "Test if updating table with a response adds correct items."
-    )
+    );
+
+    Ok(())
 }
 
 #[test]
-fn test_response_handling_receits() {
+fn test_response_handling_receits() -> Result<()> {
     let mut test_cases = StoreItem::mock()
         .into_iter()
         .map(|item| DbResponse::new().payload(DbPayload::Item(item)))
@@ -44,7 +46,7 @@ fn test_response_handling_receits() {
 
     let mut table = TableData::new_builder();
     table.with_table_type(AppArm::Receipts);
-    let mut table = table.build();
+    let mut table = table.build()?;
 
     test_cases
         .iter()
@@ -54,5 +56,7 @@ fn test_response_handling_receits() {
         2,
         table.items.len(),
         "Test if updating table with a response adds correct items"
-    )
+    );
+
+    Ok(())
 }

@@ -1,4 +1,5 @@
 use crate::prelude::{Component, ComponentBuilder, ComponentTracker};
+use anyhow::Result;
 
 pub mod prelude {
     pub use super::{Plugin, PluginInit, PluginParent};
@@ -12,11 +13,11 @@ pub trait Plugin: Component + PluginInit + Sized {
     /// plugin() is primarily responsible for adding itself to the
     /// parent component. Any other pieces that the child has that
     /// the parent needs are called and handled here as well.
-    fn plugin(self, parent: &mut Self::Parent);
+    fn plugin(self, parent: &mut Self::Parent) -> Result<()>;
 
     /// plugin_group() can batch plug in several plugins of the same
     /// type into the parent.
-    fn plugin_group(parent: &mut Self::Parent);
+    fn plugin_group(parent: &mut Self::Parent) -> Result<()>;
 }
 
 pub trait PluginInit {
@@ -28,8 +29,11 @@ pub trait PluginInit {
 
 pub trait PluginParent {
     // provided method
-    fn add_plugins(&mut self, plugin: fn(&mut Self)) -> &mut Self {
-        plugin(self);
-        self
+    fn add_plugins(
+        &mut self,
+        plugin: fn(&mut Self) -> Result<()>,
+    ) -> Result<&mut Self> {
+        plugin(self)?;
+        Ok(self)
     }
 }

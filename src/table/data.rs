@@ -10,18 +10,18 @@ impl TableData {
     pub fn add_items(&mut self, items: Vec<DbTable>) {
         match items.len() {
             1 => {
-                self.items.push(items.get(0).unwrap().clone());
+                self.items.push(items.first().unwrap().clone());
             }
             _ => self.items = items,
         }
     }
-    pub fn new_form(&self) -> Option<Form> {
+    pub fn new_form(&self) -> Option<Result<Form>> {
         let Some(table_type) = &self.table_type else {
             return None;
         };
         match table_type {
-            AppArm::Items => Form::new_item(),
-            AppArm::Users => Form::new_user(),
+            AppArm::Items => Some(Form::new_item()),
+            AppArm::Users => Some(Form::new_user()),
             AppArm::Receipts => None,
         }
     }

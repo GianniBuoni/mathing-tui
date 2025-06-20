@@ -4,9 +4,10 @@ pub mod prelude {
     pub use super::{new_item_inputs, new_user_inputs};
 }
 
-pub fn new_item_inputs(parent: &mut FormBuilder) {
+pub fn new_item_inputs(parent: &mut FormBuilder) -> Result<()> {
     let Some(DbPayloadBuilder::ItemParams(params)) = &mut parent.payload else {
-        return;
+        let e = FormErrors::malformed("payload").into();
+        return Err(e);
     };
 
     let mut name_input = InputField::<String>::new();
@@ -23,13 +24,16 @@ pub fn new_item_inputs(parent: &mut FormBuilder) {
 
     params.item_name(name);
     params.item_price(price);
-    name_input.plugin(parent);
-    price_input.plugin(parent);
+    name_input.plugin(parent)?;
+    price_input.plugin(parent)?;
+
+    Ok(())
 }
 
-pub fn new_user_inputs(parent: &mut FormBuilder) {
+pub fn new_user_inputs(parent: &mut FormBuilder) -> Result<()> {
     let Some(DbPayloadBuilder::UserParams(params)) = &mut parent.payload else {
-        return;
+        let e = FormErrors::malformed("payload").into();
+        return Err(e);
     };
 
     let mut name_input = InputField::<String>::new();
@@ -39,5 +43,7 @@ pub fn new_user_inputs(parent: &mut FormBuilder) {
     let name = name_input.value.clone();
 
     params.user_name(name);
-    name_input.plugin(parent);
+    name_input.plugin(parent)?;
+
+    Ok(())
 }
