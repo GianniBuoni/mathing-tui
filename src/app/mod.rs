@@ -7,7 +7,7 @@ pub mod prelude {
 mod builder;
 mod component;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum AppArm {
     Items,
     Receipts,

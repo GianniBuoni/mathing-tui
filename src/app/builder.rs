@@ -4,7 +4,7 @@ impl App {
     pub fn builder() -> AppBuilder {
         AppBuilder::default()
     }
-    fn new() -> Self {
+    pub fn new() -> Self {
         let mut app = App::builder();
         app.add_plugins(Home::plugin_group);
         app.build()
