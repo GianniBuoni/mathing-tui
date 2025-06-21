@@ -24,7 +24,7 @@ pub fn test_text_inputs(parent: &mut FormBuilder) -> Result<()> {
 
 impl<T> Choice<T>
 where
-    T: Debug + Default,
+    T: Debug + Default + Copy,
 {
     fn test_rect() -> Rect {
         Rect::new(0, 0, 50, 3)
@@ -59,6 +59,11 @@ impl Choice<i64> {
     pub fn test_choice_2() -> Self {
         Self::new("Noodle").with_value(1)
     }
+    fn plugin_group(parent: &mut SelectionBuilder<i64>) -> Result<()> {
+        Self::test_choice_1().plugin(parent)?;
+        Self::test_choice_2().plugin(parent)?;
+        Ok(())
+    }
 }
 
 impl Choice<bool> {
@@ -67,5 +72,20 @@ impl Choice<bool> {
     }
     pub fn test_choice_no() -> Self {
         Self::new("CANCEL").with_value(false)
+    }
+}
+
+impl SelectionField<i64> {
+    pub fn test_rect() -> Rect {
+        Rect::new(0, 0, 50, 6)
+    }
+    pub fn mock() -> Self {
+        let mut selection = Self::builder();
+        selection
+            .with_title("Add Users")
+            .add_plugins(Choice::plugin_group)
+            .unwrap();
+
+        selection.build().unwrap()
     }
 }

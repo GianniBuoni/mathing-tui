@@ -18,6 +18,7 @@ pub mod prelude {
 
 mod choice;
 mod plugin;
+mod selection_field;
 #[cfg(test)]
 mod tests;
 mod text_input;
@@ -44,12 +45,24 @@ where
 #[derive(Debug, Default)]
 pub struct SelectionField<T>
 where
-    T: Debug + Default,
+    T: Debug + Default + Copy,
 {
     choices: Vec<Choice<T>>,
     values: Rc<RefCell<Vec<T>>>,
     active_field: ComponentTracker,
-    selected_choice: ComponentTracker,
+    active_choice: ComponentTracker,
+    title: Rc<str>,
+    index: usize,
+    multiselect: bool,
+}
+
+#[derive(Debug, Default)]
+pub struct SelectionBuilder<T>
+where
+    T: Debug + Default + Copy,
+{
+    choices: Vec<Choice<T>>,
+    active_choice: ComponentTracker,
     title: Rc<str>,
     multiselect: bool,
 }
@@ -57,11 +70,11 @@ where
 #[derive(Debug, Default)]
 pub struct Choice<T>
 where
-    T: Debug + Default,
+    T: Debug + Default + Copy,
 {
     value: T,
     display: Rc<str>,
     active_choice: ComponentTracker,
-    selected_choice: ComponentTracker,
     index: usize,
+    selected: bool,
 }
