@@ -5,6 +5,9 @@ where
     T: Debug + Default + Copy,
 {
     fn handle_action(&mut self, action: Option<Action>) {
+        if !self.is_active() {
+            return;
+        }
         let Some(action) = action else {
             return;
         };

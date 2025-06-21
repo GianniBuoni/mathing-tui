@@ -5,12 +5,21 @@ where
     T: Debug + Default + Copy,
 {
     fn submit(&self) -> Result<()> {
-        self.choices
+        let choice_values = self
+            .choices
             .iter()
             .filter(|f| f.selected)
             .map(|f| f.value)
-            .for_each(|value| self.values.borrow_mut().push(value));
+            .collect::<Vec<T>>();
 
+        // replace inner value with new collection
+        self.values.replace(choice_values);
+        // error if value is empty
+        if self.values.borrow().is_empty() {
+            let e = FormErrors::no_data("choices").into();
+            return Err(e);
+        }
+        // error if value is longer than expected
         if !self.multiselect && self.values.borrow().len() > 1 {
             let e =
                 FormErrors::validation("multi-select", "single select").into();
