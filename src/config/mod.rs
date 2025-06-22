@@ -1,13 +1,12 @@
-use std::{collections::HashMap, sync::Once};
+use std::{collections::HashMap, sync::OnceLock};
 
 use serde::Deserialize;
 
 use crate::prelude::*;
+use parsing::parse_key_event;
 
 pub mod prelude {
     pub use super::Config;
-    pub use super::filesystems::{config_check_once, config_dir};
-    pub use super::parsing::parse_key_event;
 }
 
 mod builder;
@@ -32,13 +31,19 @@ const DEFAULT_CONFIG: &[u8; 289] = b"[keymap]
 \"k\" = \"TableNavigateUp\"
 \"up\" = \"TableNavigateUp\"";
 
-static CONFIG_CHECK: Once = Once::new();
+static CONFIG: OnceLock<Config> = OnceLock::new();
 
 #[derive(Default, Debug, Deserialize)]
 pub struct Config {
     #[serde(default)]
-    pub keymap: KeyMap,
+    keymap: KeyMap,
 }
 
 #[derive(Default, Debug)]
 pub struct KeyMap(pub HashMap<KeyEvent, Action>);
+
+impl Config {
+    pub fn get(&self, key: KeyEvent) -> Option<Action> {
+        self.keymap.0.get(&key).copied()
+    }
+}
