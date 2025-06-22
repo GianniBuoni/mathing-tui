@@ -2,15 +2,11 @@ use super::*;
 
 impl Component for Home {
     fn handle_key_events(&self, key: KeyEvent) -> Option<Action> {
-        match (key.code, key.modifiers) {
-            (KeyCode::Char(_), KeyModifiers::NONE)
-            | (KeyCode::Char(_), KeyModifiers::SHIFT)
-            | (KeyCode::Backspace, KeyModifiers::NONE)
-                if self.form.is_some() =>
-            {
-                Some(Action::HandleInput(key))
-            }
-            _ => self.keymap.get(&key).copied(),
+        if let Some(form) = &self.form {
+            form.handle_key_events(key)
+        } else {
+            let keymap = Config::get_config();
+            keymap.get(key)
         }
     }
 
@@ -107,9 +103,16 @@ impl Component for Home {
     }
 
     fn handle_response(&mut self, res: Option<&DbResponse>) {
+        let Some(res) = res else {
+            return;
+        };
+        if let Some(err) = &res.error {
+            self.error = Some(err.to_owned());
+            return;
+        }
         self.components
             .iter_mut()
-            .for_each(|component| component.handle_response(res));
+            .for_each(|component| component.handle_response(Some(res)));
     }
 
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {

@@ -18,10 +18,8 @@ impl Plugin for Home {
 
     fn plugin_group(parent: &mut Self::Parent) -> Result<()> {
         let mut home = Self::builder();
-        let keymap = Config::new()?;
 
-        home.add_key_event_handler(keymap.keymap.0)
-            .add_request_handler(parent.tui.req_tx.clone())
+        home.add_request_handler(parent.tui.req_tx.clone())
             .add_plugins(TableData::plugin_group)?;
 
         home.build()?.plugin(parent)?;

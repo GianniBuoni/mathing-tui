@@ -28,16 +28,7 @@ impl ComponentBuilder for HomeBuilder {
             components: self.components,
             req_tx: self.req_tx,
             component_tracker: self.component_tracker,
-            keymap: self.keymap,
             ..Default::default()
         })
-    }
-
-    fn add_key_event_handler(
-        &mut self,
-        keymap: HashMap<KeyEvent, Action>,
-    ) -> &mut Self {
-        self.keymap = keymap;
-        self
     }
 }

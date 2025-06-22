@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::prelude::*;
@@ -26,7 +25,6 @@ pub enum Mode {
 #[derive(Default, Debug)]
 pub struct Home {
     form: Option<Form>,
-    keymap: HashMap<KeyEvent, Action>,
     error: Option<String>,
     components: Vec<TableData>,
     component_tracker: ComponentTracker,
@@ -36,7 +34,6 @@ pub struct Home {
 
 #[derive(Default, Debug)]
 pub struct HomeBuilder {
-    keymap: HashMap<KeyEvent, Action>,
     components: Vec<TableData>,
     component_tracker: ComponentTracker,
     req_tx: Option<UnboundedSender<DbRequest>>,

@@ -2,6 +2,7 @@ use super::*;
 
 #[test]
 fn test_key_events() {
+    Config::get_config();
     let mut home = Home::mock();
 
     let none = KeyModifiers::NONE;
