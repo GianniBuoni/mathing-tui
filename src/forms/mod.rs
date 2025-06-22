@@ -30,21 +30,21 @@ impl Form {
 
 #[derive(Default, Debug)]
 pub struct Form {
+    payload: Option<DbPayloadBuilder>,
     error: Option<String>,
     fields: Vec<Box<dyn Field>>,
     title: Rc<str>,
     active_field: ComponentTracker,
     rect: Rect,
     request_type: RequestType,
-    payload: Option<DbPayloadBuilder>,
 }
 
 #[derive(Default, Debug)]
 pub struct FormBuilder {
+    pub payload: Option<DbPayloadBuilder>,
     fields: Vec<Box<dyn Field>>,
     title: Rc<str>,
     active_field: ComponentTracker,
     request_type: RequestType,
-    pub payload: Option<DbPayloadBuilder>,
     pub form_type: Option<AppArm>,
 }

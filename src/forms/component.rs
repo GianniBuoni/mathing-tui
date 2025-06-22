@@ -53,4 +53,26 @@ impl Component for Form {
             None => {}
         }
     }
+
+    fn handle_key_events(&self, key: KeyEvent) -> Option<Action> {
+        let keymap = Config::get_config();
+        let default = keymap.get(key);
+
+        if self.fields.is_empty() {
+            return default;
+        }
+        let Some(field) = self.fields.get(self.active_field.inner()) else {
+            return default;
+        };
+        if !field.handles_input() {
+            return default;
+        }
+        match (key.code, key.modifiers) {
+            (
+                KeyCode::Char(_) | KeyCode::Backspace,
+                KeyModifiers::NONE | KeyModifiers::SHIFT,
+            ) => Some(Action::HandleInput(key)),
+            _ => default,
+        }
+    }
 }

@@ -26,6 +26,9 @@ mod text_input;
 pub trait Field: Component + PluginInit {
     fn submit(&self) -> Result<()>;
     fn get_rect_height(&self) -> u16;
+    fn handles_input(&self) -> bool {
+        false
+    }
 }
 
 #[derive(Default, Debug)]

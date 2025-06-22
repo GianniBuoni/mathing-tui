@@ -72,4 +72,7 @@ where
     fn get_rect_height(&self) -> u16 {
         Self::HEIGHT
     }
+    fn handles_input(&self) -> bool {
+        true
+    }
 }
