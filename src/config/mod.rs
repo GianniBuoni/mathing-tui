@@ -18,10 +18,11 @@ mod tests;
 
 const DEFAULT_CONFIG_PATH: [&str; 2] = ["mathing", "config.toml"];
 
-const DEFAULT_CONFIG: &[u8; 246] = b"[keymap]
+const DEFAULT_CONFIG: &[u8; 267] = b"[keymap]
 \"CTRL-c\" = \"Quit\"
 \"ESC\" = \"EnterNormal\"
 \"i\" = \"EnterInsert\"
+\"a\" = \"AddToReceipt\"
 \"tab\" = \"SelectForward\"
 \"SHIFT-tab\" = \"SelectBackward\"
 \"ENTER\" = \"Submit\"

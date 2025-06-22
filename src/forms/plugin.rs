@@ -19,4 +19,19 @@ impl Form {
 
         form.build()
     }
+    pub fn new_receipt(
+        item: &StoreItem,
+        users: Vec<&StoreUser>,
+    ) -> Result<Self> {
+        let mut form = Self::builder();
+
+        let title = format!("Add {} to Receipt", item.name);
+
+        form.with_title(title)
+            .with_request_type(RequestType::Post)
+            .with_form_type(AppArm::Receipts)
+            .add_plugins(new_receipt_inputs_middleware(item, users))?;
+
+        form.build()
+    }
 }

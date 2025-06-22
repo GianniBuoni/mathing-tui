@@ -11,7 +11,7 @@ impl Form {
         let constraints = self
             .fields
             .iter()
-            .map(|_| Constraint::Fill(1))
+            .map(|f| Constraint::Length(f.get_rect_height()))
             .collect::<Vec<Constraint>>();
         let areas = Layout::vertical(constraints).split(block.inner(area));
 

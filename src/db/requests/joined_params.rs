@@ -15,6 +15,10 @@ impl JoinParamsBuilder {
         self.item_qty = item_qty;
         self
     }
+    pub fn users(&mut self, users: Rc<RefCell<Vec<i64>>>) -> &mut Self {
+        self.users = users;
+        self
+    }
     pub fn add_user(&mut self, u_id: i64) -> &mut Self {
         let users = self.users.clone();
         {

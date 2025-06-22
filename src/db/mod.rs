@@ -40,7 +40,7 @@ pub struct StoreUser {
     pub id: i64,
     created_at: i64,
     updated_at: i64,
-    name: String,
+    pub name: String,
 }
 
 #[derive(Debug, Default, Clone, PartialEq)]
@@ -48,7 +48,7 @@ pub struct StoreItem {
     pub id: i64,
     created_at: i64,
     updated_at: i64,
-    name: String,
+    pub name: String,
     price: f64,
 }
 

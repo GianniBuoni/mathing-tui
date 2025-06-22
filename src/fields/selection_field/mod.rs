@@ -3,6 +3,7 @@ use super::*;
 mod builder;
 mod component;
 mod field;
+mod plugin;
 
 impl<T> SelectionField<T>
 where

@@ -1,7 +1,9 @@
 use super::*;
 
 pub mod prelude {
-    pub use super::{new_item_inputs, new_user_inputs};
+    pub use super::{
+        new_item_inputs, new_receipt_inputs_middleware, new_user_inputs,
+    };
 }
 
 pub fn new_item_inputs(parent: &mut FormBuilder) -> Result<()> {
@@ -10,7 +12,7 @@ pub fn new_item_inputs(parent: &mut FormBuilder) -> Result<()> {
         return Err(e);
     };
     if !(*form_type == AppArm::Items) {
-        let e = FormErrors::mapping(AppArm::Users, *form_type).into();
+        let e = FormErrors::mapping(AppArm::Items, *form_type).into();
         return Err(e);
     }
     let Some(DbPayloadBuilder::ItemParams(params)) = &mut parent.payload else {
@@ -62,4 +64,49 @@ pub fn new_user_inputs(parent: &mut FormBuilder) -> Result<()> {
     name_input.plugin(parent)?;
 
     Ok(())
+}
+
+pub fn new_receipt_inputs_middleware(
+    item: &StoreItem,
+    users: Vec<&StoreUser>,
+) -> impl Fn(&mut FormBuilder) -> Result<()> {
+    move |parent| {
+        let Some(form_type) = &parent.form_type else {
+            let e = FormErrors::malformed("form type").into();
+            return Err(e);
+        };
+        if !(*form_type == AppArm::Receipts) {
+            let e = FormErrors::mapping(AppArm::Receipts, *form_type).into();
+            return Err(e);
+        }
+        let Some(DbPayloadBuilder::ReceiptParams(params)) = &mut parent.payload
+        else {
+            let e = FormErrors::malformed("payload").into();
+            return Err(e);
+        };
+
+        let mut qty_input = InputField::<i64>::new();
+        qty_input
+            .with_title("Item Qty")
+            .with_field_type(AppArm::Receipts);
+        let item_qty = qty_input.value.clone();
+
+        let mut user_select = SelectionField::<i64>::builder();
+        user_select.with_title("Add Users").with_multselect();
+        users
+            .iter()
+            .map(|f| Choice::<i64>::new(f.name.clone()).with_value(f.id))
+            .try_for_each(|f| f.plugin(&mut user_select))?;
+        let user_select = user_select.build()?;
+        let users = user_select.values.clone();
+
+        params.item_id(ParamOption::new().map_value(item.id).to_owned());
+        params.item_qty(item_qty);
+        params.users(users);
+
+        qty_input.plugin(parent)?;
+        user_select.plugin(parent)?;
+
+        Ok(())
+    }
 }

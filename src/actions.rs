@@ -6,6 +6,7 @@ pub struct QueryRequest;
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub enum Action {
     Quit,
+    AddToReceipt,
     EnterNormal,
     EnterInsert,
     SelectForward,

@@ -15,28 +15,58 @@ impl Component for Home {
     }
 
     fn handle_action(&mut self, action: Option<Action>) {
+        let Some(action) = action else {
+            return;
+        };
         match self.mode {
             Mode::Insert => match action {
-                Some(Action::EnterNormal) => {
+                Action::EnterNormal => {
                     self.form = None;
                     self.mode = Mode::Normal
                 }
-                Some(Action::Submit) => {
+                Action::Submit => {
                     self.handle_submit();
                 }
-                Some(_) => {
+                _ => {
                     if let Some(form) = &mut self.form {
-                        form.handle_action(action);
-                    }
-                }
-                None => {
-                    if let Some(form) = &mut self.form {
-                        form.handle_action(action);
+                        form.handle_action(Some(action));
                     }
                 }
             },
             Mode::Normal => match action {
-                Some(Action::EnterInsert) => {
+                Action::AddToReceipt => {
+                    let Some(table) = self.components.first() else {
+                        return;
+                    };
+                    let Some(item) = table.get_active_item() else {
+                        return;
+                    };
+                    let DbTable::Item(item) = item else {
+                        self.error = Some("Error getting item id for new receipt. First table is not the item table.".into());
+                        return;
+                    };
+                    let Some(table) = self.components.get(2) else {
+                        return;
+                    };
+                    let users = table.get_items();
+                    let users = users
+                        .iter()
+                        .filter_map(|f| match f {
+                            DbTable::User(u) => Some(u),
+                            _ => None,
+                        })
+                        .collect::<Vec<&StoreUser>>();
+
+                    match Form::new_receipt(item, users) {
+                        Ok(form) => {
+                            self.component_tracker.go_to(0);
+                            self.form = Some(form);
+                            self.mode = Mode::Insert;
+                        }
+                        Err(e) => self.error = Some(e.to_string()),
+                    }
+                }
+                Action::EnterInsert => {
                     let Some(table) =
                         self.components.get(self.component_tracker.inner())
                     else {
@@ -55,26 +85,21 @@ impl Component for Home {
                         }
                     }
                 }
-                Some(Action::SelectForward) => {
+                Action::SelectForward => {
                     self.cycle_active(1);
                     self.components
                         .iter_mut()
-                        .for_each(|c| c.handle_action(action));
+                        .for_each(|c| c.handle_action(Some(action)));
                 }
-                Some(Action::SelectBackward) => {
+                Action::SelectBackward => {
                     self.cycle_active(-1);
                     self.components
                         .iter_mut()
-                        .for_each(|c| c.handle_action(action));
+                        .for_each(|c| c.handle_action(Some(action)));
                 }
-                Some(_) => {
+                _ => {
                     self.components.iter_mut().for_each(|c| {
-                        c.handle_action(action);
-                    });
-                }
-                None => {
-                    self.components.iter_mut().for_each(|c| {
-                        c.handle_action(action);
+                        c.handle_action(Some(action));
                     });
                 }
             },

@@ -25,6 +25,13 @@ impl TableData {
             AppArm::Receipts => None,
         }
     }
+    pub fn get_items(&self) -> Rc<[DbTable]> {
+        self.items.clone().into()
+    }
+    pub fn get_active_item(&self) -> Option<&DbTable> {
+        self.items.get(self.table_index)
+    }
+
     pub(super) fn next_row(&mut self) {
         if !self.is_active() {
             return;

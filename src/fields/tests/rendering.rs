@@ -1,5 +1,3 @@
-use std::process::Termination;
-
 use ratatui::{TerminalOptions, Viewport};
 
 use super::*;

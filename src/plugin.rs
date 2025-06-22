@@ -31,7 +31,7 @@ pub trait PluginParent {
     // provided method
     fn add_plugins(
         &mut self,
-        plugin: fn(&mut Self) -> Result<()>,
+        plugin: impl Fn(&mut Self) -> Result<()>,
     ) -> Result<&mut Self> {
         plugin(self)?;
         Ok(self)

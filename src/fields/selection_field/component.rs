@@ -18,10 +18,13 @@ where
         }
     }
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
+        let styles: AppStyles = AppColors::get(self.is_active()).into();
+
         let block = Block::bordered()
             .border_type(BorderType::Rounded)
             .title(self.title.as_ref())
-            .padding(Padding::uniform(1));
+            .padding(Padding::uniform(1))
+            .style(styles.block_style);
 
         let inner_area = block.inner(rect);
         let lines = Layout::vertical(
