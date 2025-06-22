@@ -5,7 +5,7 @@ SELECT
   i.id as item_id, i.name as item_name, i.price as item_price,
   r.item_qty as item_qty
 from receipts_users ru
-INNER JOIN users u ON ru.receipt_id = u.id
+INNER JOIN users u ON ru.user_id = u.id
 INNER JOIN receipts r ON ru.receipt_id = r.id
 INNER JOIN items i ON r.item_id = i.id
 GROUP BY ru.receipt_id

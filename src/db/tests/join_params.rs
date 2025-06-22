@@ -18,12 +18,15 @@ async fn join_init_test(conn: &SqlitePool) -> Result<Vec<StoreJoinRow>> {
 
         match index {
             0 => {
+                // add Jon to PB Pretzel
                 param.add_user(users.get(2).unwrap().id);
             }
             1 => {
+                // add Noodle to Salmon
                 param.add_user(users.get(1).unwrap().id);
             }
             2 => {
+                // add Noodle and Jon to Chips and Dip
                 param
                     .add_user(users.get(1).unwrap().id)
                     .add_user(users.get(2).unwrap().id);
@@ -101,18 +104,22 @@ async fn test_join_delete(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_delete_cascade(conn: SqlitePool) -> Result<()> {
     join_init_test(&conn).await?;
+    // delete Jon
     UserParams::builder()
         .user_id(ParamOption::new().map_value(3).clone())
         .build()
         .delete(&conn)
         .await?;
 
+    // PB Pretzel should be deleted
+    // Chips and Dip should not be deleted since Noodle is still
+    // attached to the receipt
     let got = JoinedReceiptParams::builder()
         .offset(0)
         .build()
         .get_all(&conn)
         .await?;
-    assert_eq!(1, got.len(), "Test delete cascade for joined rows.");
+    assert_eq!(2, got.len(), "Test delete cascade for joined rows.");
 
     Ok(())
 }
