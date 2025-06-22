@@ -3,6 +3,38 @@ use core::panic;
 use super::*;
 
 #[test]
+fn test_key_events() {
+    Config::get_config();
+    let form = Form::test_valid();
+
+    let test_cases = [
+        (
+            KeyEvent::from(KeyCode::Char('i')),
+            Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('i')))),
+            "Test handle input.",
+        ),
+        (
+            KeyEvent::new(KeyCode::Char('i'), KeyModifiers::SHIFT),
+            Some(Action::HandleInput(KeyEvent::new(
+                KeyCode::Char('i'),
+                KeyModifiers::SHIFT,
+            ))),
+            "Test entering input in insert mode.",
+        ),
+        (
+            KeyEvent::from(KeyCode::Enter),
+            Some(Action::Submit),
+            "Test submitting.",
+        ),
+    ];
+
+    test_cases.into_iter().for_each(|(event, want, desc)| {
+        let got = form.handle_key_events(event);
+        assert_eq!(want, got, "{desc}")
+    });
+}
+
+#[test]
 fn test_form_validation() -> Result<()> {
     let key_events = [
         Action::HandleInput(KeyEvent::from(KeyCode::Char('a'))),
