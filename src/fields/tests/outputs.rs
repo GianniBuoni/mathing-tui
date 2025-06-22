@@ -41,8 +41,7 @@ fn test_get_rect_height() {
 
 #[test]
 fn test_multi_selection_submit() {
-    let make_selection =
-        Some(Action::HandleInput(KeyEvent::from(KeyCode::Char(' '))));
+    let make_selection = Some(Action::MakeSelection);
     let next_choice = Some(Action::TableNavigateDown);
 
     let test_cases = [
@@ -78,8 +77,7 @@ fn test_multi_selection_submit() {
 
 #[test]
 fn test_single_selection_submit() {
-    let make_selection =
-        Some(Action::HandleInput(KeyEvent::from(KeyCode::Char(' '))));
+    let make_selection = Some(Action::MakeSelection);
     let next_choice = Some(Action::TableNavigateDown);
 
     let test_cases = [

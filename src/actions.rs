@@ -8,6 +8,7 @@ pub enum Action {
     Quit,
     AddToReceipt,
     EnterNormal,
+    MakeSelection,
     EnterInsert,
     SelectForward,
     SelectBackward,
