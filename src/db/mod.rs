@@ -26,10 +26,8 @@ pub mod prelude {
     };
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub enum DbTable {
-    #[default]
-    None,
     Item(StoreItem),
     User(StoreUser),
     Receipt(StoreJoinRow),

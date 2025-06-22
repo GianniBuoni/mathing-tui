@@ -13,9 +13,7 @@ impl TableData {
     pub(super) fn render_rows(&self, style: Style) -> Vec<Row> {
         self.items
             .iter()
-            .map(|data| {
-                data.ref_array().into_iter().collect::<Row>().style(style)
-            })
+            .map(|data| data.ref_array().style(style))
             .collect()
     }
 

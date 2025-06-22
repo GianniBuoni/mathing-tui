@@ -1,21 +1,21 @@
 use std::borrow::Cow;
 
-use ratatui::widgets::Cell;
+use ratatui::widgets::{Cell, Row};
 
 use super::{prelude::DbPayload, *};
 use crate::table::TableDisplay;
 
 impl TableDisplay for DbTable {
-    fn ref_array(&self) -> Vec<Cell> {
+    fn ref_array(&self) -> Row {
         match self {
             DbTable::Item(i) => {
                 let name = format!(" {} ", i.name);
                 let price = format!(" {:.2} ", i.price);
-                vec![name.into(), price.into()]
+                Row::new([Cell::from(name), Cell::from(price)])
             }
             DbTable::User(u) => {
                 let name = format!(" {} ", u.name);
-                vec![name.into()]
+                Row::new([Cell::from(name)])
             }
             DbTable::Receipt(r) => {
                 let name = format!(" {} ", r.item_name);
@@ -28,9 +28,10 @@ impl TableDisplay for DbTable {
                     .collect::<Vec<Cow<str>>>();
                 let payees = payees.join(", ");
                 let payees = format!(" {payees} ");
-                vec![name.into(), price.into(), qty.into(), payees.into()]
+                let cells: [Cell; 4] =
+                    [name.into(), price.into(), qty.into(), payees.into()];
+                Row::new(cells)
             }
-            _ => vec![],
         }
     }
 }

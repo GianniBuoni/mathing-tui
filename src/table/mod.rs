@@ -15,7 +15,7 @@ pub mod prelude {
 }
 
 pub trait TableDisplay: Debug {
-    fn ref_array(&self) -> Vec<Cell>;
+    fn ref_array(&self) -> Row;
 }
 
 #[derive(Debug, Default)]
