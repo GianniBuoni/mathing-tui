@@ -2,7 +2,7 @@ use super::*;
 
 impl<T> PluginInit for InputField<T>
 where
-    T: Debug + Default + Clone + FromStr,
+    T: Debug + Default + Display + Clone + FromStr,
     <T as FromStr>::Err: Debug,
 {
     fn init(&mut self, index: usize, tracker: ComponentTracker) {
@@ -13,7 +13,7 @@ where
 
 impl<T> Plugin for InputField<T>
 where
-    T: Debug + Default + Clone + FromStr + 'static,
+    T: Debug + Default + Display + Clone + FromStr + 'static,
     <T as FromStr>::Err: Debug,
 {
     type Parent = FormBuilder;
