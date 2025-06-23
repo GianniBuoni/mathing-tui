@@ -1,0 +1,57 @@
+use std::sync::Mutex;
+use tokio::sync::OnceCell;
+
+use super::{
+    prelude::{RequestError, get_db},
+    *,
+};
+
+static TOTALS: OnceCell<Mutex<StoreTotal>> = OnceCell::const_new();
+
+impl StoreTotal {
+    async fn new() -> Result<Mutex<Self>> {
+        let conn = get_db().await?;
+
+        let rows_to_calc =
+            sqlx::query_file_as!(StoreJoinRaw, "sql/get_ru_no_offset.sql")
+                .fetch_all(conn)
+                .await
+                .map_err(|_| RequestError::not_found("all", "recipts_users"))?;
+
+        let calcs = try_join_all(rows_to_calc.into_iter().map(async |raw| {
+            anyhow::Ok::<StoreJoinRow>(raw.as_join_row(conn).await?)
+        }))
+        .await?
+        .iter_mut()
+        .map(|row| row.calc())
+        .reduce(|mut acc, next| {
+            for (key, value) in next {
+                acc.entry(key)
+                    .and_modify(|mut f| f += value)
+                    .or_insert(value);
+            }
+            acc
+        })
+        .unwrap_or_default();
+
+        Ok(Mutex::new(Self(calcs)))
+    }
+
+    pub async fn get_or_init() -> Result<&'static Mutex<Self>> {
+        TOTALS.get_or_try_init(Self::new).await
+    }
+
+    pub fn get(key: i64) -> Result<Decimal> {
+        let totals = TOTALS
+            .get()
+            .ok_or(anyhow::Error::msg("TOTALS mutex is empty"))?
+            .lock()
+            .map_err(|_| anyhow::Error::msg("Read lock failed for TOTALS"))?;
+
+        totals
+            .0
+            .get(&key)
+            .copied()
+            .ok_or(anyhow::Error::msg("No total found for given key."))
+    }
+}

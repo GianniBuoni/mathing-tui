@@ -38,6 +38,7 @@ impl Plugin for TableData {
         user_table
             .with_title("Users")
             .with_heading("User Name")
+            .with_heading("Totals")
             .with_table_type(AppArm::Users);
         let user_table = user_table.build()?;
 

@@ -15,7 +15,9 @@ impl TableDisplay for DbTable {
             }
             DbTable::User(u) => {
                 let name = format!(" {} ", u.name);
-                Row::new([Cell::from(name)])
+                let totals = StoreTotal::get(u.id).unwrap_or_default();
+                let totals = format!(" {totals:.2} ");
+                Row::new([Cell::from(name), Cell::from(totals)])
             }
             DbTable::Receipt(r) => {
                 let name = format!(" {} ", r.item_name);

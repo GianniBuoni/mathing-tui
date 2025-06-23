@@ -16,6 +16,7 @@ mod table_displays;
 mod test_cases;
 #[cfg(test)]
 mod tests;
+mod totals;
 
 pub mod prelude {
     pub use super::connection::get_db;
