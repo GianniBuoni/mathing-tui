@@ -1,27 +1,76 @@
 use super::*;
 
 #[test]
-fn test_handle_events() {
-    let key_events =
-        [(KeyEvent::from(KeyCode::Tab), Some(Action::SelectForward))];
+fn test_key_events() {
+    Config::get_config();
+    let home = Home::mock();
 
-    for (event, want) in key_events {
-        let mut home = test_home();
-        let got = home.handle_events(Some(Event::Key(event)));
-        assert_eq!(
-            want, got,
-            "Test if default event handlers map to corret actions"
-        );
-    }
+    let key_events = [
+        (
+            KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL),
+            Some(Action::Quit),
+            "Test default quit event.",
+        ),
+        (
+            KeyEvent::from(KeyCode::Tab),
+            Some(Action::SelectForward),
+            "Test default pane switch.",
+        ),
+        (
+            KeyEvent::new(KeyCode::Tab, KeyModifiers::SHIFT),
+            Some(Action::SelectBackward),
+            "Test pane switch backwards",
+        ),
+        (
+            KeyEvent::from(KeyCode::Char('i')),
+            Some(Action::EnterInsert),
+            "Test entering insert mode.",
+        ),
+        (
+            KeyEvent::from(KeyCode::Esc),
+            Some(Action::EnterNormal),
+            "Test exiting normal mode.",
+        ),
+        (
+            KeyEvent::from(KeyCode::Enter),
+            Some(Action::Submit),
+            "Test submitting in normal mode. (Should still retun the submit action)",
+        ),
+        (
+            KeyEvent::from(KeyCode::Char('j')),
+            Some(Action::TableNavigateDown),
+            "Test navigating table down with j.",
+        ),
+        (
+            KeyEvent::from(KeyCode::Down),
+            Some(Action::TableNavigateDown),
+            "Test navigating table down with DOWN.",
+        ),
+        (
+            KeyEvent::from(KeyCode::Char('k')),
+            Some(Action::TableNavigateUp),
+            "Test navigating table up with k.",
+        ),
+        (
+            KeyEvent::from(KeyCode::Up),
+            Some(Action::TableNavigateUp),
+            "Test navigating table up with UP.",
+        ),
+    ];
+
+    key_events.into_iter().for_each(|(event, want, desc)| {
+        let got = home.handle_key_events(event);
+        assert_eq!(want, got, "{desc}")
+    });
 }
 
 #[test]
 fn test_component_cycling_forward() {
-    let mut test_home = test_home();
+    let mut test_home = Home::mock();
     let key_event = KeyEvent::from(KeyCode::Tab);
 
     assert_eq!(
-        *test_home.component_tracker.borrow(),
+        test_home.component_tracker.inner(),
         0,
         "Test if current model is properly initialized",
     );
@@ -30,10 +79,10 @@ fn test_component_cycling_forward() {
         let want = if i % 2 == 0 { 1 } else { 0 };
 
         let action = test_home.handle_events(Some(Event::Key(key_event)));
-        test_home.update(action);
+        test_home.handle_action(action);
         assert_eq!(
             want,
-            *test_home.component_tracker.borrow(),
+            test_home.component_tracker.inner(),
             "Test if current view changes with repeated input"
         );
     }
@@ -41,11 +90,11 @@ fn test_component_cycling_forward() {
 
 #[test]
 fn test_component_cycling_backwards() {
-    let mut test_home = test_home();
+    let mut test_home = Home::mock();
     let key_event = KeyEvent::new(KeyCode::Tab, KeyModifiers::SHIFT);
 
     assert_eq!(
-        *test_home.component_tracker.borrow(),
+        test_home.component_tracker.inner(),
         0,
         "Test if current model is properly initialized",
     );
@@ -54,10 +103,10 @@ fn test_component_cycling_backwards() {
         let want = if i % 2 == 0 { 1 } else { 0 };
 
         let action = test_home.handle_events(Some(Event::Key(key_event)));
-        test_home.update(action);
+        test_home.handle_action(action);
         assert_eq!(
             want,
-            *test_home.component_tracker.borrow(),
+            test_home.component_tracker.inner(),
             "Test if current view changes with repeated input"
         );
     }
@@ -65,12 +114,12 @@ fn test_component_cycling_backwards() {
 
 #[test]
 fn test_tracker_sync() {
-    let mut home = test_home();
+    let mut home = Home::mock();
     let key_event = KeyEvent::from(KeyCode::Tab);
 
     for i in 0..100 {
         let action = home.handle_events(Some(Event::Key(key_event)));
-        home.update(action);
+        home.handle_action(action);
 
         let want = if i % 2 == 0 { false } else { true };
 

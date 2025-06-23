@@ -2,10 +2,11 @@ use mathing_tui::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let tui = Tui::builder().build();
-    let mut app = App::default();
+    Config::get_config();
+    StoreTotal::get_or_init().await?;
 
-    let app_result = app.run(tui).await;
+    let mut app = App::new()?;
+    let app_result = app.run().await;
 
     ratatui::restore();
     app_result

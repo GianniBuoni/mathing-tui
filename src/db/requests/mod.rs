@@ -1,3 +1,6 @@
+use std::ops::Deref;
+
+use errors::RequestError;
 use sqlx::SqliteExecutor;
 
 use super::*;
@@ -5,7 +8,11 @@ use super::*;
 pub mod prelude {
     pub use super::errors::RequestError;
     pub use super::handle_requests::handle_requests;
-    pub use super::{DbPayload, DbRequest, DbResponse, Request, RequestType};
+    pub use super::{
+        DbPayload, DbPayloadBuilder, DbRequest, DbResponse, ItemParamsBuilder,
+        JoinParamsBuilder, ParamOption, Request, RequestType,
+        UserParamsBuilder,
+    };
 }
 
 mod builders;
@@ -58,7 +65,7 @@ pub struct DbRequest {
     pub payload: DbPayload,
 }
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub enum DbPayload {
     #[default]
     None,
@@ -74,6 +81,13 @@ pub enum DbPayload {
     Users(Vec<StoreUser>),
 }
 
+#[derive(Debug)]
+pub enum DbPayloadBuilder {
+    ItemParams(ItemParamsBuilder),
+    UserParams(UserParamsBuilder),
+    ReceiptParams(JoinParamsBuilder),
+}
+
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub enum RequestType {
     #[default]
@@ -84,4 +98,50 @@ pub enum RequestType {
     Update,
     Delete,
     Reset,
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct ParamOption<T>(Rc<RefCell<Option<T>>>)
+where
+    T: Default + Debug;
+
+impl<T> ParamOption<T>
+where
+    T: Default + Debug + Clone,
+{
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn unwrap(&self) -> Option<T> {
+        self.0.borrow().deref().clone()
+    }
+    pub fn map_value(&self, value: impl Into<T>) -> &Self {
+        {
+            *self.0.borrow_mut() = Some(value.into());
+        }
+        self
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct UserParamsBuilder {
+    pub u_id: ParamOption<i64>,
+    pub name: ParamOption<String>,
+}
+
+#[derive(Debug, Default)]
+pub struct ItemParamsBuilder {
+    pub offset: Option<i64>,
+    pub item_id: ParamOption<i64>,
+    pub item_name: ParamOption<String>,
+    pub item_price: ParamOption<f64>,
+}
+
+#[derive(Debug, Default)]
+pub struct JoinParamsBuilder {
+    pub offset: Option<i64>,
+    pub users: Rc<RefCell<Vec<i64>>>,
+    pub r_id: ParamOption<i64>,
+    pub item_id: ParamOption<i64>,
+    pub item_qty: ParamOption<i64>,
 }

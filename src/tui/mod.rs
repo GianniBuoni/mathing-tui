@@ -4,53 +4,59 @@ use crossterm::event::{EventStream, KeyEventKind};
 use futures::{FutureExt, StreamExt};
 use ratatui::DefaultTerminal;
 use tokio::{
-    sync::mpsc::{UnboundedReceiver, UnboundedSender},
+    sync::mpsc::{Receiver, Sender, UnboundedReceiver, UnboundedSender},
     task::JoinHandle,
 };
 
 use crate::prelude::*;
 
 pub mod prelude {
-    pub use super::{Event, Tui};
+    pub use super::{Event, Tui, TuiBuilder};
 }
 
 mod builder;
 
 pub enum Event {
     Init,
-    Quit,
-    Error,
     Key(KeyEvent),
 }
 
+#[derive(Debug)]
 pub struct Tui {
     pub terminal: DefaultTerminal,
-    event_rx: UnboundedReceiver<Event>,
-    res_rx: UnboundedReceiver<DbResponse>,
-    pub req_tx: UnboundedSender<DbRequest>, // clone to app forms
+    event_rx: Receiver<Event>,
+    res_rx: Receiver<DbResponse>,
     _event_task: JoinHandle<()>,
     _db_task: JoinHandle<()>,
 }
 
+#[derive(Debug)]
+pub struct TuiBuilder {
+    event_tx: Sender<Event>,
+    event_rx: Receiver<Event>,
+    res_tx: Sender<DbResponse>,
+    res_rx: Receiver<DbResponse>,
+    pub req_tx: UnboundedSender<DbRequest>,
+    req_rx: UnboundedReceiver<DbRequest>,
+}
+
 impl Tui {
-    pub async fn next_event(&mut self) -> Option<Event> {
-        self.event_rx.recv().await
+    pub fn next_event(&mut self) -> Option<Event> {
+        self.event_rx.try_recv().ok()
     }
 
     pub fn next_response(&mut self) -> Option<DbResponse> {
-        match self.res_rx.try_recv() {
-            Ok(_) => None,
-            Err(_) => None,
-        }
+        self.res_rx.try_recv().ok()
     }
 
-    async fn event_loop(event_tx: UnboundedSender<Event>) {
+    async fn event_loop(event_tx: Sender<Event>) {
         let mut event_stream = EventStream::new();
 
         // if this fails, then it's likely a bug in the calling code
         event_tx
             .send(Event::Init)
-            .expect("Failed to send Init event");
+            .await
+            .expect("Failed to send Init event.");
 
         loop {
             let event = tokio::select! {
@@ -59,11 +65,11 @@ impl Tui {
                     CrosstermEvent::Key(key) if key.kind == KeyEventKind::Press => Event::Key(key),
                     _ => continue,
                 }
-                Some(Err(_)) => Event::Error,
+                Some(Err(_)) => break,
                 None => break,
                 }
             };
-            if event_tx.send(event).is_err() {
+            if event_tx.send(event).await.is_err() {
                 break;
             }
         }
@@ -71,23 +77,28 @@ impl Tui {
 
     async fn db_loop(
         mut req_rx: UnboundedReceiver<DbRequest>,
-        res_tx: UnboundedSender<DbResponse>,
+        res_tx: Sender<DbResponse>,
     ) {
-        let conn = get_db().await.map_err(|_| {
-            let res = DbResponse::new()
-                .req_type(RequestType::GetAll)
-                .error(RequestError::Connection.to_string());
-            res_tx.send(res)
-        });
-
-        // inital fetch should go here
+        let conn = match get_db().await {
+            Ok(c) => c,
+            Err(_) => {
+                let res = DbResponse::new()
+                    .req_type(RequestType::GetAll)
+                    .error(RequestError::Connection.to_string());
+                res_tx
+                    .send(res)
+                    .await
+                    .expect("Failed to send the Connection Error response.");
+                return;
+            }
+        };
 
         loop {
             let res = tokio::select! {
-                Some(req) = req_rx.recv() => handle_requests(req, conn.as_ref().unwrap()).await,
-                else => break,
+                Some(req) = req_rx.recv() => handle_requests(req, conn).await,
+                else => continue,
             };
-            if res_tx.send(res).is_err() {
+            if res_tx.send(res).await.is_err() {
                 break;
             }
         }

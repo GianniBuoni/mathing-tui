@@ -2,17 +2,17 @@ use super::*;
 
 #[test]
 fn test_table_constuction() {
-    let items = mock_items();
+    let items = TableData::mock_items();
     let desc = "Test table.active data is constructed correctly";
 
-    assert!(!items.active, "{desc}");
+    assert!(items.is_active(), "{desc}");
     assert_eq!(items.app_index, 0, "{desc}");
     assert_eq!(items.table_index, 0, "{desc}")
 }
 
 #[test]
 fn test_row_increment() {
-    let mut items = mock_items();
+    let mut items = TableData::mock_items();
 
     for i in 0..3 {
         let want = match i {
@@ -31,7 +31,7 @@ fn test_row_increment() {
 
 #[test]
 fn test_row_decrement() {
-    let mut items = mock_items();
+    let mut items = TableData::mock_items();
 
     for i in 0..3 {
         let want = 2 - i;
@@ -54,12 +54,12 @@ fn test_up_down_navigation_input() {
         (KeyCode::Up, 2, "Test up key input"),
     ];
 
-    let home = test_home();
+    let home = Home::mock();
 
     key_codes.into_iter().for_each(|(key, want, desc)| {
-        let mut items = mock_items();
+        let mut items = TableData::mock_items();
         let action = home.handle_key_events(KeyEvent::from(key));
-        items.update(action);
+        items.handle_action(action);
 
         assert_eq!(want, items.table_index.clone(), "{desc}");
     });

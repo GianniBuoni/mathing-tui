@@ -1,68 +1,36 @@
-use std::ops::Deref;
+use core::panic;
 
 use super::*;
 
 #[test]
-fn test_input_validation_f64() {
-    let mut key_events = [
-        (
-            test_f64_input(),
-            Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('1')))),
-            None,
-            "Test valid float input.",
-        ),
-        (
-            test_f64_input(),
-            Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('a')))),
-            Some(FormErrors::validation("a", "f64").to_string()),
-            "Test invalid input.",
-        ),
-        (
-            test_f64_input(),
-            None,
-            Some(FormErrors::no_data("Item Price").to_string()),
-            "Test unset data.",
-        ),
-    ];
+fn test_key_events() {
+    Config::get_config();
+    let form = Form::test_valid();
 
-    key_events
-        .iter_mut()
-        .for_each(|(input, action, want, desc)| {
-            input.update(*action);
-            let got = input.validate().map_err(|e| e.to_string()).err();
-            assert_eq!(*want, got, "{desc}")
-        });
-}
-
-#[test]
-fn test_input_mapping() {
-    let test_float = Rc::new(RefCell::new(0. as f64));
-
-    let mut test_cases = [
+    let test_cases = [
         (
-            Box::new(test_f64_input().map_value(test_float.clone()))
-                as Box<dyn Field>,
-            "Ok",
-            "Test valid float field.",
+            KeyEvent::from(KeyCode::Char('i')),
+            Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('i')))),
+            "Test handle input.",
         ),
         (
-            Box::new(test_f64_input()) as Box<dyn Field>,
-            "Item Price is not mapped to any value.",
-            "Test unmapped float field.",
+            KeyEvent::new(KeyCode::Char('i'), KeyModifiers::SHIFT),
+            Some(Action::HandleInput(KeyEvent::new(
+                KeyCode::Char('i'),
+                KeyModifiers::SHIFT,
+            ))),
+            "Test entering input in insert mode.",
+        ),
+        (
+            KeyEvent::from(KeyCode::Enter),
+            Some(Action::Submit),
+            "Test submitting.",
         ),
     ];
 
-    test_cases.iter_mut().for_each(|(input, want, desc)| {
-        let action =
-            Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('1'))));
-        input.update(action);
-
-        let got = match input.submit() {
-            Ok(_) => "Ok".to_string(),
-            Err(e) => e.to_string(),
-        };
-
-        assert_eq!(want.to_string(), got, "{desc}")
+    test_cases.into_iter().for_each(|(event, want, desc)| {
+        let got = form.handle_key_events(event);
+        assert_eq!(want, got, "{desc}")
     });
 }
 
@@ -77,9 +45,11 @@ fn test_form_validation() -> Result<()> {
         Action::HandleInput(KeyEvent::from(KeyCode::Char('9'))),
     ];
 
-    let mut form = test_valid_form(&OutputStruct::default());
-    key_events.iter().for_each(|key| form.update(Some(*key)));
-    form.fields.iter().try_for_each(|field| field.submit())?;
+    let mut form = Form::test_valid();
+    key_events
+        .iter()
+        .for_each(|key| form.handle_action(Some(*key)));
+    form.submit()?;
 
     Ok(())
 }
@@ -97,38 +67,56 @@ fn test_form_submit() -> Result<()> {
 
     let want = ("a", 1.99 as f64);
 
-    let got = OutputStruct::default();
-    let mut form = test_valid_form(&got);
-    key_events.iter().for_each(|key| form.update(Some(*key)));
+    let mut form = Form::test_valid();
+    key_events
+        .iter()
+        .for_each(|key| form.handle_action(Some(*key)));
     form.submit()?;
 
-    let name = got.name.borrow();
-    let got = (name.deref().deref(), *got.price.borrow());
+    // check if from values changed
+    let Some(DbPayloadBuilder::ItemParams(params)) = form.payload else {
+        let panic_msg = "Test is not testing the expected kind of form.";
+        panic!("{panic_msg}")
+    };
 
-    assert_eq!(want, got, "Test if valid form creates expected output");
+    let desc = "Test if submitting with input values produces the correct resulting value.";
+    let got_name = params.item_name.unwrap().unwrap();
+    let got_price = params.item_price.unwrap().unwrap();
+
+    assert_eq!(want.0, got_name, "{desc}");
+    assert_eq!(want.1, got_price, "{desc}");
 
     Ok(())
 }
 
 #[test]
 fn test_malformed_form_error() {
-    let key_events = [
-        Action::HandleInput(KeyEvent::from(KeyCode::Char('a'))),
-        Action::SelectForward,
-        Action::HandleInput(KeyEvent::from(KeyCode::Char('1'))),
-        Action::HandleInput(KeyEvent::from(KeyCode::Char('.'))),
-        Action::HandleInput(KeyEvent::from(KeyCode::Char('9'))),
-        Action::HandleInput(KeyEvent::from(KeyCode::Char('9'))),
+    let mut test_case = Form::builder();
+    test_case.with_request_type(RequestType::Get);
+
+    let mut test_case_1 = Form::builder();
+    test_case_1
+        .with_request_type(RequestType::Post)
+        .with_form_type(AppArm::Items);
+
+    let test_cases = [
+        (Form::builder(), FormErrors::malformed("request type")),
+        (test_case, FormErrors::malformed("form type")),
+        (test_case_1, FormErrors::malformed("fields")),
     ];
 
-    let mut form = test_invalid_form_no_fields();
-    key_events.iter().for_each(|key| form.update(Some(*key)));
+    test_cases.into_iter().for_each(|(form, want)| {
+        let res = form.build();
 
-    let want = "Malformed: form has no fields.".to_string();
-    let got = match form.submit() {
-        Ok(_) => panic!("Expected an error!"),
-        Err(e) => e.to_string(),
-    };
+        if let Ok(unexpected) = &res {
+            dbg!(unexpected);
+            panic!("Expected an error");
+        }
 
-    assert_eq!(want, got, "Test malformed form");
+        if let Err(got) = &res {
+            let got = got.to_string();
+            let want = want.to_string();
+            assert_eq!(want, got, "Test malformed form");
+        }
+    });
 }

@@ -1,69 +1,50 @@
-#![allow(dead_code)]
+// ISSUE: dyn fields require static lifetimes
+// which is causing problems in form plugins
+// consider introducing a 'form lifetime
+
 use std::{
-    cell::RefCell,
     fmt::{Debug, Display},
     rc::Rc,
-    str::FromStr,
 };
-
-use tui_input::Input;
 
 use crate::prelude::*;
 
 mod builder;
+mod component;
 mod errors;
 mod form_data;
-mod form_tui;
-mod input_field;
+mod plugin;
 #[cfg(test)]
 mod tests;
 
 pub mod prelude {
     pub use super::errors::FormErrors;
     #[allow(unused_imports)]
-    pub use super::{Form, FormTui, InputField};
+    pub use super::{Form, FormBuilder};
 }
 
-#[derive(Debug)]
-pub enum FormTui {
-    ItemForm(Form),
-    ReceiptForm(Form),
-}
-
-pub trait Field: Component {
-    fn check_active(&mut self);
-    fn assign_index(&mut self, index: usize);
-    fn submit(&self) -> Result<()>;
-}
-
-#[derive(Default, Debug)]
-pub struct InputField<T>
-where
-    T: Debug + FromStr,
-    <T as FromStr>::Err: Debug,
-{
-    input: Input,
-    title: Rc<str>,
-    active_field: Rc<RefCell<usize>>,
-    value: Option<Rc<RefCell<T>>>,
-    index: usize,
-    active: bool,
+impl Form {
+    const HEIGHT: u16 = 6;
+    const WIDTH: u16 = 100;
 }
 
 #[derive(Default, Debug)]
 pub struct Form {
+    payload: Option<DbPayloadBuilder>,
     error: Option<String>,
     fields: Vec<Box<dyn Field>>,
     title: Rc<str>,
-    active_field: Rc<RefCell<usize>>,
+    active_field: ComponentTracker,
     rect: Rect,
-    cursor_pos: Position,
+    request_type: RequestType,
 }
 
-#[derive(Debug, Default)]
+#[derive(Default, Debug)]
 pub struct FormBuilder {
+    pub payload: Option<DbPayloadBuilder>,
     fields: Vec<Box<dyn Field>>,
     title: Rc<str>,
-    active_field: Rc<RefCell<usize>>,
-    rect: Rect,
+    active_field: ComponentTracker,
+    request_type: RequestType,
+    pub form_type: Option<AppArm>,
 }

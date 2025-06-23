@@ -1,29 +1,4 @@
-use temp_env::with_vars;
-
 use super::*;
-
-#[test]
-fn test_config_dir() -> Result<()> {
-    with_vars(
-        [
-            ("PLATFORM", Some("development")),
-            ("PLATFORM", Some("production")),
-        ],
-        || {
-            let got = config_dir()
-                .expect("config_dir function retuned unexpected error");
-
-            assert!(
-                got.to_string_lossy()
-                    .contains("/.config/mathing/config.toml"),
-                "Testing {}; assumes using POSIX file path",
-                got.to_string_lossy()
-            );
-        },
-    );
-
-    Ok(())
-}
 
 #[test]
 fn test_parse_key_event() -> Result<(), String> {
@@ -61,8 +36,8 @@ fn test_parse_key_event() -> Result<(), String> {
 }
 
 #[test]
-fn test_config_builder() -> Result<()> {
-    let config = Config::new()?;
+fn test_config_builder() {
+    let config = Config::get_config();
 
     let test_cases = [
         (
@@ -91,10 +66,8 @@ fn test_config_builder() -> Result<()> {
         (KeyEvent::from(KeyCode::Up), Action::TableNavigateUp, "up"),
     ];
 
-    test_cases.iter().for_each(|(event, want, string)| {
-        let got = config.keymap.0.get(event).unwrap();
+    test_cases.into_iter().for_each(|(event, want, string)| {
+        let got = config.get(event).unwrap();
         assert_eq!(want, got, "Testing default config for {string}");
     });
-
-    Ok(())
 }

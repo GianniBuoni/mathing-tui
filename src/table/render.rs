@@ -2,10 +2,7 @@ use std::ops::Deref;
 
 use super::*;
 
-impl<T> TableData<T>
-where
-    T: TableDisplay,
-{
+impl TableData {
     pub(super) fn render_block<'a>(&'a self, style: Style) -> Block<'a> {
         Block::bordered()
             .border_style(style)
@@ -16,9 +13,7 @@ where
     pub(super) fn render_rows(&self, style: Style) -> Vec<Row> {
         self.items
             .iter()
-            .map(|data| {
-                data.ref_array().into_iter().collect::<Row>().style(style)
-            })
+            .map(|data| data.ref_array().style(style))
             .collect()
     }
 

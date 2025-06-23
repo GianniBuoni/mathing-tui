@@ -1,54 +1,32 @@
 use super::*;
 
 mod outputs;
-mod test_form_rendering;
+mod rendering;
 
-fn test_big_rect() -> Rect {
-    Rect::new(0, 0, 56, 11)
-}
+impl Form {
+    pub fn test_rect_buffer() -> Rect {
+        Rect::new(0, 0, 56, 12)
+    }
+    pub fn test_rect() -> Rect {
+        Rect::new(0, 0, 52, 12)
+    }
+    pub fn test_no_fields() -> Form {
+        Self {
+            title: "Add New Item".into(),
+            rect: Self::test_rect(),
+            ..Default::default()
+        }
+    }
+    pub fn test_valid() -> Form {
+        let mut form = Self::builder();
+        form.with_title("Add New Item")
+            .with_request_type(RequestType::Post)
+            .with_form_type(AppArm::Items)
+            .add_plugins(test_text_inputs)
+            .unwrap();
 
-fn test_input_rect() -> Rect {
-    Rect::new(0, 0, 50, 3)
-}
-
-fn test_form<'a>() -> Form {
-    Form::new_builder()
-        .add_title("Add New Item")
-        .add_rect(Rect::new(0, 0, 50, 9))
-        .build()
-}
-
-fn test_f64_input<'a>() -> InputField<f64> {
-    InputField::new("Item Price")
-}
-
-fn test_str_input<'a>() -> InputField<String> {
-    InputField::new("Item Name")
-}
-
-#[derive(Default)]
-struct OutputStruct {
-    name: Rc<RefCell<String>>,
-    price: Rc<RefCell<f64>>,
-}
-
-fn test_valid_form(source: &OutputStruct) -> Form {
-    let name_field =
-        InputField::<String>::new("Item Name").map_value(source.name.clone());
-    let price_field =
-        InputField::<f64>::new("Item Price").map_value(source.price.clone());
-
-    Form::new_builder()
-        .add_title("Add New Item")
-        .add_rect(Rect::new(0, 0, 50, 9))
-        .add_field(name_field)
-        .add_field(price_field)
-        .build()
-}
-
-fn test_invalid_form_no_fields() -> Form {
-    Form::new_builder()
-        .add_title("Add New Item")
-        .add_rect(Rect::new(0, 0, 50, 9))
-        .build()
+        let mut form = form.build().unwrap();
+        form.rect = Self::test_rect();
+        form
+    }
 }

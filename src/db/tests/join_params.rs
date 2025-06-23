@@ -10,26 +10,30 @@ async fn join_init_test(conn: &SqlitePool) -> Result<Vec<StoreJoinRow>> {
 
     for (index, r) in items.into_iter().enumerate() {
         sleep_until(Instant::now() + Duration::from_secs(1)).await;
-        let mut param = JoinedReceiptParams::new()
-            .item_id(r.0.id)
-            .item_qty(r.1)
+        let mut param = JoinedReceiptParams::builder();
+        param
+            .item_id(ParamOption::new().map_value(r.0.id).clone())
+            .item_qty(ParamOption::new().map_value(r.1).clone())
             .offset(0);
 
         match index {
             0 => {
-                param = param.add_user(users.get(2).unwrap().id);
+                // add Jon to PB Pretzel
+                param.add_user(users.get(2).unwrap().id);
             }
             1 => {
-                param = param.add_user(users.get(1).unwrap().id);
+                // add Noodle to Salmon
+                param.add_user(users.get(1).unwrap().id);
             }
             2 => {
-                param = param
+                // add Noodle and Jon to Chips and Dip
+                param
                     .add_user(users.get(1).unwrap().id)
                     .add_user(users.get(2).unwrap().id);
             }
             _ => {}
         }
-        res.push(param.post(conn).await?);
+        res.push(param.build().post(conn).await?);
     }
 
     Ok(res)
@@ -44,7 +48,11 @@ async fn test_join_post(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_join_get_all(conn: SqlitePool) -> Result<()> {
     let want = join_init_test(&conn).await?;
-    let got = JoinedReceiptParams::new().offset(0).get_all(&conn).await?;
+    let got = JoinedReceiptParams::builder()
+        .offset(0)
+        .build()
+        .get_all(&conn)
+        .await?;
 
     assert_eq!(want, got, "Test if get_all matches expected");
 
@@ -54,8 +62,13 @@ async fn test_join_get_all(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_join_get(conn: SqlitePool) -> Result<()> {
     let want = join_init_test(&conn).await?;
-    let got = JoinedReceiptParams::new()
-        .r_id(want.get(0).unwrap().receipt_id)
+    let got = JoinedReceiptParams::builder()
+        .r_id(
+            ParamOption::new()
+                .map_value(want.get(0).unwrap().receipt_id)
+                .clone(),
+        )
+        .build()
         .get(&conn)
         .await?;
 
@@ -68,12 +81,21 @@ async fn test_join_get(conn: SqlitePool) -> Result<()> {
 async fn test_join_delete(conn: SqlitePool) -> Result<()> {
     let initial = join_init_test(&conn).await?;
 
-    JoinedReceiptParams::new()
-        .r_id(initial.get(0).unwrap().receipt_id)
+    JoinedReceiptParams::builder()
+        .r_id(
+            ParamOption::new()
+                .map_value(initial.get(0).unwrap().receipt_id)
+                .clone(),
+        )
+        .build()
         .delete(&conn)
         .await?;
 
-    let got = JoinedReceiptParams::new().offset(0).get_all(&conn).await?;
+    let got = JoinedReceiptParams::builder()
+        .offset(0)
+        .build()
+        .get_all(&conn)
+        .await?;
     assert_ne!(initial.len(), got.len(), "Test if entries were deleted.");
 
     Ok(())
@@ -82,10 +104,22 @@ async fn test_join_delete(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_delete_cascade(conn: SqlitePool) -> Result<()> {
     join_init_test(&conn).await?;
-    UserParams::new().user_id(3).delete(&conn).await?;
+    // delete Jon
+    UserParams::builder()
+        .user_id(ParamOption::new().map_value(3).clone())
+        .build()
+        .delete(&conn)
+        .await?;
 
-    let got = JoinedReceiptParams::new().offset(0).get_all(&conn).await?;
-    assert_eq!(1, got.len(), "Test delete cascade for joined rows.");
+    // PB Pretzel should be deleted
+    // Chips and Dip should not be deleted since Noodle is still
+    // attached to the receipt
+    let got = JoinedReceiptParams::builder()
+        .offset(0)
+        .build()
+        .get_all(&conn)
+        .await?;
+    assert_eq!(2, got.len(), "Test delete cascade for joined rows.");
 
     Ok(())
 }
@@ -96,21 +130,40 @@ async fn test_joined_update(conn: SqlitePool) -> Result<()> {
 
     let params = [
         (
-            JoinedReceiptParams::new()
-                .r_id(init.get(0).unwrap().receipt_id)
-                .item_qty(1),
+            JoinedReceiptParams::builder()
+                .r_id(
+                    ParamOption::new()
+                        .map_value(init.get(0).unwrap().receipt_id)
+                        .clone(),
+                )
+                .item_qty(ParamOption::new().map_value(1).clone())
+                .build(),
             "ID 1, changed qty to 1",
         ),
         (
-            JoinedReceiptParams::new()
-                .r_id(init.get(1).unwrap().receipt_id)
-                .item_id(init.get(0).unwrap().item_id),
+            JoinedReceiptParams::builder()
+                .r_id(
+                    ParamOption::new()
+                        .map_value(init.get(1).unwrap().receipt_id)
+                        .clone(),
+                )
+                .item_id(
+                    ParamOption::new()
+                        .map_value(init.get(0).unwrap().item_id)
+                        .clone(),
+                )
+                .build(),
             "ID 2, to a differnt item.",
         ),
         (
-            JoinedReceiptParams::new()
-                .r_id(init.get(2).unwrap().receipt_id)
-                .add_user(3),
+            JoinedReceiptParams::builder()
+                .r_id(
+                    ParamOption::new()
+                        .map_value(init.get(2).unwrap().receipt_id)
+                        .clone(),
+                )
+                .add_user(3)
+                .build(),
             "ID 3, Remove user Noodle from receipt.",
         ),
     ];
@@ -134,10 +187,14 @@ async fn test_joined_update(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_joined_reset(conn: SqlitePool) -> Result<()> {
     join_init_test(&conn).await?;
-    let rows = JoinedReceiptParams::new().reset(&conn).await?;
+    let rows = JoinedReceiptParams::builder().build().reset(&conn).await?;
     assert_eq!(3, rows, "Test if expected amount of rows were affected.");
 
-    let got = JoinedReceiptParams::new().offset(0).get_all(&conn).await?;
+    let got = JoinedReceiptParams::builder()
+        .offset(0)
+        .build()
+        .get_all(&conn)
+        .await?;
     assert_eq!(0, got.len(), "Test if reset deleted all receipt records.");
     Ok(())
 }
@@ -146,47 +203,65 @@ async fn test_joined_reset(conn: SqlitePool) -> Result<()> {
 async fn test_joined_errors(conn: SqlitePool) -> Result<()> {
     let test_cases = [
         (
-            JoinedReceiptParams::new().item_id(0).add_user(0),
+            JoinedReceiptParams::builder()
+                .item_id(ParamOption::new().map_value(0).clone())
+                .add_user(0)
+                .build(),
             RequestType::Get,
             RequestError::missing_param("receipt id"),
         ),
         (
-            JoinedReceiptParams::new().r_id(0),
+            JoinedReceiptParams::builder()
+                .r_id(ParamOption::new().map_value(0).clone())
+                .build(),
             RequestType::GetAll,
             RequestError::missing_param("offset"),
         ),
         (
-            JoinedReceiptParams::new().r_id(0).item_id(0),
+            JoinedReceiptParams::builder()
+                .r_id(ParamOption::new().map_value(0).clone())
+                .item_id(ParamOption::new().map_value(0).clone())
+                .build(),
             RequestType::Post,
             RequestError::missing_param("item qty"),
         ),
         (
-            JoinedReceiptParams::new().r_id(0).item_qty(0),
+            JoinedReceiptParams::builder()
+                .r_id(ParamOption::new().map_value(0).clone())
+                .item_qty(ParamOption::new().map_value(0).clone())
+                .build(),
             RequestType::Post,
             RequestError::missing_param("item id"),
         ),
         (
-            JoinedReceiptParams::new(),
+            JoinedReceiptParams::builder().build(),
             RequestType::Delete,
             RequestError::missing_param("receipt id"),
         ),
         (
-            JoinedReceiptParams::new().r_id(0),
+            JoinedReceiptParams::builder()
+                .r_id(ParamOption::new().map_value(0).clone())
+                .build(),
             RequestType::Delete,
             RequestError::not_found(0, "receipts"),
         ),
         (
-            JoinedReceiptParams::new(),
+            JoinedReceiptParams::builder().build(),
             RequestType::Update,
             RequestError::missing_param("receipt id"),
         ),
         (
-            JoinedReceiptParams::new().r_id(0),
+            JoinedReceiptParams::builder()
+                .r_id(ParamOption::new().map_value(0).clone())
+                .build(),
             RequestType::Update,
             RequestError::missing_param("item id, item qty, or users"),
         ),
         (
-            JoinedReceiptParams::new().r_id(0).add_user(0),
+            JoinedReceiptParams::builder()
+                .r_id(ParamOption::new().map_value(0).clone())
+                .add_user(0)
+                .build(),
             RequestType::Update,
             RequestError::not_found(0, "receipts_users"),
         ),
@@ -228,8 +303,9 @@ async fn test_get_totals(conn: SqlitePool) -> Result<()> {
     let want = expected_totals();
     let mut got = StoreTotal::default();
 
-    JoinedReceiptParams::new()
+    JoinedReceiptParams::builder()
         .offset(0)
+        .build()
         .get_all(&conn)
         .await?
         .into_iter()

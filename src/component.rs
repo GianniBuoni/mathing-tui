@@ -1,35 +1,54 @@
 use crate::prelude::*;
-use std::{cell::RefCell, collections::HashMap, fmt::Debug, rc::Rc};
+use anyhow::Result;
+use std::{cell::RefCell, fmt::Debug, rc::Rc};
 
 pub mod prelude {
-    pub use super::{Component, ComponentBuilder};
+    pub use super::{Component, ComponentBuilder, ComponentTracker};
 }
 
-pub trait ComponentBuilder<T>
+#[derive(Debug, Default, Clone)]
+pub struct ComponentTracker(Rc<RefCell<usize>>);
+
+impl ComponentTracker {
+    pub fn go_to(&self, index: usize) {
+        *self.0.borrow_mut() = index;
+    }
+    pub fn inner(&self) -> usize {
+        *self.0.borrow()
+    }
+}
+
+pub trait ComponentBuilder
 where
     Self: Sized,
-    T: Component,
 {
-    fn build(self) -> T;
-    fn add_key_event_handler(self, _keymap: HashMap<KeyEvent, Action>) -> Self {
-        todo!()
-    }
+    type Output: Component;
+
+    fn build(self) -> Result<Self::Output>;
 }
 
 pub trait Component: Debug {
-    fn update(&mut self, action: Option<Action>);
+    // required methods
     fn draw(&mut self, frame: &mut Frame, rect: Rect);
+    fn handle_action(&mut self, action: Option<Action>);
 
-    fn handle_key_events(&self, _key: KeyEvent) -> Option<Action> {
-        todo!();
-    }
-
+    // provided methods
     fn handle_events(&mut self, event: Option<Event>) -> Option<Action> {
         match event {
             Some(Event::Key(key_event)) => self.handle_key_events(key_event),
             _ => None,
         }
     }
-
-    fn init(&mut self, _index: usize, _tracker: Rc<RefCell<usize>>) {}
+    // optional methods
+    fn handle_response(&mut self, res: Option<&DbResponse>) {
+        let _ = res;
+        todo!()
+    }
+    fn handle_key_events(&self, key: KeyEvent) -> Option<Action> {
+        let _ = key;
+        todo!();
+    }
+    fn is_active(&self) -> bool {
+        todo!();
+    }
 }

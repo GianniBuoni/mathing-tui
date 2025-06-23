@@ -1,20 +1,39 @@
+use core::panic;
+
 use serde::de::{self, Visitor};
 
 use super::*;
 
 impl Config {
-    pub fn new() -> Result<Self> {
-        config_check_once()?;
-
-        let config = config::Config::builder()
+    fn new() -> Self {
+        let config_dir = match Self::check() {
+            Ok(p) => p,
+            Err(e) => {
+                panic!("Issue with checking config dir: {e}.")
+            }
+        };
+        let config = match config::Config::builder()
             .add_source(
-                config::File::from(config_dir()?)
+                config::File::from(config_dir)
                     .format(config::FileFormat::Toml)
                     .required(false),
             )
-            .build()?;
-
-        Ok(config.try_deserialize::<Self>()?)
+            .build()
+        {
+            Ok(c) => c,
+            Err(e) => {
+                panic!("Issue building config struct: {e}.")
+            }
+        };
+        match config.try_deserialize::<Self>() {
+            Ok(c) => c,
+            Err(e) => {
+                panic!("Issue deserializing config file: {e}")
+            }
+        }
+    }
+    pub fn get_config() -> &'static Self {
+        CONFIG.get_or_init(Self::new)
     }
 }
 

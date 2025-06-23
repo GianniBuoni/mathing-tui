@@ -7,60 +7,80 @@ use std::{
 
 use super::*;
 
-pub fn config_dir() -> Result<PathBuf> {
-    let notfound_error = Error::new(
-        ErrorKind::NotFound,
-        "Could not parse config filepath for this platform.",
-    );
+impl Config {
+    fn config_dir() -> Result<PathBuf> {
+        let notfound_error = Error::new(
+            ErrorKind::NotFound,
+            "Could not parse config filepath for this platform.",
+        );
 
-    let mut path = match env::var("PLATFORM") {
-        Ok(str) => match str {
-            str if str == "development" => {
-                PathBuf::from(env::var("PWD")?).join(".config")
+        let mut path = match env::var("PLATFORM") {
+            Ok(str) => match str {
+                str if str == "development" => {
+                    PathBuf::from(env::var("PWD")?).join(".config")
+                }
+                _ => dirs::config_dir().ok_or(notfound_error)?,
+            },
+            Err(_) => dirs::config_dir().ok_or(notfound_error)?,
+        };
+
+        match env::var("MATHING_CONFIG") {
+            Ok(dir) => {
+                path = path.join(dir).join("config.toml");
             }
-            _ => dirs::config_dir().ok_or(notfound_error)?,
-        },
-        Err(_) => dirs::config_dir().ok_or(notfound_error)?,
-    };
-
-    match env::var("MATHING_CONFIG") {
-        Ok(dir) => {
-            path = path.join(dir).join("config.toml");
+            Err(_) => DEFAULT_CONFIG_PATH.iter().for_each(|s| {
+                path = path.join(s);
+            }),
         }
-        Err(_) => DEFAULT_CONFIG_PATH.iter().for_each(|s| {
-            path = path.join(s);
-        }),
+
+        Ok(path)
     }
 
-    Ok(path)
-}
+    pub(super) fn check() -> Result<PathBuf> {
+        let path = Self::config_dir()?;
+        let config_exists = path.exists() && path.is_file();
 
-fn config_check() -> Result<()> {
-    let config_exists = config_dir()?.exists() && config_dir()?.is_file();
+        if !config_exists {
+            create_dir_all(path.parent().ok_or_else(|| {
+                anyhow::Error::msg(
+                    "Could not parse parent dir for config file.",
+                )
+            })?)?;
 
-    if !config_exists {
-        let path = config_dir()?;
+            let mut f = File::create_new(path.clone())?;
+            f.write_all(DEFAULT_CONFIG)?;
+            //TODO: add logging feature to report that file was created.
+        }
 
-        create_dir_all(path.parent().ok_or_else(|| {
-            Error::new(
-                ErrorKind::NotADirectory,
-                "Could not parse parent dir for config file.",
-            )
-        })?)?;
-
-        let mut f = File::create_new(path)?;
-        f.write_all(DEFAULT_CONFIG)?;
-        //TODO: add logging feature to report that file was created.
+        Ok(path)
     }
-
-    Ok(())
 }
 
-pub fn config_check_once() -> Result<()> {
-    let mut res = Ok(());
-    CONFIG_CHECK.call_once(|| {
-        res = config_check();
-    });
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use temp_env::with_vars;
 
-    res
+    #[test]
+    fn test_config_dir() -> Result<()> {
+        with_vars(
+            [
+                ("PLATFORM", Some("development")),
+                ("PLATFORM", Some("production")),
+            ],
+            || {
+                let got = Config::config_dir()
+                    .expect("config_dir function retuned unexpected error");
+
+                assert!(
+                    got.to_string_lossy()
+                        .contains("/.config/mathing/config.toml"),
+                    "Testing {}; assumes using POSIX file path",
+                    got.to_string_lossy()
+                );
+            },
+        );
+
+        Ok(())
+    }
 }

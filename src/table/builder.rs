@@ -2,47 +2,38 @@ use std::fmt::Display;
 
 use super::*;
 
-#[derive(Default)]
-pub struct TableBuilder<T>
-where
-    T: TableDisplay,
-{
-    title: Rc<str>,
-    headings: Vec<Rc<str>>,
-    items: Vec<T>,
-    tracker: Rc<RefCell<usize>>,
-}
-
-impl<T> TableBuilder<T>
-where
-    T: TableDisplay,
-{
-    pub fn add_title(mut self, title: impl Into<Rc<str>>) -> Self {
+impl TableBuilder {
+    pub fn with_title(&mut self, title: impl Into<Rc<str>>) -> &mut Self {
         self.title = title.into();
         self
     }
-    pub fn add_heading(mut self, heading: impl Display) -> Self {
+    pub fn with_heading(&mut self, heading: impl Display) -> &mut Self {
         let heading = format!(" {heading} ");
         self.headings.push(heading.into());
         self
     }
-    pub fn add_item(mut self, item: T) -> Self {
-        self.items.push(item);
+    pub fn with_table_type(&mut self, app_arm: AppArm) -> &mut Self {
+        self.table_type = Some(app_arm);
         self
     }
 }
 
-impl<T> ComponentBuilder<TableData<T>> for TableBuilder<T>
-where
-    T: TableDisplay,
-{
-    fn build(self) -> TableData<T> {
-        TableData::<T> {
+impl ComponentBuilder for TableBuilder {
+    type Output = TableData;
+    fn build(self) -> Result<Self::Output> {
+        let Some(table_type) = self.table_type else {
+            let message = format!(
+                "Malformed table: {} has no defined table type.",
+                self.title
+            );
+            return Err(anyhow::Error::msg(message));
+        };
+
+        Ok(TableData {
             title: self.title,
             headings: self.headings.into(),
-            items: self.items,
-            tracker: self.tracker,
+            table_type: Some(table_type),
             ..Default::default()
-        }
+        })
     }
 }

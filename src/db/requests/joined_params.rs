@@ -1,30 +1,59 @@
 use anyhow::Ok;
 
 use super::*;
-use crate::prelude::*;
+
+impl JoinParamsBuilder {
+    pub fn r_id(&mut self, r_id: ParamOption<i64>) -> &mut Self {
+        self.r_id = r_id;
+        self
+    }
+    pub fn item_id(&mut self, item_id: ParamOption<i64>) -> &mut Self {
+        self.item_id = item_id;
+        self
+    }
+    pub fn item_qty(&mut self, item_qty: ParamOption<i64>) -> &mut Self {
+        self.item_qty = item_qty;
+        self
+    }
+    pub fn users(&mut self, users: Rc<RefCell<Vec<i64>>>) -> &mut Self {
+        self.users = users;
+        self
+    }
+    pub fn add_user(&mut self, u_id: i64) -> &mut Self {
+        let users = self.users.clone();
+        {
+            let mut users = users.borrow_mut();
+            users.push(u_id);
+        }
+        self
+    }
+    pub fn offset(&mut self, offset: i64) -> &mut Self {
+        self.offset = Some(offset);
+        self
+    }
+    pub fn build(&self) -> JoinedReceiptParams {
+        let users = self.users.clone();
+        let users = users.borrow().to_owned();
+
+        JoinedReceiptParams {
+            offset: self.offset,
+            users,
+            r_id: self.r_id.unwrap(),
+            item_id: self.item_id.unwrap(),
+            item_qty: self.item_qty.unwrap(),
+        }
+    }
+}
 
 impl JoinedReceiptParams {
-    pub fn new() -> Self {
+    pub fn builder() -> JoinParamsBuilder {
+        JoinParamsBuilder::default()
+    }
+    fn new() -> Self {
         Self::default()
     }
-    pub fn r_id(mut self, r_id: i64) -> Self {
+    fn r_id(mut self, r_id: i64) -> Self {
         self.r_id = Some(r_id);
-        self
-    }
-    pub fn item_id(mut self, item_id: i64) -> Self {
-        self.item_id = Some(item_id);
-        self
-    }
-    pub fn item_qty(mut self, item_qty: i64) -> Self {
-        self.item_qty = Some(item_qty);
-        self
-    }
-    pub fn add_user(mut self, u_id: i64) -> Self {
-        self.users.push(u_id);
-        self
-    }
-    pub fn offset(mut self, offset: i64) -> Self {
-        self.offset = Some(offset);
         self
     }
     pub async fn reset(&self, conn: &SqlitePool) -> Result<u64> {

@@ -3,9 +3,11 @@ use super::*;
 async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreUser>> {
     Ok(try_join_all(TEST_USERS.into_iter().map(async |user_name| {
         Ok::<StoreUser, Error>({
-            let param = UserParams::new().user_name(user_name);
-            let user = param.post(conn).await?;
-            user
+            UserParams::builder()
+                .user_name(ParamOption::new().map_value(user_name).clone())
+                .build()
+                .post(conn)
+                .await?
         })
     }))
     .await?
@@ -26,7 +28,7 @@ async fn test_add_users(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_get_users(conn: SqlitePool) -> Result<()> {
     let unordered = init_test(&conn).await?;
-    let ordered = UserParams::new().get_all(&conn).await?;
+    let ordered = UserParams::builder().build().get_all(&conn).await?;
 
     assert_eq!(
         ordered.len(),
@@ -47,7 +49,11 @@ async fn test_get_users(conn: SqlitePool) -> Result<()> {
 async fn test_get_user(conn: SqlitePool) -> Result<()> {
     try_join_all(init_test(&conn).await?.into_iter().map(async |want| {
         anyhow::Ok::<()>({
-            let got = UserParams::new().user_id(want.id).get(&conn).await?;
+            let got = UserParams::builder()
+                .user_id(ParamOption::new().map_value(want.id).clone())
+                .build()
+                .get(&conn)
+                .await?;
             assert_eq!(
                 want.name, got.name,
                 "Test getting user matches expected"
@@ -62,11 +68,18 @@ async fn test_get_user(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_delete_user(conn: SqlitePool) -> Result<()> {
     let original = init_test(&conn).await?;
-    let params = UserParams::new().user_id(original.get(0).unwrap().id);
+    let params = UserParams::builder()
+        .user_id(
+            ParamOption::new()
+                .map_value(original.get(0).unwrap().id)
+                .clone(),
+        )
+        .build();
 
     params.delete(&conn).await?;
 
-    let finals = UserParams::new()
+    let finals = UserParams::builder()
+        .build()
         .get_all(&conn)
         .await?
         .into_iter()
@@ -90,7 +103,12 @@ async fn test_update_user(conn: SqlitePool) -> Result<()> {
     let params = users
         .iter()
         .zip(want)
-        .map(|(user, name)| UserParams::new().user_id(user.id).user_name(name))
+        .map(|(user, name)| {
+            UserParams::builder()
+                .user_id(ParamOption::new().map_value(user.id).clone())
+                .user_name(ParamOption::new().map_value(name).clone())
+                .build()
+        })
         .collect::<Vec<UserParams>>();
 
     let got = try_join_all(params.into_iter().map(async |param| {
@@ -123,8 +141,10 @@ async fn test_update_user(conn: SqlitePool) -> Result<()> {
 
 #[sqlx::test]
 async fn test_invalid_params(conn: SqlitePool) -> Result<()> {
-    let no_id = UserParams::new();
-    let no_name = UserParams::new().user_id(0);
+    let no_id = UserParams::builder().build();
+    let no_name = UserParams::builder()
+        .user_id(ParamOption::new().map_value(0).clone())
+        .build();
 
     match no_id.delete(&conn).await {
         Ok(_) => panic!("Test user delete suceeded, but expected an error."),

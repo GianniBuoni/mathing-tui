@@ -1,6 +1,6 @@
 use super::*;
 
-pub fn parse_key_event(raw: &str) -> Result<KeyEvent, String> {
+pub(super) fn parse_key_event(raw: &str) -> Result<KeyEvent, String> {
     let raw_lower = raw.to_ascii_lowercase();
     let (keycode, modifiers) = parse_key_modifiers(&raw_lower);
     parse_key_code_add_modifier(keycode, modifiers)

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap, fmt::Debug, rc::Rc};
 
 use anyhow::{Error, Result};
 use futures::future::try_join_all;
@@ -16,32 +16,38 @@ mod table_displays;
 mod test_cases;
 #[cfg(test)]
 mod tests;
+mod totals;
 
 pub mod prelude {
     pub use super::connection::get_db;
     pub use super::requests::prelude::*;
-    #[cfg(test)]
-    pub use super::test_cases::*;
     pub use super::{
-        ItemParams, JoinedReceiptParams, StoreItem, StoreJoinRow, StoreTotal,
-        StoreUser, UserParams,
+        DbTable, ItemParams, JoinedReceiptParams, StoreItem, StoreJoinRow,
+        StoreTotal, StoreUser, UserParams,
     };
+}
+
+#[derive(Debug, Clone)]
+pub enum DbTable {
+    Item(StoreItem),
+    User(StoreUser),
+    Receipt(StoreJoinRow),
 }
 
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct StoreUser {
-    id: i64,
+    pub id: i64,
     created_at: i64,
     updated_at: i64,
-    name: String,
+    pub name: String,
 }
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct StoreItem {
-    id: i64,
+    pub id: i64,
     created_at: i64,
     updated_at: i64,
-    name: String,
+    pub name: String,
     price: f64,
 }
 
@@ -73,7 +79,7 @@ struct StoreJoinRaw {
     user_count: i64,
 }
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct StoreJoinRow {
     users: Vec<StoreUser>,
     item_name: String,
@@ -87,13 +93,13 @@ pub struct StoreJoinRow {
 #[derive(Debug, Default)]
 pub struct StoreTotal(HashMap<i64, Decimal>);
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct UserParams {
     u_id: Option<i64>,
     name: Option<String>,
 }
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct ItemParams {
     item_id: Option<i64>,
     item_name: Option<String>,
@@ -101,7 +107,7 @@ pub struct ItemParams {
     offset: Option<i64>,
 }
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct JoinedReceiptParams {
     users: Vec<i64>,
     r_id: Option<i64>,

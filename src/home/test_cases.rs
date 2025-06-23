@@ -1,11 +1,12 @@
 use crate::prelude::*;
 
-pub fn test_home() -> Home {
-    let keymap = Config::new().unwrap().keymap.0;
+impl Home {
+    pub fn mock() -> Self {
+        let mut home = Home::builder();
 
-    Home::new_builder()
-        .add_component(TableTui::Items(mock_items()))
-        .add_component(TableTui::Receipt(mock_receipts()))
-        .add_key_event_handler(keymap)
-        .build()
+        home.add_component(TableData::mock_items())
+            .add_component(TableData::mock_receipts());
+
+        home.build().unwrap()
+    }
 }
