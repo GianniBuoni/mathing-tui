@@ -34,4 +34,15 @@ impl Form {
 
         form.build()
     }
+    pub fn delete_item(item: &StoreItem) -> Result<Self> {
+        let mut form = Self::builder();
+
+        let title = format!("Delete {}", item.name);
+
+        form.with_title(title)
+            .with_request_type(RequestType::Delete)
+            .with_form_type(AppArm::Items);
+
+        form.build()
+    }
 }

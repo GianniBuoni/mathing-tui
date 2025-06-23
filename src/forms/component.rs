@@ -34,23 +34,25 @@ impl Component for Form {
     }
 
     fn handle_action(&mut self, action: Option<Action>) {
-        match action {
-            Some(Action::SelectForward) => {
+        let Some(some_act) = action else {
+            return;
+        };
+        match some_act {
+            Action::SelectForward => {
                 self.cycle_active(1);
                 self.fields.iter_mut().for_each(|f| f.handle_action(action));
             }
-            Some(Action::SelectBackward) => {
+            Action::SelectBackward => {
                 self.cycle_active(-1);
                 self.fields.iter_mut().for_each(|f| f.handle_action(action));
             }
-            Some(_) => {
+            _ => {
                 if let Some(active) =
                     self.fields.get_mut(self.active_field.inner())
                 {
                     active.handle_action(action);
                 }
             }
-            None => {}
         }
     }
 

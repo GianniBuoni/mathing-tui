@@ -1,3 +1,5 @@
+use crate::dialogue::DialogueBuilder;
+
 use super::*;
 
 impl Component for Home {
@@ -38,7 +40,9 @@ impl Component for Home {
                         return;
                     };
                     let DbTable::Item(item) = item else {
-                        self.error = Some("Error getting item id for new receipt. First table is not the item table.".into());
+                        let message = "Error getting item id for new receipt. First table is not the item table.";
+                        let dialogue = Dialogue::message_only(message);
+                        self.message = Some(dialogue);
                         return;
                     };
                     let Some(table) = self.components.get(2) else {
@@ -59,7 +63,9 @@ impl Component for Home {
                             self.form = Some(form);
                             self.mode = Mode::Insert;
                         }
-                        Err(e) => self.error = Some(e.to_string()),
+                        Err(e) => {
+                            self.message = Some(Dialogue::message_only(e))
+                        }
                     }
                 }
                 Action::EnterInsert => {
@@ -77,7 +83,7 @@ impl Component for Home {
                             self.mode = Mode::Insert;
                         }
                         Err(e) => {
-                            self.error = Some(e.to_string());
+                            self.message = Some(Dialogue::message_only(e));
                         }
                     }
                 }
@@ -107,7 +113,7 @@ impl Component for Home {
             return;
         };
         if let Some(err) = &res.error {
-            self.error = Some(err.to_owned());
+            self.message = Some(Dialogue::message_only(err));
             return;
         }
         self.components
@@ -156,12 +162,8 @@ impl Component for Home {
         if let Some(form) = &mut self.form {
             form.draw(frame, rect);
         }
-
-        if let Some(error) = &mut self.error {
-            Line::from(error.as_str())
-                .bold()
-                .red()
-                .render(frame.area(), frame.buffer_mut());
+        if let Some(dialogue) = &mut self.message {
+            dialogue.draw(frame, rect);
         }
     }
 }
