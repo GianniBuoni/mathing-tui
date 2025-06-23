@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT\n  ru.receipt_id as receipt_id,\n  GROUP_CONCAT( CAST(ru.user_id as TEXT)) as user_ids,\n  COUNT(ru.user_id) as user_count,\n  i.id as item_id, i.name as item_name, i.price as item_price,\n  r.item_qty as item_qty\nfrom receipts_users ru\nINNER JOIN users u ON ru.receipt_id = u.id\nINNER JOIN receipts r ON ru.receipt_id = r.id\nINNER JOIN items i ON r.item_id = i.id\nGROUP BY ru.receipt_id\nLIMIT 20 OFFSET ?1;\n",
+  "query": "SELECT\n  ru.receipt_id as receipt_id,\n  GROUP_CONCAT( CAST(ru.user_id as TEXT)) as user_ids,\n  COUNT(ru.user_id) as user_count,\n  i.id as item_id, i.name as item_name, i.price as item_price,\n  r.item_qty as item_qty\nfrom receipts_users ru\nINNER JOIN users u ON ru.user_id= u.id\nINNER JOIN receipts r ON ru.receipt_id = r.id\nINNER JOIN items i ON r.item_id = i.id\nGROUP BY ru.receipt_id\n",
   "describe": {
     "columns": [
       {
@@ -40,7 +40,7 @@
       }
     ],
     "parameters": {
-      "Right": 1
+      "Right": 0
     },
     "nullable": [
       false,
@@ -52,5 +52,5 @@
       false
     ]
   },
-  "hash": "fec30f6b128f876d5a1b6a99c2b6763987ac0859b063b4f5e59b0eafca276873"
+  "hash": "c25d8c31a9b81a62c8b9a7e7d86dd1963e5b40641f15a8c639a8503c805d9204"
 }
