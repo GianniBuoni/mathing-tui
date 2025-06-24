@@ -25,8 +25,18 @@ impl TableData {
                 };
                 Some(Dialogue::delete_item(item))
             }
-            AppArm::Users => None,
-            AppArm::Receipts => None,
+            AppArm::Users => {
+                let DbTable::User(user) = current_item else {
+                    return None;
+                };
+                Some(Dialogue::delete_user(user))
+            }
+            AppArm::Receipts => {
+                let DbTable::Receipt(receipt) = current_item else {
+                    return None;
+                };
+                Some(Dialogue::delete_reciept(receipt))
+            }
         }
     }
     pub fn edit_form(&self) -> Option<Result<Form>> {

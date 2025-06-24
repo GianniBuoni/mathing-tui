@@ -82,9 +82,9 @@ struct StoreJoinRaw {
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct StoreJoinRow {
     pub users: Vec<StoreUser>,
-    item_name: String,
+    pub item_name: String,
     user_count: i64,
-    receipt_id: i64,
+    pub receipt_id: i64,
     item_id: i64,
     item_price: f64,
     pub item_qty: i64,

@@ -11,7 +11,8 @@ impl Dialogue {
             .with_from_type(AppArm::Items);
         let mut dialogue = dialogue.build()?;
 
-        let Some(DbPayloadBuilder::ItemParams(params)) = &mut dialogue.payload
+        let Some(DbPayloadBuilder::ItemParams(params)) =
+            dialogue.payload.as_mut()
         else {
             let e = anyhow::Error::msg(
                 "Mapping error: Form expects ItemParams payload.",
@@ -19,6 +20,53 @@ impl Dialogue {
             return Err(e);
         };
         params.item_id(ParamOption::new().map_value(item.id).to_owned());
+
+        Ok(dialogue)
+    }
+
+    pub fn delete_user(user: &StoreUser) -> Result<Self> {
+        let message = format!("Confirm deletion of {}?", user.name);
+        let mut dialogue = Self::builder();
+
+        dialogue
+            .with_message(message)
+            .with_req_type(RequestType::Delete)
+            .with_from_type(AppArm::Users);
+        let mut dialogue = dialogue.build()?;
+
+        let Some(DbPayloadBuilder::UserParams(params)) =
+            dialogue.payload.as_mut()
+        else {
+            let e = anyhow::Error::msg(
+                "Mapping error: Form expects ItemParams payload.",
+            );
+            return Err(e);
+        };
+        params.user_id(ParamOption::new().map_value(user.id).to_owned());
+
+        Ok(dialogue)
+    }
+
+    pub fn delete_reciept(receipt: &StoreJoinRow) -> Result<Self> {
+        let message = format!("Confirm deletion of {}?", receipt.item_name);
+        let mut dialogue = Self::builder();
+
+        dialogue
+            .with_message(message)
+            .with_req_type(RequestType::Delete)
+            .with_from_type(AppArm::Receipts);
+        let mut dialogue = dialogue.build()?;
+
+        let Some(DbPayloadBuilder::ReceiptParams(params)) =
+            dialogue.payload.as_mut()
+        else {
+            let e = anyhow::Error::msg(
+                "Mapping error: Form expects ItemParams payload.",
+            );
+            return Err(e);
+        };
+        params
+            .r_id(ParamOption::new().map_value(receipt.receipt_id).to_owned());
 
         Ok(dialogue)
     }
