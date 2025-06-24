@@ -66,16 +66,14 @@ async fn test_req_errors(conn: SqlitePool) {
     ];
 
     for (payload, req_type, want, desc) in test_cases {
-        let got = handle_requests(
-            DbRequest::new().payload(payload).req_type(req_type),
-            &conn,
-        )
-        .await;
+        let mut req = DbRequest::new();
+        req.payload(payload).req_type(req_type);
+
+        let got = handle_requests(req, &conn).await;
 
         if got.error.is_none() {
             panic!("Tests expected to return a response with an error.")
         }
-
         assert_eq!(want.to_string(), got.error.unwrap(), "{desc}");
     }
 }
