@@ -33,7 +33,7 @@ fn parse_key_code_add_modifier(
         "left" => KeyCode::Left,
         "down" => KeyCode::Down,
         "up" => KeyCode::Up,
-        "right" => KeyCode::Down,
+        "right" => KeyCode::Right,
         s if s.len() == 1 => {
             let c = s.chars().next().ok_or(err_msg)?;
             KeyCode::Char(c)
@@ -61,7 +61,7 @@ mod tests {
             ("left", KeyCode::Left),
             ("down", KeyCode::Down),
             ("up", KeyCode::Up),
-            ("right", KeyCode::Down),
+            ("right", KeyCode::Right),
             ("a", KeyCode::Char('a')),
             ("b", KeyCode::Char('b')),
             ("c", KeyCode::Char('c')),

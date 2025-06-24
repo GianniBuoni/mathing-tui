@@ -17,7 +17,7 @@ mod tests;
 
 const DEFAULT_CONFIG_PATH: [&str; 2] = ["mathing", "config.toml"];
 
-const DEFAULT_CONFIG: &[u8; 406] = b"[keymap]
+const DEFAULT_CONFIG: &[u8; 421] = b"[keymap]
 \"CTRL-c\" = \"Quit\"
 \"a\" = \"AddToReceipt\"
 \"d\" = \"DeleteSelected\"
@@ -35,6 +35,7 @@ const DEFAULT_CONFIG: &[u8; 406] = b"[keymap]
 \"l\" = \"NavigateRight\"
 \"TAB\" = \"SelectForward\"
 \"SHIFT-TAB\" = \"SelectBackward\"
+\"y\" = \"Submit\"
 \"ENTER\" = \"Submit\"";
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
