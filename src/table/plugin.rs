@@ -16,7 +16,7 @@ impl Plugin for TableData {
     }
 
     fn plugin_group(parent: &mut Self::Parent) -> Result<()> {
-        let mut item_table = TableData::new_builder();
+        let mut item_table = TableData::builder();
         item_table
             .with_title("Store Items")
             .with_heading("Item Name")
@@ -24,7 +24,7 @@ impl Plugin for TableData {
             .with_table_type(AppArm::Items);
         let item_table = item_table.build()?;
 
-        let mut r_table = TableData::new_builder();
+        let mut r_table = TableData::builder();
         r_table
             .with_title("Receipts")
             .with_heading("Item Name")
@@ -34,7 +34,7 @@ impl Plugin for TableData {
             .with_table_type(AppArm::Receipts);
         let r_table = r_table.build()?;
 
-        let mut user_table = TableData::new_builder();
+        let mut user_table = TableData::builder();
         user_table
             .with_title("Users")
             .with_heading("User Name")

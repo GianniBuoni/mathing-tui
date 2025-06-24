@@ -3,6 +3,7 @@ use std::{fmt::Debug, rc::Rc};
 use crate::prelude::*;
 
 mod builder;
+mod component;
 mod data;
 mod plugin;
 mod render;
