@@ -9,6 +9,8 @@ pub mod prelude {
 mod builder;
 mod component;
 mod plugin;
+#[cfg(test)]
+mod tests;
 
 impl Dialogue {
     const HEIGHT: u16 = 5;
@@ -26,9 +28,11 @@ impl Dialogue {
     pub fn get_req_type(&self) -> RequestType {
         self.request_type
     }
-    pub fn message_only(message: impl Display) -> Self {
+    pub fn error(message: impl Display) -> Self {
         Self {
             message: message.to_string().into(),
+            rect: Rect::new(0, 0, Dialogue::WIDTH, Dialogue::HEIGHT),
+            error: true,
             ..Default::default()
         }
     }
@@ -40,6 +44,7 @@ pub struct Dialogue {
     message: Rc<str>,
     rect: Rect,
     request_type: RequestType,
+    error: bool,
 }
 
 #[derive(Debug, Default)]

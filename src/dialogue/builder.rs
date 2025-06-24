@@ -41,6 +41,7 @@ impl ComponentBuilder for DialogueBuilder {
             message: self.message,
             rect: Rect::new(0, 0, Dialogue::WIDTH, Dialogue::HEIGHT),
             request_type: self.request_type,
+            error: false,
         })
     }
 }
