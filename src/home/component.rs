@@ -141,7 +141,6 @@ impl Component for Home {
         };
         if let Some(err) = &res.error {
             self.map_err(err);
-            self.mode = Mode::Insert;
             return;
         }
         self.components
