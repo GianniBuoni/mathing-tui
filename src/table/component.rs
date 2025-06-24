@@ -46,27 +46,54 @@ impl Component for TableData {
             return;
         };
 
-        match (table_type, &res.payload) {
-            (AppArm::Items, DbPayload::Item(_) | DbPayload::Items(_)) => {
+        match (table_type, &res.req_type, &res.payload) {
+            // Get and Post Responses
+            item if matches!(
+                item,
+                (
+                    AppArm::Items,
+                    RequestType::Get | RequestType::GetAll | RequestType::Post,
+                    DbPayload::Item(_) | DbPayload::Items(_),
+                )
+            ) || matches!(
+                item,
+                (
+                    AppArm::Receipts,
+                    RequestType::Get | RequestType::GetAll | RequestType::Post,
+                    DbPayload::Receipt(_) | DbPayload::Receipts(_),
+                )
+            ) || matches!(
+                item,
+                (
+                    AppArm::Users,
+                    RequestType::Get | RequestType::GetAll | RequestType::Post,
+                    DbPayload::User(_) | DbPayload::Users(_),
+                ),
+            ) =>
+            {
                 self.add_items(res.payload.clone().into());
             }
-            (
-                AppArm::Receipts,
-                DbPayload::Receipt(_) | DbPayload::Receipts(_),
-            ) => {
-                self.add_items(res.payload.clone().into());
-            }
-            (AppArm::Users, DbPayload::User(_) | DbPayload::Users(_)) => {
-                self.add_items(res.payload.clone().into());
-            }
-            (
-                AppArm::Items | AppArm::Receipts | AppArm::Users,
-                DbPayload::AffectedRows(i),
-            ) => {
-                if !self.is_active() {
+            // Update Responses
+            item if matches!(
+                item,
+                (AppArm::Items, RequestType::Update, DbPayload::Item(_))
+            ) || matches!(
+                item,
+                (AppArm::Users, RequestType::Update, DbPayload::User(_))
+            ) || matches!(
+                item,
+                (AppArm::Receipts, RequestType::Update, DbPayload::Receipt(_))
+            ) =>
+            {
+                let new_element: Vec<DbTable> = res.payload.clone().into();
+                let Some(new_element) = new_element.first() else {
                     return;
-                }
-                if *i == 1 {
+                };
+                self.items[self.table_index] = new_element.to_owned();
+            }
+            // Delete responses
+            (_, RequestType::Delete, DbPayload::AffectedRows(i)) => {
+                if self.is_active() && !self.items.is_empty() && *i == 1 {
                     self.items.remove(self.table_index);
                 }
             }

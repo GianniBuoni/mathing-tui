@@ -48,7 +48,7 @@ pub struct StoreItem {
     created_at: i64,
     updated_at: i64,
     pub name: String,
-    price: f64,
+    pub price: f64,
 }
 
 #[derive(Debug, PartialEq)]
@@ -81,13 +81,13 @@ struct StoreJoinRaw {
 
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct StoreJoinRow {
-    users: Vec<StoreUser>,
+    pub users: Vec<StoreUser>,
     item_name: String,
     user_count: i64,
     receipt_id: i64,
     item_id: i64,
     item_price: f64,
-    item_qty: i64,
+    pub item_qty: i64,
 }
 
 #[derive(Debug, Default)]

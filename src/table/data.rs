@@ -6,9 +6,8 @@ impl TableData {
         TableBuilder::default()
     }
     pub fn new_form(&self) -> Option<Result<Form>> {
-        let Some(table_type) = &self.table_type else {
-            return None;
-        };
+        let table_type = self.table_type.as_ref()?;
+
         match table_type {
             AppArm::Items => Some(Form::new_item()),
             AppArm::Users => Some(Form::new_user()),
@@ -16,12 +15,9 @@ impl TableData {
         }
     }
     pub fn delete_form(&self) -> Option<Result<Dialogue>> {
-        let Some(table_type) = &self.table_type else {
-            return None;
-        };
-        let Some(current_item) = self.items.get(self.table_index) else {
-            return None;
-        };
+        let table_type = self.table_type.as_ref()?;
+        let current_item = self.items.get(self.table_index)?;
+
         match table_type {
             AppArm::Items => {
                 let DbTable::Item(item) = current_item else {
@@ -33,6 +29,21 @@ impl TableData {
             AppArm::Receipts => None,
         }
     }
+    pub fn edit_form(&self) -> Option<Result<Form>> {
+        let table_type = self.table_type.as_ref()?;
+        let item = self.get_active_item()?;
+
+        match table_type {
+            AppArm::Items => {
+                let DbTable::Item(item) = item else {
+                    return None;
+                };
+                Some(Form::edit_item(item))
+            }
+            _ => None,
+        }
+    }
+
     pub fn get_items(&self) -> Rc<[DbTable]> {
         self.items.clone().into()
     }
@@ -53,10 +64,7 @@ impl TableData {
         self.items.len() - 1
     }
     pub(super) fn next_row(&mut self) {
-        if !self.is_active() {
-            return;
-        }
-        if self.items.is_empty() {
+        if !self.is_active() || self.items.is_empty() {
             return;
         }
         if self.table_index < self.max() {
@@ -66,10 +74,7 @@ impl TableData {
         }
     }
     pub(super) fn prev_row(&mut self) {
-        if !self.is_active() {
-            return;
-        }
-        if self.items.is_empty() {
+        if !self.is_active() || self.items.is_empty() {
             return;
         }
         if self.table_index > 0 {

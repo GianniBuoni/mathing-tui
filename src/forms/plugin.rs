@@ -10,6 +10,16 @@ impl Form {
 
         form.build()
     }
+    pub fn edit_item(item: &StoreItem) -> Result<Self> {
+        let mut form = Self::builder();
+        form.with_title("Edit Item")
+            .with_request_type(RequestType::Update)
+            .with_form_type(AppArm::Items)
+            .add_plugins(edit_item_inputs(item))?;
+
+        form.build()
+    }
+
     pub fn new_user() -> Result<Self> {
         let mut form = Self::builder();
         form.with_title("New User")
@@ -31,17 +41,6 @@ impl Form {
             .with_request_type(RequestType::Post)
             .with_form_type(AppArm::Receipts)
             .add_plugins(new_receipt_inputs_middleware(item, users))?;
-
-        form.build()
-    }
-    pub fn delete_item(item: &StoreItem) -> Result<Self> {
-        let mut form = Self::builder();
-
-        let title = format!("Delete {}", item.name);
-
-        form.with_title(title)
-            .with_request_type(RequestType::Delete)
-            .with_form_type(AppArm::Items);
 
         form.build()
     }
