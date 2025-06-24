@@ -1,15 +1,12 @@
-use crate::dialogue::DialogueBuilder;
-
 use super::*;
 
 impl Component for Home {
     fn handle_key_events(&self, key: KeyEvent) -> Option<Action> {
         if let Some(form) = &self.form {
-            form.handle_key_events(key)
-        } else {
-            let keymap = Config::get_config();
-            keymap.get(key)
+            return form.handle_key_events(key);
         }
+        let keymap = Config::get_config();
+        keymap.get(key)
     }
 
     fn handle_action(&mut self, action: Option<Action>) {
@@ -20,6 +17,7 @@ impl Component for Home {
             Mode::Insert => match action {
                 Action::EnterNormal => {
                     self.form = None;
+                    self.message = None;
                     self.mode = Mode::Normal
                 }
                 Action::Submit => {
@@ -80,6 +78,25 @@ impl Component for Home {
                     match form {
                         Ok(form) => {
                             self.form = Some(form);
+                            self.mode = Mode::Insert;
+                        }
+                        Err(e) => {
+                            self.message = Some(Dialogue::message_only(e));
+                        }
+                    }
+                }
+                Action::DeleteSelected => {
+                    let Some(table) =
+                        self.components.get(self.component_tracker.inner())
+                    else {
+                        return;
+                    };
+                    let Some(dialogue) = table.delete_form() else {
+                        return;
+                    };
+                    match dialogue {
+                        Ok(dialogue) => {
+                            self.message = Some(dialogue);
                             self.mode = Mode::Insert;
                         }
                         Err(e) => {

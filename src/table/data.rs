@@ -25,6 +25,24 @@ impl TableData {
             AppArm::Receipts => None,
         }
     }
+    pub fn delete_form(&self) -> Option<Result<Dialogue>> {
+        let Some(table_type) = &self.table_type else {
+            return None;
+        };
+        let Some(current_item) = self.items.get(self.table_index) else {
+            return None;
+        };
+        match table_type {
+            AppArm::Items => {
+                let DbTable::Item(item) = current_item else {
+                    return None;
+                };
+                Some(Dialogue::delete_item(item))
+            }
+            AppArm::Users => None,
+            AppArm::Receipts => None,
+        }
+    }
     pub fn get_items(&self) -> Rc<[DbTable]> {
         self.items.clone().into()
     }
