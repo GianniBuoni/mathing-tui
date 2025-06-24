@@ -61,7 +61,7 @@ async fn main() -> Result<()> {
         params
             .item_name(ParamOption::new().map_value(name).to_owned())
             .item_price(ParamOption::new().map_value(price).to_owned());
-        params.build().post(&conn).await?;
+        params.build().post(conn).await?;
     }
 
     for name in names {
@@ -69,7 +69,7 @@ async fn main() -> Result<()> {
         params.user_name(
             ParamOption::new().map_value(name.to_owned()).to_owned(),
         );
-        params.build().post(&conn).await?;
+        params.build().post(conn).await?;
     }
 
     Ok(())
