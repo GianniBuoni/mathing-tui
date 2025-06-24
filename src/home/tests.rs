@@ -38,22 +38,22 @@ fn test_key_events() {
         ),
         (
             KeyEvent::from(KeyCode::Char('j')),
-            Some(Action::TableNavigateDown),
+            Some(Action::NavigateDown),
             "Test navigating table down with j.",
         ),
         (
             KeyEvent::from(KeyCode::Down),
-            Some(Action::TableNavigateDown),
+            Some(Action::NavigateDown),
             "Test navigating table down with DOWN.",
         ),
         (
             KeyEvent::from(KeyCode::Char('k')),
-            Some(Action::TableNavigateUp),
+            Some(Action::NavigateUp),
             "Test navigating table up with k.",
         ),
         (
             KeyEvent::from(KeyCode::Up),
-            Some(Action::TableNavigateUp),
+            Some(Action::NavigateUp),
             "Test navigating table up with UP.",
         ),
     ];

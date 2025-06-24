@@ -86,10 +86,10 @@ impl Component for TableData {
     }
     fn handle_action(&mut self, action: Option<Action>) {
         match action {
-            Some(Action::TableNavigateDown) => {
+            Some(Action::NavigateDown) => {
                 self.next_row();
             }
-            Some(Action::TableNavigateUp) => {
+            Some(Action::NavigateUp) => {
                 self.prev_row();
             }
             Some(_) => {}
