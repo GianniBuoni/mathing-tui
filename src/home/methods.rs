@@ -21,7 +21,7 @@ impl Home {
         }
     }
     pub(super) fn handle_submit(&mut self) {
-        if self.form.is_some() || self.message.is_some() {
+        if self.form.is_some() || (self.message.is_some() && !self.is_error()) {
             // init request
             let mut req = DbRequest::new();
             // try any submission
@@ -41,11 +41,11 @@ impl Home {
                 self.map_err(err);
                 return;
             }
-            // reset mode
-            self.form = None;
-            self.message = None;
-            self.mode = Mode::Normal;
         }
+        // defer to resetting
+        self.form = None;
+        self.message = None;
+        self.mode = Mode::Normal;
     }
 
     fn try_form_submit(&mut self, req: &mut DbRequest) -> Result<()> {
@@ -69,12 +69,20 @@ impl Home {
         Ok(())
     }
 
+    fn is_error(&self) -> bool {
+        let Some(message) = self.message.as_ref() else {
+            return false;
+        };
+        message.is_error()
+    }
+
     pub(super) fn map_err(&mut self, err: impl Display) {
         if let Some(form) = self.form.as_mut() {
             form.map_err(err);
+            self.mode = Mode::Insert;
             return;
         }
-        self.message = Some(Dialogue::message_only(err))
+        self.message = Some(Dialogue::error(err))
     }
 
     /// [`Home`]'s init method is responsible for making all the initial
@@ -99,7 +107,6 @@ impl Home {
                 };
                 if let Err(err) = tx.send(req) {
                     self.map_err(err);
-                    return;
                 }
             });
     }

@@ -36,6 +36,9 @@ impl Dialogue {
             ..Default::default()
         }
     }
+    pub fn is_error(&self) -> bool {
+        self.error
+    }
 }
 
 #[derive(Debug, Default)]

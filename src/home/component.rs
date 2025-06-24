@@ -38,9 +38,8 @@ impl Component for Home {
                         return;
                     };
                     let DbTable::Item(item) = item else {
-                        let message = "Error getting item id for new receipt. First table is not the item table.";
-                        let dialogue = Dialogue::message_only(message);
-                        self.message = Some(dialogue);
+                        let err = "Error getting item id for new receipt. First table is not the item table.";
+                        self.map_err(err);
                         return;
                     };
                     let Some(table) = self.components.get(2) else {
@@ -61,9 +60,7 @@ impl Component for Home {
                             self.form = Some(form);
                             self.mode = Mode::Insert;
                         }
-                        Err(e) => {
-                            self.message = Some(Dialogue::message_only(e))
-                        }
+                        Err(err) => self.map_err(err),
                     }
                 }
                 Action::EnterInsert => {
@@ -80,9 +77,7 @@ impl Component for Home {
                             self.form = Some(form);
                             self.mode = Mode::Insert;
                         }
-                        Err(e) => {
-                            self.message = Some(Dialogue::message_only(e));
-                        }
+                        Err(err) => self.map_err(err),
                     }
                 }
                 Action::DeleteSelected => {
@@ -99,9 +94,24 @@ impl Component for Home {
                             self.message = Some(dialogue);
                             self.mode = Mode::Insert;
                         }
-                        Err(e) => {
-                            self.message = Some(Dialogue::message_only(e));
+                        Err(err) => self.map_err(err),
+                    }
+                }
+                Action::EditSelected => {
+                    let Some(table) =
+                        self.components.get(self.component_tracker.inner())
+                    else {
+                        return;
+                    };
+                    let Some(form) = table.edit_form() else {
+                        return;
+                    };
+                    match form {
+                        Ok(form) => {
+                            self.form = Some(form);
+                            self.mode = Mode::Insert
                         }
+                        Err(err) => self.map_err(err),
                     }
                 }
                 Action::SelectForward => {
@@ -130,7 +140,8 @@ impl Component for Home {
             return;
         };
         if let Some(err) = &res.error {
-            self.message = Some(Dialogue::message_only(err));
+            self.map_err(err);
+            self.mode = Mode::Insert;
             return;
         }
         self.components

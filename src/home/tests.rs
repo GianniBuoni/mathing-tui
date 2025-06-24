@@ -131,3 +131,15 @@ fn test_tracker_sync() {
         assert_eq!(!want, receipts.is_active(), "Receipt iteration: {i}");
     }
 }
+
+#[test]
+fn handle_response() {
+    let res = DbResponse::new()
+        .req_type(RequestType::Update)
+        .error(RequestError::missing_param("id"));
+
+    let mut home = Home::mock();
+    home.handle_response(Some(&res));
+
+    assert!(home.message.is_some());
+}
