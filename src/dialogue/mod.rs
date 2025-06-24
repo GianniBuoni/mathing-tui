@@ -3,7 +3,7 @@ use std::{fmt::Display, rc::Rc};
 use crate::prelude::*;
 
 pub mod prelude {
-    pub use super::{Dialogue, DialogueBuilder};
+    pub use super::Dialogue;
 }
 
 mod builder;
@@ -17,8 +17,11 @@ impl Dialogue {
     pub fn builder() -> DialogueBuilder {
         DialogueBuilder::default()
     }
-    pub fn get_payload(&self) -> Option<DbPayload> {
-        self.payload.as_ref().map(|payload| payload.build())
+    pub fn try_get_payload(&self) -> Result<DbPayload> {
+        self.payload
+            .as_ref()
+            .map(|payload| payload.build())
+            .ok_or(FormErrors::malformed("payload").into())
     }
     pub fn get_req_type(&self) -> RequestType {
         self.request_type

@@ -65,15 +65,15 @@ impl Form {
         }
     }
 
-    pub fn map_err(&mut self, err: Option<anyhow::Error>) {
-        match err {
-            None => self.error = None,
-            Some(e) => self.error = Some(format!(" {} ", e)),
-        }
+    pub fn map_err(&mut self, err: impl Display) {
+        self.error = Some(format!(" {err} "))
     }
 
-    pub fn get_payload(&self) -> Option<DbPayload> {
-        self.payload.as_ref().map(|payload| payload.build())
+    pub fn try_get_payload(&self) -> Result<DbPayload> {
+        self.payload
+            .as_ref()
+            .map(|payload| payload.build())
+            .ok_or(FormErrors::malformed("payload").into())
     }
 
     pub fn get_req_type(&self) -> RequestType {
