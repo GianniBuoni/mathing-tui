@@ -100,9 +100,9 @@ fn test_malformed_form_error() {
         .with_form_type(AppArm::Items);
 
     let test_cases = [
-        (Form::builder(), FormErrors::malformed("request type")),
-        (test_case, FormErrors::malformed("form type")),
-        (test_case_1, FormErrors::malformed("fields")),
+        (Form::builder(), FormError::malformed("request type")),
+        (test_case, FormError::malformed("form type")),
+        (test_case_1, FormError::malformed("fields")),
     ];
 
     test_cases.into_iter().for_each(|(form, want)| {

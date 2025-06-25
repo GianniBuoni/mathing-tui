@@ -1,11 +1,12 @@
 use super::*;
+use crate::forms::FormBuilder;
 
 mod outputs;
 mod rendering;
 
 pub fn test_text_inputs(parent: &mut FormBuilder) -> Result<()> {
     let Some(DbPayloadBuilder::ItemParams(params)) = &mut parent.payload else {
-        let e = FormErrors::malformed("payload").into();
+        let e = FormError::malformed("payload").into();
         return Err(e);
     };
     let string_input = InputField::<String>::test_item_name();

@@ -18,7 +18,7 @@ impl Home {
                 req.payload(payload).req_type(RequestType::GetAll);
 
                 let Some(tx) = self.req_tx.clone() else {
-                    self.map_err(FormErrors::malformed("req_tx"));
+                    self.map_err(FormError::malformed("req_tx"));
                     return;
                 };
                 if let Err(err) = tx.send(req) {

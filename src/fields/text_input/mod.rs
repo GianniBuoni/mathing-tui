@@ -3,6 +3,7 @@ use std::{any::type_name, ops::Deref};
 use tui_input::backend::crossterm::EventHandler;
 
 use super::*;
+use crate::forms::FormBuilder;
 
 mod component;
 mod plugin;
@@ -55,12 +56,12 @@ where
 
         if inner_value.is_empty() {
             return Err({
-                FormErrors::no_data(self.title.deref().trim()).into()
+                FormError::no_data(self.title.deref().trim()).into()
             });
         }
 
         inner_value.parse::<T>().map_err(|_| {
-            FormErrors::validation(inner_value, type_name::<T>()).into()
+            FormError::validation(inner_value, type_name::<T>()).into()
         })
     }
 }

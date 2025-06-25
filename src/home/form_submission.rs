@@ -15,7 +15,7 @@ impl Home {
                 return;
             }
             let Some(tx) = self.req_tx.clone() else {
-                self.map_err(FormErrors::malformed("req tx"));
+                self.map_err(FormError::malformed("req tx"));
                 return;
             };
             if let Err(err) = tx.send(req) {
