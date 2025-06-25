@@ -50,20 +50,12 @@ fn test_config_builder() {
         (KeyEvent::from(KeyCode::Char('i')), Action::EnterInsert, "i"),
         (
             KeyEvent::from(KeyCode::Char('j')),
-            Action::TableNavigateDown,
+            Action::NavigateDown,
             "j",
         ),
-        (
-            KeyEvent::from(KeyCode::Down),
-            Action::TableNavigateDown,
-            "down",
-        ),
-        (
-            KeyEvent::from(KeyCode::Char('k')),
-            Action::TableNavigateUp,
-            "k",
-        ),
-        (KeyEvent::from(KeyCode::Up), Action::TableNavigateUp, "up"),
+        (KeyEvent::from(KeyCode::Down), Action::NavigateDown, "down"),
+        (KeyEvent::from(KeyCode::Char('k')), Action::NavigateUp, "k"),
+        (KeyEvent::from(KeyCode::Up), Action::NavigateUp, "up"),
     ];
 
     test_cases.into_iter().for_each(|(event, want, string)| {

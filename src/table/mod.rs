@@ -3,6 +3,7 @@ use std::{fmt::Debug, rc::Rc};
 use crate::prelude::*;
 
 mod builder;
+mod component;
 mod data;
 mod plugin;
 mod render;
@@ -26,7 +27,7 @@ pub struct TableData {
     table_index: usize,
     app_index: usize,
     tracker: ComponentTracker,
-    table_type: Option<AppArm>,
+    pub table_type: Option<AppArm>,
 }
 
 #[derive(Debug, Default)]

@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use super::*;
 
 impl Home {
@@ -19,39 +21,68 @@ impl Home {
         }
     }
     pub(super) fn handle_submit(&mut self) {
-        // return early if there is no form
-        let Some(form) = self.form.as_mut() else {
-            return;
-        };
-        // unwrap tx; if none map err
-        let Some(tx) = self.req_tx.clone() else {
-            form.map_err(Some(FormErrors::malformed("req tx").into()));
-            return;
-        };
-        // try a submit; if there is an err, map it to the form
-        if let Err(e) = form.submit() {
-            form.map_err(Some(e));
-            return;
+        if self.form.is_some() || (self.message.is_some() && !self.is_error()) {
+            // init request
+            let mut req = DbRequest::new();
+            // try any submission
+            if let Err(err) = self.try_form_submit(&mut req) {
+                self.map_err(err);
+                return;
+            }
+            if let Err(err) = self.try_dialogue_submit(&mut req) {
+                self.map_err(err);
+                return;
+            }
+            let Some(tx) = self.req_tx.clone() else {
+                self.map_err(FormErrors::malformed("req tx"));
+                return;
+            };
+            if let Err(err) = tx.send(req) {
+                self.map_err(err);
+                return;
+            }
         }
-        // unwrap the payload; if none map an err to the form
-        let Some(payload) = form.get_payload() else {
-            form.map_err(Some(FormErrors::malformed("payload").into()));
-            return;
-        };
-        // no errors -> start building req
-        let req = DbRequest::new()
-            .req_type(form.get_req_type())
-            .payload(payload);
-
-        // send req; if err map err
-        if let Err(err) = tx.send(req) {
-            let err = anyhow::Error::msg(err.to_string());
-            form.map_err(Some(err));
-            return;
-        }
-        // reset mode
+        // defer to resetting
         self.form = None;
+        self.message = None;
         self.mode = Mode::Normal;
+    }
+
+    fn try_form_submit(&mut self, req: &mut DbRequest) -> Result<()> {
+        let Some(form) = self.form.as_mut() else {
+            return Ok(());
+        };
+        form.submit()?;
+        req.req_type(form.get_req_type())
+            .payload(form.try_get_payload()?);
+
+        Ok(())
+    }
+
+    fn try_dialogue_submit(&mut self, req: &mut DbRequest) -> Result<()> {
+        let Some(dialogue) = self.message.as_mut() else {
+            return Ok(());
+        };
+        req.req_type(dialogue.get_req_type())
+            .payload(dialogue.try_get_payload()?);
+
+        Ok(())
+    }
+
+    fn is_error(&self) -> bool {
+        let Some(message) = self.message.as_ref() else {
+            return false;
+        };
+        message.is_error()
+    }
+
+    pub(super) fn map_err(&mut self, err: impl Display) {
+        if let Some(form) = self.form.as_mut() {
+            form.map_err(err);
+            self.mode = Mode::Insert;
+            return;
+        }
+        self.message = Some(Dialogue::error(err))
     }
 
     /// [`Home`]'s init method is responsible for making all the initial
@@ -67,11 +98,16 @@ impl Home {
         [item_payload, user_payload, r_payload]
             .into_iter()
             .for_each(|payload| {
-                let req = DbRequest::new()
-                    .payload(payload)
-                    .req_type(RequestType::GetAll);
-                // TODO: add real error handling
-                let _ = self.req_tx.as_ref().unwrap().send(req);
+                let mut req = DbRequest::new();
+                req.payload(payload).req_type(RequestType::GetAll);
+
+                let Some(tx) = self.req_tx.clone() else {
+                    self.map_err(FormErrors::malformed("req_tx"));
+                    return;
+                };
+                if let Err(err) = tx.send(req) {
+                    self.map_err(err);
+                }
             });
     }
 }

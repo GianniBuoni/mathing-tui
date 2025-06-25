@@ -9,7 +9,7 @@ impl TableData {
         Rect::new(0, 0, 50, 8)
     }
     pub fn mock_items() -> Self {
-        let mut table = TableData::new_builder();
+        let mut table = TableData::builder();
         table
             .with_title("Grocery Items")
             .with_heading("Items")
@@ -24,7 +24,7 @@ impl TableData {
     }
 
     pub fn mock_receipts() -> TableData {
-        let mut table = TableData::new_builder();
+        let mut table = TableData::builder();
         table
             .with_title("Receipt Items")
             .with_heading("Item Name")

@@ -13,3 +13,6 @@ reset:
   rm data.db
   touch data.db
   sqlx migrate run
+
+seed:
+  cargo run --bin seed

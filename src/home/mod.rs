@@ -25,7 +25,7 @@ pub enum Mode {
 #[derive(Default, Debug)]
 pub struct Home {
     form: Option<Form>,
-    error: Option<String>,
+    message: Option<Dialogue>,
     components: Vec<TableData>,
     component_tracker: ComponentTracker,
     req_tx: Option<UnboundedSender<DbRequest>>,

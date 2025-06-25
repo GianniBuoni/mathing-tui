@@ -17,19 +17,26 @@ mod tests;
 
 const DEFAULT_CONFIG_PATH: [&str; 2] = ["mathing", "config.toml"];
 
-const DEFAULT_CONFIG: &[u8; 289] = b"[keymap]
+const DEFAULT_CONFIG: &[u8; 421] = b"[keymap]
 \"CTRL-c\" = \"Quit\"
-\"ESC\" = \"EnterNormal\"
-\"i\" = \"EnterInsert\"
 \"a\" = \"AddToReceipt\"
+\"d\" = \"DeleteSelected\"
+\"e\" = \"EditSelected\"
+\"i\" = \"EnterInsert\"
+\"ESC\" = \"EnterNormal\"
 \" \" = \"MakeSelection\"
-\"tab\" = \"SelectForward\"
-\"SHIFT-tab\" = \"SelectBackward\"
-\"ENTER\" = \"Submit\"
-\"j\" = \"TableNavigateDown\"
-\"down\" = \"TableNavigateDown\"
-\"k\" = \"TableNavigateUp\"
-\"up\" = \"TableNavigateUp\"";
+\"LEFT\" = \"NavigateLeft\"
+\"h\" = \"NavigateLeft\"
+\"DOWN\" = \"NavigateDown\"
+\"j\" = \"NavigateDown\"
+\"UP\" = \"NavigateUp\"
+\"k\" = \"NavigateUp\"
+\"RIGHT\" = \"NavigateRight\"
+\"l\" = \"NavigateRight\"
+\"TAB\" = \"SelectForward\"
+\"SHIFT-TAB\" = \"SelectBackward\"
+\"y\" = \"Submit\"
+\"ENTER\" = \"Submit\"";
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
 

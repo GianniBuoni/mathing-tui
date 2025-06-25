@@ -9,7 +9,7 @@ mod plugin;
 
 impl<T> InputField<T>
 where
-    T: Debug + FromStr + Default + Clone,
+    T: Debug + Default + Display + Clone + FromStr,
     <T as FromStr>::Err: Debug,
 {
     const HEIGHT: u16 = 3;
@@ -28,6 +28,12 @@ where
 
     pub fn with_field_type(&mut self, field_type: AppArm) -> &mut Self {
         self.field_type = Some(field_type);
+        self
+    }
+
+    pub fn with_default_value(&mut self, default_value: T) -> &mut Self {
+        let input = Input::new(default_value.to_string());
+        self.input = input;
         self
     }
 
@@ -61,7 +67,7 @@ where
 
 impl<T> Field for InputField<T>
 where
-    T: Debug + FromStr + Default + Clone,
+    T: Debug + Default + Display + Clone + FromStr,
     <T as FromStr>::Err: Debug,
 {
     fn submit(&self) -> Result<()> {

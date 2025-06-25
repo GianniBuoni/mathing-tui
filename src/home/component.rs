@@ -3,11 +3,10 @@ use super::*;
 impl Component for Home {
     fn handle_key_events(&self, key: KeyEvent) -> Option<Action> {
         if let Some(form) = &self.form {
-            form.handle_key_events(key)
-        } else {
-            let keymap = Config::get_config();
-            keymap.get(key)
+            return form.handle_key_events(key);
         }
+        let keymap = Config::get_config();
+        keymap.get(key)
     }
 
     fn handle_action(&mut self, action: Option<Action>) {
@@ -18,6 +17,7 @@ impl Component for Home {
             Mode::Insert => match action {
                 Action::EnterNormal => {
                     self.form = None;
+                    self.message = None;
                     self.mode = Mode::Normal
                 }
                 Action::Submit => {
@@ -38,7 +38,8 @@ impl Component for Home {
                         return;
                     };
                     let DbTable::Item(item) = item else {
-                        self.error = Some("Error getting item id for new receipt. First table is not the item table.".into());
+                        let err = "Error getting item id for new receipt. First table is not the item table.";
+                        self.map_err(err);
                         return;
                     };
                     let Some(table) = self.components.get(2) else {
@@ -59,7 +60,7 @@ impl Component for Home {
                             self.form = Some(form);
                             self.mode = Mode::Insert;
                         }
-                        Err(e) => self.error = Some(e.to_string()),
+                        Err(err) => self.map_err(err),
                     }
                 }
                 Action::EnterInsert => {
@@ -76,8 +77,70 @@ impl Component for Home {
                             self.form = Some(form);
                             self.mode = Mode::Insert;
                         }
-                        Err(e) => {
-                            self.error = Some(e.to_string());
+                        Err(err) => self.map_err(err),
+                    }
+                }
+                Action::DeleteSelected => {
+                    let Some(table) =
+                        self.components.get(self.component_tracker.inner())
+                    else {
+                        return;
+                    };
+                    let Some(dialogue) = table.delete_form() else {
+                        return;
+                    };
+                    match dialogue {
+                        Ok(dialogue) => {
+                            self.message = Some(dialogue);
+                            self.mode = Mode::Insert;
+                        }
+                        Err(err) => self.map_err(err),
+                    }
+                }
+                Action::EditSelected => {
+                    let Some(table) =
+                        self.components.get(self.component_tracker.inner())
+                    else {
+                        return;
+                    };
+
+                    if let Some(AppArm::Receipts) = table.table_type {
+                        // get receipts
+                        let Some(DbTable::Receipt(current_r)) =
+                            table.get_active_item()
+                        else {
+                            return;
+                        };
+                        // get users
+                        let Some(table) = self.components.get(2) else {
+                            return;
+                        };
+                        let users = table.get_items();
+                        let users = users
+                            .iter()
+                            .filter_map(|f| match f {
+                                DbTable::User(u) => Some(u),
+                                _ => None,
+                            })
+                            .collect::<Vec<&StoreUser>>();
+
+                        match Form::edit_receipt(current_r, users) {
+                            Ok(form) => {
+                                self.form = Some(form);
+                                self.mode = Mode::Insert;
+                            }
+                            Err(err) => self.map_err(err),
+                        }
+                    } else {
+                        let Some(form) = table.edit_form() else {
+                            return;
+                        };
+                        match form {
+                            Ok(form) => {
+                                self.form = Some(form);
+                                self.mode = Mode::Insert
+                            }
+                            Err(err) => self.map_err(err),
                         }
                     }
                 }
@@ -107,7 +170,7 @@ impl Component for Home {
             return;
         };
         if let Some(err) = &res.error {
-            self.error = Some(err.to_owned());
+            self.map_err(err);
             return;
         }
         self.components
@@ -156,12 +219,8 @@ impl Component for Home {
         if let Some(form) = &mut self.form {
             form.draw(frame, rect);
         }
-
-        if let Some(error) = &mut self.error {
-            Line::from(error.as_str())
-                .bold()
-                .red()
-                .render(frame.area(), frame.buffer_mut());
+        if let Some(dialogue) = &mut self.message {
+            dialogue.draw(frame, rect);
         }
     }
 }

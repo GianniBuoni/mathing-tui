@@ -22,11 +22,11 @@ impl DbRequest {
     pub fn new() -> Self {
         Self::default()
     }
-    pub fn req_type(mut self, req_type: RequestType) -> Self {
+    pub fn req_type(&mut self, req_type: RequestType) -> &mut Self {
         self.req_type = req_type;
         self
     }
-    pub fn payload(mut self, payload: DbPayload) -> Self {
+    pub fn payload(&mut self, payload: DbPayload) -> &mut Self {
         self.payload = payload;
         self
     }

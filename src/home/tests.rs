@@ -38,22 +38,22 @@ fn test_key_events() {
         ),
         (
             KeyEvent::from(KeyCode::Char('j')),
-            Some(Action::TableNavigateDown),
+            Some(Action::NavigateDown),
             "Test navigating table down with j.",
         ),
         (
             KeyEvent::from(KeyCode::Down),
-            Some(Action::TableNavigateDown),
+            Some(Action::NavigateDown),
             "Test navigating table down with DOWN.",
         ),
         (
             KeyEvent::from(KeyCode::Char('k')),
-            Some(Action::TableNavigateUp),
+            Some(Action::NavigateUp),
             "Test navigating table up with k.",
         ),
         (
             KeyEvent::from(KeyCode::Up),
-            Some(Action::TableNavigateUp),
+            Some(Action::NavigateUp),
             "Test navigating table up with UP.",
         ),
     ];
@@ -130,4 +130,16 @@ fn test_tracker_sync() {
         assert_eq!(want, item.is_active(), "Item iteration: {i}");
         assert_eq!(!want, receipts.is_active(), "Receipt iteration: {i}");
     }
+}
+
+#[test]
+fn handle_response() {
+    let res = DbResponse::new()
+        .req_type(RequestType::Update)
+        .error(RequestError::missing_param("id"));
+
+    let mut home = Home::mock();
+    home.handle_response(Some(&res));
+
+    assert!(home.message.is_some());
 }

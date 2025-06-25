@@ -65,12 +65,10 @@ async fn test_req_handler_items(conn: SqlitePool) {
 
     // desired payload
     for (payload, req_type, want) in test_cases {
-        let got = handle_requests(
-            DbRequest::new().req_type(req_type).payload(payload),
-            &conn,
-        )
-        .await
-        .payload;
+        let mut req = DbRequest::new();
+        req.req_type(req_type).payload(payload);
+
+        let got = handle_requests(req, &conn).await.payload;
 
         match got {
             Item(got) => {
@@ -149,12 +147,10 @@ fn test_req_handler_users(conn: SqlitePool) {
     ];
 
     for (payload, req_type, want) in test_cases {
-        let got = handle_requests(
-            DbRequest::new().req_type(req_type).payload(payload),
-            &conn,
-        )
-        .await
-        .payload;
+        let mut req = DbRequest::new();
+        req.req_type(req_type).payload(payload);
+
+        let got = handle_requests(req, &conn).await.payload;
 
         match got {
             User(got) => {
@@ -274,12 +270,10 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
     ];
 
     for (payload, req_type, want) in test_cases {
-        let got = handle_requests(
-            DbRequest::new().req_type(req_type).payload(payload),
-            &conn,
-        )
-        .await
-        .payload;
+        let mut req = DbRequest::new();
+        req.req_type(req_type).payload(payload);
+
+        let got = handle_requests(req, &conn).await.payload;
 
         match got {
             Receipt(got) => {
@@ -355,13 +349,10 @@ async fn test_req_inits(conn: SqlitePool) -> Result<()> {
     ];
 
     for (payload, want, desc) in test_cases {
-        let res = handle_requests(
-            DbRequest::new()
-                .payload(payload)
-                .req_type(RequestType::GetAll),
-            &conn,
-        )
-        .await;
+        let mut req = DbRequest::new();
+        req.req_type(RequestType::GetAll).payload(payload);
+
+        let res = handle_requests(req, &conn).await;
 
         if res.error.is_some() {
             let message =

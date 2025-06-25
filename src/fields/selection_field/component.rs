@@ -9,8 +9,8 @@ where
             return;
         };
         match action {
-            Action::TableNavigateDown => self.cycle_next(1),
-            Action::TableNavigateUp => self.cycle_next(-1),
+            Action::NavigateDown => self.cycle_next(1),
+            Action::NavigateUp => self.cycle_next(-1),
             _ => self
                 .choices
                 .iter_mut()

@@ -2,7 +2,7 @@ use super::*;
 
 impl<T> Component for InputField<T>
 where
-    T: Debug + FromStr + Default + Clone,
+    T: Debug + Default + Display + Clone + FromStr,
     <T as FromStr>::Err: Debug,
 {
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
