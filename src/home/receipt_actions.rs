@@ -20,18 +20,18 @@ impl Home {
     }
     pub(super) fn edit_r_parms(
         &self,
-    ) -> Result<(&StoreJoinRow, Rc<[StoreUser]>), HomeErrors> {
+    ) -> Result<(&StoreJoinRow, Rc<[StoreUser]>), ComponentError> {
         let (r, users) = self.build_r_form_params()?;
 
         let r = match r {
             DbTable::Item(_) => {
-                return Err(HomeErrors::Mapping(
+                return Err(ComponentError::Mapping(
                     AppArm::Items,
                     AppArm::Receipts,
                 ));
             }
             DbTable::User(_) => {
-                return Err(HomeErrors::Mapping(
+                return Err(ComponentError::Mapping(
                     AppArm::Users,
                     AppArm::Receipts,
                 ));
@@ -45,15 +45,15 @@ impl Home {
     // helper methods
     fn build_r_form_params(
         &self,
-    ) -> Result<(&DbTable, Rc<[StoreUser]>), HomeErrors> {
+    ) -> Result<(&DbTable, Rc<[StoreUser]>), ComponentError> {
         let table = self.check_for_table()?;
         // get active item of the table
         let Some(item) = table.get_active_item() else {
-            return Err(HomeErrors::NoData);
+            return Err(ComponentError::NoData);
         };
         // get user table
         let Some(table) = self.components.get(2) else {
-            return Err(HomeErrors::not_found("Users"));
+            return Err(ComponentError::not_found("Users"));
         };
         let users = table.get_items();
         let users = users
@@ -68,16 +68,19 @@ impl Home {
     }
     fn new_r_params(
         &self,
-    ) -> Result<(&StoreItem, Rc<[StoreUser]>), HomeErrors> {
+    ) -> Result<(&StoreItem, Rc<[StoreUser]>), ComponentError> {
         let (item, users) = self.build_r_form_params()?;
 
         let item = match item {
             DbTable::Item(i) => i,
             DbTable::User(_) => {
-                return Err(HomeErrors::Mapping(AppArm::Users, AppArm::Items));
+                return Err(ComponentError::Mapping(
+                    AppArm::Users,
+                    AppArm::Items,
+                ));
             }
             DbTable::Receipt(_) => {
-                return Err(HomeErrors::Mapping(
+                return Err(ComponentError::Mapping(
                     AppArm::Receipts,
                     AppArm::Items,
                 ));
