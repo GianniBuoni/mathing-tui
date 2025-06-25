@@ -2,17 +2,21 @@ use std::{fmt::Debug, rc::Rc};
 
 use crate::prelude::*;
 
+// public methods
 mod builder;
 mod component;
-mod data;
+mod form_building;
+mod getters;
 mod plugin;
+
+// private methods
 mod render;
+mod state_management;
 #[cfg(test)]
 mod tests;
 
 pub mod prelude {
-    #[allow(unused_imports)]
-    pub use super::{TableData, TableDisplay};
+    pub use super::TableData;
 }
 
 pub trait TableDisplay: Debug {

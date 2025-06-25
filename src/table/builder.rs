@@ -2,6 +2,12 @@ use std::fmt::Display;
 
 use super::*;
 
+impl TableData {
+    pub fn builder() -> TableBuilder {
+        TableBuilder::default()
+    }
+}
+
 impl TableBuilder {
     pub fn with_title(&mut self, title: impl Into<Rc<str>>) -> &mut Self {
         self.title = title.into();
