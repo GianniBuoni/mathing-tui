@@ -50,7 +50,13 @@ impl TableData {
                 };
                 Some(Form::edit_item(item))
             }
-            _ => None,
+            AppArm::Users => {
+                let DbTable::User(user) = item else {
+                    return None;
+                };
+                Some(Form::edit_user(user))
+            }
+            AppArm::Receipts => None,
         }
     }
 

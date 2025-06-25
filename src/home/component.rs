@@ -103,15 +103,45 @@ impl Component for Home {
                     else {
                         return;
                     };
-                    let Some(form) = table.edit_form() else {
-                        return;
-                    };
-                    match form {
-                        Ok(form) => {
-                            self.form = Some(form);
-                            self.mode = Mode::Insert
+
+                    if let Some(AppArm::Receipts) = table.table_type {
+                        // get receipts
+                        let Some(DbTable::Receipt(current_r)) =
+                            table.get_active_item()
+                        else {
+                            return;
+                        };
+                        // get users
+                        let Some(table) = self.components.get(2) else {
+                            return;
+                        };
+                        let users = table.get_items();
+                        let users = users
+                            .iter()
+                            .filter_map(|f| match f {
+                                DbTable::User(u) => Some(u),
+                                _ => None,
+                            })
+                            .collect::<Vec<&StoreUser>>();
+
+                        match Form::edit_receipt(current_r, users) {
+                            Ok(form) => {
+                                self.form = Some(form);
+                                self.mode = Mode::Insert;
+                            }
+                            Err(err) => self.map_err(err),
                         }
-                        Err(err) => self.map_err(err),
+                    } else {
+                        let Some(form) = table.edit_form() else {
+                            return;
+                        };
+                        match form {
+                            Ok(form) => {
+                                self.form = Some(form);
+                                self.mode = Mode::Insert
+                            }
+                            Err(err) => self.map_err(err),
+                        }
                     }
                 }
                 Action::SelectForward => {
