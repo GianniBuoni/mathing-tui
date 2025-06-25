@@ -2,7 +2,7 @@ use super::*;
 
 pub fn new_receipt_inputs_middleware(
     item: &StoreItem,
-    users: Vec<&StoreUser>,
+    users: Rc<[StoreUser]>,
 ) -> impl Fn(&mut FormBuilder) -> Result<()> {
     move |parent| {
         let params = try_get_receipt_params(parent)?;
@@ -35,7 +35,7 @@ pub fn new_receipt_inputs_middleware(
 
 pub fn edit_receipt_intputs(
     receipt: &StoreJoinRow,
-    users: Vec<&StoreUser>,
+    users: Rc<[StoreUser]>,
 ) -> impl Fn(&mut FormBuilder) -> Result<()> {
     move |parent| {
         let params = try_get_receipt_params(parent)?;

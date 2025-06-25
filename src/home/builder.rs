@@ -1,5 +1,11 @@
 use super::*;
 
+impl PluginParent for HomeBuilder {}
+impl Home {
+    pub fn builder() -> HomeBuilder {
+        HomeBuilder::default()
+    }
+}
 impl HomeBuilder {
     pub fn add_component(&mut self, component: TableData) -> &mut Self {
         self.components.push(component);
@@ -14,7 +20,6 @@ impl HomeBuilder {
         self
     }
 }
-
 impl ComponentBuilder for HomeBuilder {
     type Output = Home;
 

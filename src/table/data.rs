@@ -1,3 +1,5 @@
+use anyhow::Error;
+
 use super::*;
 
 impl TableData {
@@ -5,58 +7,74 @@ impl TableData {
     pub fn builder() -> TableBuilder {
         TableBuilder::default()
     }
-    pub fn new_form(&self) -> Option<Result<Form>> {
-        let table_type = self.table_type.as_ref()?;
+    pub fn new_form(&self) -> Result<Option<Form>> {
+        let table_type = self
+            .table_type
+            .as_ref()
+            .ok_or(Error::msg("Table is missing a form type."))?;
 
         match table_type {
-            AppArm::Items => Some(Form::new_item()),
-            AppArm::Users => Some(Form::new_user()),
-            AppArm::Receipts => None,
+            AppArm::Items => Form::new_item().map(Some),
+            AppArm::Users => Form::new_user().map(Some),
+            AppArm::Receipts => Ok(None),
         }
     }
-    pub fn delete_form(&self) -> Option<Result<Dialogue>> {
-        let table_type = self.table_type.as_ref()?;
-        let current_item = self.items.get(self.table_index)?;
+    pub fn delete_form(&self) -> Result<Option<Dialogue>> {
+        let table_type = self
+            .table_type
+            .as_ref()
+            .ok_or(Error::msg("Table if missing a form type."))?;
+
+        let Some(current_item) = self.items.get(self.table_index) else {
+            return Ok(None);
+        };
 
         match table_type {
             AppArm::Items => {
                 let DbTable::Item(item) = current_item else {
-                    return None;
+                    // TODO: make error?
+                    return Ok(None);
                 };
-                Some(Dialogue::delete_item(item))
+                Dialogue::delete_item(item).map(Some)
             }
             AppArm::Users => {
                 let DbTable::User(user) = current_item else {
-                    return None;
+                    return Ok(None);
                 };
-                Some(Dialogue::delete_user(user))
+                Dialogue::delete_user(user).map(Some)
             }
             AppArm::Receipts => {
                 let DbTable::Receipt(receipt) = current_item else {
-                    return None;
+                    return Ok(None);
                 };
-                Some(Dialogue::delete_reciept(receipt))
+                Dialogue::delete_reciept(receipt).map(Some)
             }
         }
     }
-    pub fn edit_form(&self) -> Option<Result<Form>> {
-        let table_type = self.table_type.as_ref()?;
-        let item = self.get_active_item()?;
+    pub fn edit_form(&self) -> Result<Option<Form>> {
+        let table_type = self
+            .table_type
+            .as_ref()
+            .ok_or(Error::msg("Table if missing a form type."))?;
+
+        let Some(item) = self.get_active_item() else {
+            return Ok(None);
+        };
 
         match table_type {
             AppArm::Items => {
                 let DbTable::Item(item) = item else {
-                    return None;
+                    return Ok(None);
                 };
-                Some(Form::edit_item(item))
+                Form::edit_item(item).map(Some)
             }
             AppArm::Users => {
                 let DbTable::User(user) = item else {
-                    return None;
+                    return Ok(None);
                 };
-                Some(Form::edit_user(user))
+                Form::edit_user(user).map(Some)
             }
-            AppArm::Receipts => None,
+            AppArm::Receipts => Ok(None),
         }
     }
 
