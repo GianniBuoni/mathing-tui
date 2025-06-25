@@ -6,6 +6,7 @@ pub mod prelude {
     pub use crate::config::prelude::*;
     pub use crate::db::prelude::*;
     pub(crate) use crate::dialogue::prelude::*;
+    pub use crate::errors::prelude::*;
     pub(crate) use crate::fields::prelude::*;
     pub(crate) use crate::forms::prelude::*;
     pub(crate) use crate::home::prelude::*;
@@ -27,6 +28,7 @@ mod component;
 mod config;
 mod db;
 mod dialogue;
+mod errors;
 mod fields;
 mod forms;
 mod home;
