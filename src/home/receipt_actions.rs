@@ -20,24 +20,9 @@ impl Home {
     }
     pub(super) fn edit_r_parms(
         &self,
-    ) -> Result<(&StoreJoinRow, Rc<[StoreUser]>), ComponentError> {
+    ) -> Result<(&StoreJoinRow, Rc<[StoreUser]>)> {
         let (r, users) = self.build_r_form_params()?;
-
-        let r = match r {
-            DbTable::Item(_) => {
-                return Err(ComponentError::Mapping(
-                    AppArm::Items,
-                    AppArm::Receipts,
-                ));
-            }
-            DbTable::User(_) => {
-                return Err(ComponentError::Mapping(
-                    AppArm::Users,
-                    AppArm::Receipts,
-                ));
-            }
-            DbTable::Receipt(r) => r,
-        };
+        let r = r.get_receipt()?;
 
         Ok((r, users))
     }
@@ -66,26 +51,9 @@ impl Home {
 
         Ok((item, users))
     }
-    fn new_r_params(
-        &self,
-    ) -> Result<(&StoreItem, Rc<[StoreUser]>), ComponentError> {
+    fn new_r_params(&self) -> Result<(&StoreItem, Rc<[StoreUser]>)> {
         let (item, users) = self.build_r_form_params()?;
-
-        let item = match item {
-            DbTable::Item(i) => i,
-            DbTable::User(_) => {
-                return Err(ComponentError::Mapping(
-                    AppArm::Users,
-                    AppArm::Items,
-                ));
-            }
-            DbTable::Receipt(_) => {
-                return Err(ComponentError::Mapping(
-                    AppArm::Receipts,
-                    AppArm::Items,
-                ));
-            }
-        };
+        let item = item.get_item()?;
 
         Ok((item, users))
     }

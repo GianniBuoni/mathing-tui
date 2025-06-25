@@ -1,3 +1,5 @@
+use crate::{app::AppArm, prelude::AppError};
+
 use super::{prelude::Request, *};
 
 impl StoreJoinRaw {
@@ -43,5 +45,41 @@ impl StoreTotal {
         other.into_iter().for_each(|(key, val)| {
             self.0.entry(key).and_modify(|e| *e += val).or_insert(val);
         });
+    }
+}
+
+impl DbTable {
+    pub fn get_item(&self) -> Result<&StoreItem, AppError> {
+        match self {
+            DbTable::Item(i) => Ok(i),
+            DbTable::User(_) => {
+                Err(AppError::Mapping(AppArm::Items, AppArm::Users))
+            }
+            DbTable::Receipt(_) => {
+                Err(AppError::Mapping(AppArm::Items, AppArm::Receipts))
+            }
+        }
+    }
+    pub fn get_user(&self) -> Result<&StoreUser, AppError> {
+        match self {
+            DbTable::Item(_) => {
+                Err(AppError::Mapping(AppArm::Users, AppArm::Items))
+            }
+            DbTable::User(u) => Ok(u),
+            DbTable::Receipt(_) => {
+                Err(AppError::Mapping(AppArm::Users, AppArm::Receipts))
+            }
+        }
+    }
+    pub fn get_receipt(&self) -> Result<&StoreJoinRow, AppError> {
+        match self {
+            DbTable::Item(_) => {
+                Err(AppError::Mapping(AppArm::Receipts, AppArm::Items))
+            }
+            DbTable::User(_) => {
+                Err(AppError::Mapping(AppArm::Receipts, AppArm::Users))
+            }
+            DbTable::Receipt(r) => Ok(r),
+        }
     }
 }

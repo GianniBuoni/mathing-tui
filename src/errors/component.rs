@@ -4,7 +4,6 @@ use super::*;
 pub enum ComponentError {
     NoData,
     NotFound(String),
-    Mapping(AppArm, AppArm),
 }
 
 impl Display for ComponentError {
@@ -17,12 +16,6 @@ impl Display for ComponentError {
                 )
             }
             Self::NotFound(want) => write!(f, "{want} was not found."),
-            Self::Mapping(got, want) => {
-                write!(
-                    f,
-                    "Opperation matched with {got:?} but expected {want:?}."
-                )
-            }
         }
     }
 }
@@ -30,6 +23,9 @@ impl Display for ComponentError {
 impl std::error::Error for ComponentError {}
 
 impl ComponentError {
+    /// Ididates that component is missing a field, or field
+    /// that should be [`Some`] is [`None`].
+    /// Capitalize the params.
     pub fn not_found(want: impl Display) -> Self {
         Self::NotFound(want.to_string())
     }
