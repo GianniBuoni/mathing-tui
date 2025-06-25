@@ -1,4 +1,7 @@
-use super::*;
+use super::{
+    response_matching::{match_post_get, match_update},
+    *,
+};
 
 impl Component for TableData {
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
@@ -45,46 +48,13 @@ impl Component for TableData {
         let Some(table_type) = &self.table_type else {
             return;
         };
-
         match (table_type, &res.req_type, &res.payload) {
             // Get and Post Responses
-            item if matches!(
-                item,
-                (
-                    AppArm::Items,
-                    RequestType::Get | RequestType::GetAll | RequestType::Post,
-                    DbPayload::Item(_) | DbPayload::Items(_),
-                )
-            ) || matches!(
-                item,
-                (
-                    AppArm::Receipts,
-                    RequestType::Get | RequestType::GetAll | RequestType::Post,
-                    DbPayload::Receipt(_) | DbPayload::Receipts(_),
-                )
-            ) || matches!(
-                item,
-                (
-                    AppArm::Users,
-                    RequestType::Get | RequestType::GetAll | RequestType::Post,
-                    DbPayload::User(_) | DbPayload::Users(_),
-                ),
-            ) =>
-            {
+            item if match_post_get(item) => {
                 self.add_items(res.payload.clone().into());
             }
             // Update Responses
-            item if matches!(
-                item,
-                (AppArm::Items, RequestType::Update, DbPayload::Item(_))
-            ) || matches!(
-                item,
-                (AppArm::Users, RequestType::Update, DbPayload::User(_))
-            ) || matches!(
-                item,
-                (AppArm::Receipts, RequestType::Update, DbPayload::Receipt(_))
-            ) =>
-            {
+            item if match_update(item) => {
                 let new_element: Vec<DbTable> = res.payload.clone().into();
                 let Some(new_element) = new_element.first() else {
                     return;
