@@ -11,7 +11,7 @@ mod plugin;
 
 // private methods
 mod render;
-mod response_matching;
+mod response_handling;
 mod state_management;
 #[cfg(test)]
 mod tests;

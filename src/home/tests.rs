@@ -133,13 +133,14 @@ fn test_tracker_sync() {
 }
 
 #[test]
-fn handle_response() {
+fn handle_response() -> Result<()> {
     let res = DbResponse::new()
         .req_type(RequestType::Update)
         .error(RequestError::missing_param("id"));
 
     let mut home = Home::mock();
-    home.handle_response(Some(&res));
+    home.handle_response(Some(&res))?;
 
     assert!(home.message.is_some());
+    Ok(())
 }

@@ -27,7 +27,7 @@ impl Component for App {
             None => {}
         }
     }
-    fn handle_response(&mut self, res: Option<&DbResponse>) {
-        self.component.handle_response(res);
+    fn handle_response(&mut self, res: Option<&DbResponse>) -> Result<()> {
+        self.component.handle_response(res)
     }
 }

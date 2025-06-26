@@ -28,7 +28,7 @@ fn test_response_handling_items() -> Result<()> {
 
     test_cases
         .iter()
-        .for_each(|res| table.handle_response(Some(res)));
+        .try_for_each(|res| table.handle_response(Some(res)))?;
 
     assert_eq!(
         3,
@@ -66,7 +66,7 @@ fn test_response_handling_receits() -> Result<()> {
 
     test_cases
         .iter()
-        .for_each(|res| table.handle_response(Some(res)));
+        .try_for_each(|res| table.handle_response(Some(res)))?;
 
     assert_eq!(
         2,

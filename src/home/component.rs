@@ -49,20 +49,25 @@ impl Component for Home {
             },
         }
     }
-
-    fn handle_response(&mut self, res: Option<&DbResponse>) {
+    /// Home's response handler maps any error into a dialoge message.
+    fn handle_response(&mut self, res: Option<&DbResponse>) -> Result<()> {
         let Some(res) = res else {
-            return;
+            return Ok(());
         };
         if let Some(err) = &res.error {
             self.map_err(err);
-            return;
+            return Ok(());
         }
-        self.components
+        let res = self
+            .components
             .iter_mut()
-            .for_each(|component| component.handle_response(Some(res)));
-    }
+            .try_for_each(|component| component.handle_response(Some(res)));
 
+        if let Err(err) = res {
+            self.map_err(err);
+        }
+        Ok(())
+    }
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
         let context_menu = Line::from(vec![
             " Quit ".gray(),

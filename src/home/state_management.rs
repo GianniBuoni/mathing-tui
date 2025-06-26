@@ -45,6 +45,7 @@ impl Home {
             self.mode = Mode::Insert;
             return;
         }
-        self.message = Some(Dialogue::error(err))
+        self.message = Some(Dialogue::error(err));
+        self.mode = Mode::Insert;
     }
 }
