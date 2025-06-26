@@ -20,28 +20,25 @@ impl StoreTotal {
         }))
         .await?
         .iter_mut()
-        .map(|row| row.calc())
-        .reduce(|mut acc, next| {
-            for (key, value) in next {
-                acc.entry(key)
-                    .and_modify(|mut f| f += value)
-                    .or_insert(value);
-            }
-            acc
+        .try_fold(StoreTotal::default(), |mut acc, next| {
+            anyhow::Ok::<StoreTotal>({
+                acc.add(next.calc()?);
+                acc
+            })
         })
         .unwrap_or_default();
 
-        Ok(Mutex::new(Self(calcs)))
+        Ok(Mutex::new(calcs))
     }
 
     pub async fn get_or_init() -> Result<&'static Mutex<Self>> {
         TOTALS.get_or_try_init(Self::new).await
     }
 
-    pub fn get(key: i64) -> Result<Decimal> {
+    pub fn get_inner(key: i64) -> Result<Decimal> {
         let totals = TOTALS
             .get()
-            .ok_or(anyhow::Error::msg("TOTALS mutex is empty"))?
+            .ok_or(ComponentError::not_found("StoreTotal Mutex"))?
             .lock()
             .map_err(|_| anyhow::Error::msg("Read lock failed for TOTALS"))?;
 
@@ -50,5 +47,11 @@ impl StoreTotal {
             .get(&key)
             .copied()
             .ok_or(anyhow::Error::msg("No total found for given key."))
+    }
+
+    pub fn get() -> Result<&'static Mutex<Self>> {
+        TOTALS
+            .get()
+            .ok_or(ComponentError::not_found("StoreTotal Mutex").into())
     }
 }

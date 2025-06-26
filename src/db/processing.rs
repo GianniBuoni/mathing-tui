@@ -25,18 +25,19 @@ impl StoreJoinRaw {
 }
 
 impl StoreJoinRow {
-    pub fn calc(&self) -> HashMap<i64, Decimal> {
-        let mut out = HashMap::new();
-
-        if let Some(total) = Decimal::from_f64(
+    pub fn calc(&self) -> Result<HashMap<i64, Decimal>> {
+        let err = "Decimal Error: Could not convert float to Decimal";
+        let total = Decimal::from_f64(
             self.item_price * self.item_qty as f64 / self.user_count as f64,
-        ) {
-            self.users.iter().for_each(|u| {
-                out.insert(u.id, total.round_dp(2));
-            });
-        };
+        )
+        .ok_or(anyhow::Error::msg(err))?;
 
-        out
+        Ok({
+            self.users
+                .iter()
+                .map(|user| (user.id, total.round_dp(2)))
+                .collect()
+        })
     }
 }
 
