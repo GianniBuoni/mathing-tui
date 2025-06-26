@@ -3,7 +3,9 @@ use super::*;
 impl Home {
     /// Check wether the main component has table components associated with
     /// the main comopnents active index. Errors out if none exists.
-    pub(super) fn check_for_table(&self) -> Result<&TableData, ComponentError> {
+    pub(super) fn try_get_current_table(
+        &self,
+    ) -> Result<&TableData, ComponentError> {
         let Some(table) = self.components.get(self.component_tracker.inner())
         else {
             return Err(ComponentError::NoData);

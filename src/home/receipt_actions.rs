@@ -22,7 +22,7 @@ impl Home {
         &self,
     ) -> Result<(&StoreJoinRow, Rc<[StoreUser]>)> {
         let (r, users) = self.build_r_form_params()?;
-        let r = r.get_receipt()?;
+        let r = r.try_get_receipt()?;
 
         Ok((r, users))
     }

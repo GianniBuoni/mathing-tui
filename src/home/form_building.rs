@@ -4,8 +4,7 @@ impl Home {
     pub(super) fn enter_insert(&mut self) {
         match (|| {
             anyhow::Ok::<Option<Form>>({
-                let table = self.check_for_table()?;
-                table.new_form()?
+                self.try_get_current_table()?.try_new_form()?
             })
         })() {
             Ok(form) => {
@@ -20,8 +19,7 @@ impl Home {
     pub(super) fn delete_selected(&mut self) {
         match (|| {
             anyhow::Ok::<Option<Dialogue>>({
-                let table = self.check_for_table()?;
-                table.delete_form()?
+                self.try_get_current_table()?.try_delete_form()?
             })
         })() {
             Ok(log) => {
@@ -36,7 +34,7 @@ impl Home {
     pub(super) fn edit_selected(&mut self) {
         match (|| {
             anyhow::Ok::<Option<Form>>({
-                let table = self.check_for_table()?;
+                let table = self.try_get_current_table()?;
                 if let Some(AppArm::Receipts) = table.table_type {
                     let (r, users) = self.edit_r_parms()?;
                     Form::edit_receipt(r, users).map(Some)?

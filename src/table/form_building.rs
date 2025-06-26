@@ -1,7 +1,7 @@
 use super::*;
 
 impl TableData {
-    pub fn new_form(&self) -> Result<Option<Form>> {
+    pub fn try_new_form(&self) -> Result<Option<Form>> {
         let table_type = self
             .table_type
             .as_ref()
@@ -13,7 +13,7 @@ impl TableData {
             AppArm::Receipts => Ok(None),
         }
     }
-    pub fn delete_form(&self) -> Result<Option<Dialogue>> {
+    pub fn try_delete_form(&self) -> Result<Option<Dialogue>> {
         let table_type = self
             .table_type
             .as_ref()
@@ -29,11 +29,11 @@ impl TableData {
                 Dialogue::delete_item(item).map(Some)
             }
             AppArm::Users => {
-                let user = current_item.get_user()?;
+                let user = current_item.try_get_user()?;
                 Dialogue::delete_user(user).map(Some)
             }
             AppArm::Receipts => {
-                let receipt = current_item.get_receipt()?;
+                let receipt = current_item.try_get_receipt()?;
                 Dialogue::delete_reciept(receipt).map(Some)
             }
         }
@@ -44,9 +44,7 @@ impl TableData {
             .as_ref()
             .ok_or(ComponentError::not_found("Table type"))?;
 
-        let Some(item) = self.get_active_item() else {
-            return Ok(None);
-        };
+        let item = self.try_get_active_item()?;
 
         match table_type {
             AppArm::Items => {
@@ -54,7 +52,7 @@ impl TableData {
                 Form::edit_item(item).map(Some)
             }
             AppArm::Users => {
-                let user = item.get_user()?;
+                let user = item.try_get_user()?;
                 Form::edit_user(user).map(Some)
             }
             AppArm::Receipts => Ok(None),

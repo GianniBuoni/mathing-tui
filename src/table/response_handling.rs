@@ -38,17 +38,17 @@ pub(super) fn match_update(item: (&AppArm, &RequestType, &DbPayload)) -> bool {
         (AppArm::Receipts, RequestType::Update, DbPayload::Receipt(_))
     )
 }
-pub(super) fn update_store_total(
+pub(super) fn try_add_store_total(
     (_, req_type, res_payload): (&AppArm, &RequestType, &DbPayload),
 ) -> Result<()> {
     // return early if the original req was not a Post
-    if !(*req_type == RequestType::Post) {
+    if !(matches!(req_type, RequestType::Post | RequestType::Update)) {
         return Ok(());
     }
     let DbPayload::Receipt(receipt) = res_payload else {
         return Ok(());
     };
-    let store_total = StoreTotal::get()?;
+    let store_total = StoreTotal::try_get()?;
 
     let err =
         "Mutex Error: main thread could not obtain a lock to the store totals.";

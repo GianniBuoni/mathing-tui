@@ -23,7 +23,6 @@ impl StoreJoinRaw {
         })
     }
 }
-
 impl StoreJoinRow {
     pub fn calc(&self) -> Result<HashMap<i64, Decimal>> {
         let err = "Decimal Error: Could not convert float to Decimal";
@@ -40,17 +39,8 @@ impl StoreJoinRow {
         })
     }
 }
-
-impl StoreTotal {
-    pub fn add(&mut self, other: HashMap<i64, Decimal>) {
-        other.into_iter().for_each(|(key, val)| {
-            self.0.entry(key).and_modify(|e| *e += val).or_insert(val);
-        });
-    }
-}
-
 impl DbTable {
-    pub fn get_item(&self) -> Result<&StoreItem, AppError> {
+    pub fn try_get_item(&self) -> Result<&StoreItem, AppError> {
         match self {
             DbTable::Item(i) => Ok(i),
             DbTable::User(_) => {
@@ -61,7 +51,7 @@ impl DbTable {
             }
         }
     }
-    pub fn get_user(&self) -> Result<&StoreUser, AppError> {
+    pub fn try_get_user(&self) -> Result<&StoreUser, AppError> {
         match self {
             DbTable::Item(_) => {
                 Err(AppError::Mapping(AppArm::Users, AppArm::Items))
@@ -72,7 +62,7 @@ impl DbTable {
             }
         }
     }
-    pub fn get_receipt(&self) -> Result<&StoreJoinRow, AppError> {
+    pub fn try_get_receipt(&self) -> Result<&StoreJoinRow, AppError> {
         match self {
             DbTable::Item(_) => {
                 Err(AppError::Mapping(AppArm::Receipts, AppArm::Items))

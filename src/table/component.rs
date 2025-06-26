@@ -1,5 +1,5 @@
 use super::{
-    response_handling::{match_post_get, match_update, update_store_total},
+    response_handling::{match_post_get, match_update, try_add_store_total},
     *,
 };
 
@@ -51,7 +51,7 @@ impl Component for TableData {
             // Get and Post Responses
             item if match_post_get(item) => {
                 self.add_items(res.payload.clone().into());
-                update_store_total(item)?;
+                try_add_store_total(item)?;
                 Ok(())
             }
             // Update Responses
@@ -62,6 +62,7 @@ impl Component for TableData {
                     new_element.first().ok_or(ComponentError::NoData)?;
 
                 self.items[self.table_index] = new_element.to_owned();
+                try_add_store_total(item)?;
                 Ok(())
             }
             // Delete responses

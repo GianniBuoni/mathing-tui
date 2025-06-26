@@ -15,7 +15,8 @@ impl TableDisplay for DbTable {
             }
             DbTable::User(u) => {
                 let name = format!(" {} ", u.name);
-                let totals = StoreTotal::get_inner(u.id).unwrap_or_default();
+                let totals =
+                    StoreTotal::try_get_inner(u.id).unwrap_or_default();
                 let totals = format!(" {totals:.2} ");
                 Row::new([Cell::from(name), Cell::from(totals)])
             }
