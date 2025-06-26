@@ -28,15 +28,9 @@ where
         Ok(())
     }
     fn get_rect_height(&self) -> u16 {
-        let Some(height) = self
-            .choices
+        self.choices
             .iter()
-            .map(|f| f.get_rect_height())
-            .reduce(|acc, f| acc + f)
-        else {
-            return Self::HEIGHT;
-        };
-        Self::HEIGHT + height
+            .fold(Self::HEIGHT, |acc, next| acc + next.get_rect_height())
     }
 }
 
