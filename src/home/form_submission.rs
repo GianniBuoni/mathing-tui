@@ -35,9 +35,16 @@ impl Home {
             return Ok(());
         };
         form.submit()?;
-        req.req_type(form.get_req_type())
-            .payload(form.try_get_payload()?);
 
+        let req_type = form.get_req_type();
+        let payload = form.try_get_payload()?;
+
+        if (req_type == RequestType::Update)
+            && (matches!(payload, DbPayload::ReceiptParams(_)))
+        {
+            self.try_subtract_store_total()?
+        }
+        req.req_type(req_type).payload(payload);
         Ok(())
     }
 
@@ -45,8 +52,15 @@ impl Home {
         let Some(dialogue) = self.message.as_mut() else {
             return Ok(());
         };
-        req.req_type(dialogue.get_req_type())
-            .payload(dialogue.try_get_payload()?);
+        let req_type = dialogue.get_req_type();
+        let payload = dialogue.try_get_payload()?;
+
+        if (req_type == RequestType::Delete)
+            && (matches!(payload, DbPayload::ReceiptParams(_)))
+        {
+            self.try_subtract_store_total()?;
+        }
+        req.req_type(req_type).payload(payload);
 
         Ok(())
     }

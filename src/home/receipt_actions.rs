@@ -26,19 +26,27 @@ impl Home {
 
         Ok((r, users))
     }
+    pub(super) fn try_subtract_store_total(&self) -> Result<()> {
+        let current_r = self
+            .try_get_current_table()?
+            .try_get_active_item()?
+            .try_get_receipt()?;
+
+        StoreTotal::try_get()?
+            .lock()
+            .unwrap()
+            .subtract(current_r.calc()?);
+
+        Ok(())
+    }
 
     // helper methods
-    fn build_r_form_params(
-        &self,
-    ) -> Result<(&DbTable, Rc<[StoreUser]>), ComponentError> {
-        let table = self.check_for_table()?;
-        // get active item of the table
-        let Some(item) = table.get_active_item() else {
-            return Err(ComponentError::NoData);
-        };
+    fn build_r_form_params(&self) -> Result<(&DbTable, Rc<[StoreUser]>)> {
+        let item = self.try_get_current_table()?.try_get_active_item()?;
+
         // get user table
         let Some(table) = self.components.get(2) else {
-            return Err(ComponentError::not_found("Users"));
+            return Err(ComponentError::not_found("Users").into());
         };
         let users = table.get_items();
         let users = users
