@@ -2,6 +2,8 @@ use super::*;
 
 #[derive(Debug)]
 pub enum ComponentError {
+    /// Idicates that function expects component to have a data collection
+    /// to opperate on, but none was found.
     NoData,
     NotFound(String),
 }
@@ -12,10 +14,12 @@ impl Display for ComponentError {
             Self::NoData => {
                 write!(
                     f,
-                    "Home or tables have no items/components, check your builders."
+                    "No Data: Home or tables have no items/components. Check your builders."
                 )
             }
-            Self::NotFound(want) => write!(f, "{want} was not found."),
+            Self::NotFound(want) => {
+                write!(f, "Not found: {want} was not found.")
+            }
         }
     }
 }
