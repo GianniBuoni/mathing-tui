@@ -1,10 +1,7 @@
 use std::sync::Mutex;
 use tokio::sync::OnceCell;
 
-use super::{
-    prelude::{RequestError, get_db},
-    *,
-};
+use super::*;
 
 static TOTALS: OnceCell<Mutex<StoreTotal>> = OnceCell::const_new();
 

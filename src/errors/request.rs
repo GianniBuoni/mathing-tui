@@ -2,10 +2,10 @@ use std::fmt::Display;
 
 #[derive(Debug)]
 pub enum RequestError {
+    Connection,
     MissingParam(String),
     NotFound(String, String),
     Unhandled(String, String),
-    Connection,
 }
 
 impl RequestError {

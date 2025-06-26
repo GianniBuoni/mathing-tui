@@ -1,6 +1,6 @@
 use sqlx::SqliteConnection;
 
-use super::{errors::RequestError, *};
+use super::*;
 
 impl ReceiptsUsersParams {
     pub fn new() -> Self {

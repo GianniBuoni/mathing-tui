@@ -1,4 +1,3 @@
-use super::errors::RequestError;
 use super::*;
 
 /// handle_requests will take the request's Params and call the appropriate

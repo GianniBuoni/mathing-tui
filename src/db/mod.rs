@@ -5,6 +5,8 @@ use futures::future::try_join_all;
 use rust_decimal::prelude::*;
 use sqlx::SqlitePool;
 
+use crate::errors::prelude::*;
+use connection::get_db;
 use db_time::get_time;
 
 mod connection;

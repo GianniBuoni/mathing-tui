@@ -1,4 +1,4 @@
-use super::{errors::RequestError, *};
+use super::*;
 
 impl UserParamsBuilder {
     pub fn user_id(&mut self, id: ParamOption<i64>) -> &mut Self {
