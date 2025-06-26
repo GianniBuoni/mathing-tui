@@ -25,7 +25,7 @@ impl TableData {
 
         match table_type {
             AppArm::Items => {
-                let item = current_item.get_item()?;
+                let item = current_item.try_get_item()?;
                 Dialogue::delete_item(item).map(Some)
             }
             AppArm::Users => {
@@ -48,7 +48,7 @@ impl TableData {
 
         match table_type {
             AppArm::Items => {
-                let item = item.get_item()?;
+                let item = item.try_get_item()?;
                 Form::edit_item(item).map(Some)
             }
             AppArm::Users => {

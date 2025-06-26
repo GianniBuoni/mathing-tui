@@ -61,7 +61,7 @@ impl Home {
     }
     fn new_r_params(&self) -> Result<(&StoreItem, Rc<[StoreUser]>)> {
         let (item, users) = self.build_r_form_params()?;
-        let item = item.get_item()?;
+        let item = item.try_get_item()?;
 
         Ok((item, users))
     }
