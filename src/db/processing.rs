@@ -1,11 +1,9 @@
-use crate::{app::AppArm, prelude::AppError};
-
 use super::{prelude::Request, *};
 
 impl StoreJoinRaw {
     pub async fn try_join_row(self, conn: &SqlitePool) -> Result<StoreJoinRow> {
         let users = try_join_all(self.user_ids.split(",").map(async |s| {
-            anyhow::Ok::<StoreUser>({
+            Aok::<StoreUser>({
                 let id = s.parse::<i64>()?;
                 UserParams::new().user_id(id).get(conn).await?
             })
