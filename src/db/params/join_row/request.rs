@@ -79,12 +79,12 @@ impl<'e> Request<'e> for JoinedReceiptParams {
                 .post(&mut *tx)
                 .await?;
         }
-
         tx.commit().await?;
-        Ok(JoinedReceiptParams::new()
+
+        JoinedReceiptParams::new()
             .with_r_id(receipt.id)
             .get(conn)
-            .await?)
+            .await
     }
 
     async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
@@ -107,7 +107,7 @@ impl<'e> Request<'e> for JoinedReceiptParams {
             RequestError::not_found(r_id, "receipts_users (joined)")
         })?;
 
-        Ok(raw_rows.try_join_row(conn).await?)
+        raw_rows.try_join_row(conn).await
     }
 
     async fn delete(&self, conn: Self::Connection) -> Result<u64> {
@@ -171,6 +171,6 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         }
         tx.commit().await?;
 
-        Ok(JoinedReceiptParams::new().with_r_id(id).get(conn).await?)
+        JoinedReceiptParams::new().with_r_id(id).get(conn).await
     }
 }

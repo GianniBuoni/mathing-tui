@@ -133,14 +133,19 @@ async fn test_update_item(conn: SqlitePool) -> Result<()> {
         .zip(update_params.into_iter())
         .map(|(original, (new_name, new_price))| {
             let mut param = ItemParams::builder();
-            param.with_item_id(ParamOption::new().map_value(original.id).clone());
+            param.with_item_id(
+                ParamOption::new().map_value(original.id).clone(),
+            );
 
             if let Some(name) = new_name {
-                param.with_item_name(ParamOption::new().map_value(name).clone());
+                param
+                    .with_item_name(ParamOption::new().map_value(name).clone());
             }
 
             if let Some(price) = new_price {
-                param.with_item_price(ParamOption::new().map_value(price).clone());
+                param.with_item_price(
+                    ParamOption::new().map_value(price).clone(),
+                );
             }
             param.build()
         })
