@@ -17,7 +17,7 @@ impl StoreTotal {
                 .map_err(|_| RequestError::not_found("all", "recipts_users"))?;
 
         Ok(try_join_all(rows_to_calc.into_iter().map(async |raw| {
-            anyhow::Ok::<StoreJoinRow>(raw.as_join_row(conn).await?)
+            anyhow::Ok::<StoreJoinRow>(raw.try_join_row(conn).await?)
         }))
         .await?
         .iter_mut()
