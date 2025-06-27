@@ -19,7 +19,7 @@ impl Dialogue {
             );
             return Err(e);
         };
-        params.item_id(ParamOption::new().map_value(item.id).to_owned());
+        params.with_item_id(ParamOption::new().map_value(item.id).to_owned());
 
         Ok(dialogue)
     }
@@ -42,7 +42,7 @@ impl Dialogue {
             );
             return Err(e);
         };
-        params.user_id(ParamOption::new().map_value(user.id).to_owned());
+        params.with_user_id(ParamOption::new().map_value(user.id).to_owned());
 
         Ok(dialogue)
     }
@@ -65,8 +65,9 @@ impl Dialogue {
             );
             return Err(e);
         };
-        params
-            .r_id(ParamOption::new().map_value(receipt.receipt_id).to_owned());
+        params.with_r_id(
+            ParamOption::new().map_value(receipt.receipt_id).to_owned(),
+        );
 
         Ok(dialogue)
     }

@@ -54,19 +54,19 @@ async fn main() -> Result<()> {
 
     let names = ["Blue", "Noodle"];
 
-    let conn = get_db().await?;
+    let conn = DbConn::try_get().await?;
 
     for (name, price) in items.into_iter().zip(prices.into_iter()) {
         let mut params = ItemParams::builder();
         params
-            .item_name(ParamOption::new().map_value(name).to_owned())
-            .item_price(ParamOption::new().map_value(price).to_owned());
+            .with_item_name(ParamOption::new().map_value(name).to_owned())
+            .with_item_price(ParamOption::new().map_value(price).to_owned());
         params.build().post(conn).await?;
     }
 
     for name in names {
         let mut params = UserParams::builder();
-        params.user_name(
+        params.with_user_name(
             ParamOption::new().map_value(name.to_owned()).to_owned(),
         );
         params.build().post(conn).await?;

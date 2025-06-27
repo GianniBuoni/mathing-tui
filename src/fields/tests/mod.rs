@@ -15,8 +15,8 @@ pub fn test_text_inputs(parent: &mut FormBuilder) -> Result<()> {
     let float_input = InputField::<f64>::test_item_price();
     let price = float_input.value.clone();
 
-    params.item_name(name);
-    params.item_price(price);
+    params.with_item_name(name);
+    params.with_item_price(price);
     string_input.plugin(parent)?;
     float_input.plugin(parent)?;
 

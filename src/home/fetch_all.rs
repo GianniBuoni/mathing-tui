@@ -5,10 +5,10 @@ impl Home {
     /// requests to the Db
     pub fn fetch_all(&mut self) {
         let item_payload =
-            DbPayload::ItemParams(ItemParams::builder().offset(0).build());
+            DbPayload::ItemParams(ItemParams::builder().with_offset(0).build());
         let user_payload = DbPayload::UserParams(UserParams::builder().build());
         let r_payload = DbPayload::ReceiptParams(
-            JoinedReceiptParams::builder().offset(0).build(),
+            JoinedReceiptParams::builder().with_offset(0).build(),
         );
 
         [item_payload, user_payload, r_payload]

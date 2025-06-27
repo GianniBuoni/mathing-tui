@@ -15,8 +15,8 @@ pub fn new_item_inputs(parent: &mut FormBuilder) -> Result<()> {
         .with_field_type(AppArm::Items);
     let price = price_input.value.clone();
 
-    params.item_name(name);
-    params.item_price(price);
+    params.with_item_name(name);
+    params.with_item_price(price);
     name_input.plugin(parent)?;
     price_input.plugin(parent)?;
 
@@ -43,9 +43,9 @@ pub fn edit_item_inputs(
             .with_default_value(item.price);
         let price = price_input.value.clone();
 
-        params.item_id(ParamOption::new().map_value(item.id).to_owned());
-        params.item_name(name);
-        params.item_price(price);
+        params.with_item_id(ParamOption::new().map_value(item.id).to_owned());
+        params.with_item_name(name);
+        params.with_item_price(price);
         name_input.plugin(parent)?;
         price_input.plugin(parent)?;
 

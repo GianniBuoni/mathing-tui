@@ -1,68 +1,4 @@
-use anyhow::Ok;
-
 use super::*;
-
-impl JoinParamsBuilder {
-    pub fn r_id(&mut self, r_id: ParamOption<i64>) -> &mut Self {
-        self.r_id = r_id;
-        self
-    }
-    pub fn item_id(&mut self, item_id: ParamOption<i64>) -> &mut Self {
-        self.item_id = item_id;
-        self
-    }
-    pub fn item_qty(&mut self, item_qty: ParamOption<i64>) -> &mut Self {
-        self.item_qty = item_qty;
-        self
-    }
-    pub fn users(&mut self, users: Rc<RefCell<Vec<i64>>>) -> &mut Self {
-        self.users = users;
-        self
-    }
-    pub fn add_user(&mut self, u_id: i64) -> &mut Self {
-        let users = self.users.clone();
-        {
-            let mut users = users.borrow_mut();
-            users.push(u_id);
-        }
-        self
-    }
-    pub fn offset(&mut self, offset: i64) -> &mut Self {
-        self.offset = Some(offset);
-        self
-    }
-    pub fn build(&self) -> JoinedReceiptParams {
-        let users = self.users.clone();
-        let users = users.borrow().to_owned();
-
-        JoinedReceiptParams {
-            offset: self.offset,
-            users,
-            r_id: self.r_id.unwrap(),
-            item_id: self.item_id.unwrap(),
-            item_qty: self.item_qty.unwrap(),
-        }
-    }
-}
-
-impl JoinedReceiptParams {
-    pub fn builder() -> JoinParamsBuilder {
-        JoinParamsBuilder::default()
-    }
-    fn new() -> Self {
-        Self::default()
-    }
-    fn r_id(mut self, r_id: i64) -> Self {
-        self.r_id = Some(r_id);
-        self
-    }
-    pub async fn reset(&self, conn: &SqlitePool) -> Result<u64> {
-        Ok(sqlx::query!("DELETE FROM receipts")
-            .execute(conn)
-            .await?
-            .rows_affected())
-    }
-}
 
 impl<'e> Request<'e> for JoinedReceiptParams {
     type Output = StoreJoinRow;
@@ -118,7 +54,7 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         ))?;
 
         // check if item exists
-        ItemParams::new().item_id(item_id).get(conn).await?;
+        ItemParams::new().with_item_id(item_id).get(conn).await?;
 
         if self.users.is_empty() {
             return Err(RequestError::missing_param(
@@ -136,17 +72,17 @@ impl<'e> Request<'e> for JoinedReceiptParams {
             .await?;
 
         for u_id in self.users.clone() {
-            UserParams::new().user_id(u_id).get(conn).await?;
+            UserParams::new().with_user_id(u_id).get(conn).await?;
             ReceiptsUsersParams::new()
-                .r_id(receipt.id)
-                .u_id(u_id)
+                .with_r_id(receipt.id)
+                .with_u_id(u_id)
                 .post(&mut *tx)
                 .await?;
         }
 
         tx.commit().await?;
         Ok(JoinedReceiptParams::new()
-            .r_id(receipt.id)
+            .with_r_id(receipt.id)
             .get(conn)
             .await?)
     }
@@ -210,7 +146,7 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         if !self.users.is_empty() {
             // reset receipt_user rows
             let current_users = ReceiptsUsersParams::new()
-                .r_id(id)
+                .with_r_id(id)
                 .get(&mut *tx)
                 .await?
                 .iter()
@@ -219,22 +155,22 @@ impl<'e> Request<'e> for JoinedReceiptParams {
 
             for user in current_users {
                 ReceiptsUsersParams::new()
-                    .r_id(id)
-                    .u_id(user)
+                    .with_r_id(id)
+                    .with_u_id(user)
                     .delete(&mut *tx)
                     .await?;
             }
             // add all users back in
             for user in &self.users {
                 ReceiptsUsersParams::new()
-                    .u_id(*user)
-                    .r_id(id)
+                    .with_u_id(*user)
+                    .with_r_id(id)
                     .post(&mut *tx)
                     .await?;
             }
         }
         tx.commit().await?;
 
-        Ok(JoinedReceiptParams::new().r_id(id).get(conn).await?)
+        Ok(JoinedReceiptParams::new().with_r_id(id).get(conn).await?)
     }
 }

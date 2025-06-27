@@ -1,35 +1,5 @@
 use super::*;
 
-impl UserParamsBuilder {
-    pub fn user_id(&mut self, id: ParamOption<i64>) -> &mut Self {
-        self.u_id = id;
-        self
-    }
-    pub fn user_name(&mut self, name: ParamOption<String>) -> &mut Self {
-        self.name = name;
-        self
-    }
-    pub fn build(&self) -> UserParams {
-        UserParams {
-            u_id: self.u_id.unwrap(),
-            name: self.name.unwrap(),
-        }
-    }
-}
-
-impl UserParams {
-    pub fn builder() -> UserParamsBuilder {
-        UserParamsBuilder::default()
-    }
-    pub fn new() -> Self {
-        Self::default()
-    }
-    pub fn user_id(mut self, id: i64) -> Self {
-        self.u_id = Some(id);
-        self
-    }
-}
-
 impl<'e> Request<'e> for UserParams {
     type Output = StoreUser;
     type Connection = &'e SqlitePool;
@@ -62,7 +32,7 @@ impl<'e> Request<'e> for UserParams {
 
     async fn post(&self, conn: Self::Connection) -> Result<Self::Output> {
         let mut tx = conn.begin().await?;
-        let now = get_time()?;
+        let now = DbConn::try_get_time()?;
 
         let name = self.name.clone().ok_or(RequestError::missing_param(
             RequestType::Post,
@@ -106,7 +76,7 @@ impl<'e> Request<'e> for UserParams {
         let mut tx = conn.begin().await?;
 
         let id = self.check_id(RequestType::Update)?;
-        let now = get_time()?;
+        let now = DbConn::try_get_time()?;
         let name = self.name.clone().ok_or(RequestError::missing_param(
             RequestType::Update,
             "user",

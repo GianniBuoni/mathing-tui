@@ -20,10 +20,6 @@ pub mod prelude {
     pub use super::TableData;
 }
 
-pub trait TableDisplay: Debug {
-    fn ref_array(&self) -> Row;
-}
-
 #[derive(Debug, Default)]
 pub struct TableData {
     title: Rc<str>,

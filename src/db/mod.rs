@@ -1,131 +1,61 @@
-use std::{cell::RefCell, collections::HashMap, fmt::Debug, rc::Rc};
+use std::{
+    cell::RefCell,
+    collections::HashMap,
+    env,
+    fmt::{Debug, Display},
+    ops::Deref,
+    rc::Rc,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use futures::future::try_join_all;
 use rust_decimal::prelude::*;
-use sqlx::SqlitePool;
+use sqlx::{SqliteConnection, SqliteExecutor, SqlitePool};
+use tokio::sync::OnceCell;
 
 use crate::prelude::*;
-use connection::get_db;
-use db_time::get_time;
+use tables::{StoreJoinRaw, StoreReceipt, StoreReceiptsUsers};
 
-mod connection;
-mod db_time;
-mod processing;
+mod params;
+mod payloads;
 mod requests;
-mod table_displays;
-#[cfg(test)]
-mod test_cases;
+mod response;
+mod tables;
 #[cfg(test)]
 mod tests;
 mod totals;
 
 pub mod prelude {
-    pub use super::connection::get_db;
+    pub use super::DbConn;
+    pub use super::params::prelude::*;
+    pub use super::payloads::prelude::*;
     pub use super::requests::prelude::*;
-    pub use super::{
-        DbTable, ItemParams, JoinedReceiptParams, StoreItem, StoreJoinRow,
-        StoreTotal, StoreUser, UserParams,
+    pub use super::response::prelude::*;
+    pub use super::tables::prelude::*;
+    pub use super::totals::prelude::*;
+    // TODO: remove later when ifgure out how to make param building
+    // a consuming operation?
+    pub use super::params::{
+        items::ItemParamsBuilder, join_row::JoinParamsBuilder,
+        users::UserParamsBuilder,
     };
 }
 
-#[derive(Debug, Clone)]
-pub enum DbTable {
-    Item(StoreItem),
-    User(StoreUser),
-    Receipt(StoreJoinRow),
-}
+static DB: OnceCell<DbConn> = OnceCell::const_new();
 
-#[derive(Debug, Default, Clone, PartialEq)]
-pub struct StoreUser {
-    pub id: i64,
-    created_at: i64,
-    updated_at: i64,
-    pub name: String,
-}
+pub struct DbConn(SqlitePool);
 
-#[derive(Debug, Default, Clone, PartialEq)]
-pub struct StoreItem {
-    pub id: i64,
-    created_at: i64,
-    updated_at: i64,
-    pub name: String,
-    pub price: f64,
-}
-
-#[derive(Debug, PartialEq)]
-pub struct StoreReceipt {
-    id: i64,
-    created_at: i64,
-    updated_at: i64,
-    item_id: i64,
-    item_qty: i64,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-struct StoreReceiptsUsers {
-    created_at: i64,
-    updated_at: i64,
-    receipt_id: i64,
-    user_id: i64,
-}
-
-#[derive(Debug, PartialEq)]
-struct StoreJoinRaw {
-    item_name: String,
-    user_ids: String,
-    receipt_id: i64,
-    item_id: i64,
-    item_price: f64,
-    item_qty: i64,
-    user_count: i64,
-}
-
-#[derive(Debug, Default, Clone, PartialEq)]
-pub struct StoreJoinRow {
-    pub users: Vec<StoreUser>,
-    pub item_name: String,
-    user_count: i64,
-    pub receipt_id: i64,
-    item_id: i64,
-    item_price: f64,
-    pub item_qty: i64,
-}
-
-#[derive(Debug, Default)]
-pub struct StoreTotal(HashMap<i64, Decimal>);
-
-#[derive(Debug, Default, PartialEq, Clone)]
-pub struct UserParams {
-    u_id: Option<i64>,
-    name: Option<String>,
-}
-
-#[derive(Debug, Default, PartialEq, Clone)]
-pub struct ItemParams {
-    item_id: Option<i64>,
-    item_name: Option<String>,
-    item_price: Option<f64>,
-    offset: Option<i64>,
-}
-
-#[derive(Debug, Default, PartialEq, Clone)]
-pub struct JoinedReceiptParams {
-    users: Vec<i64>,
-    r_id: Option<i64>,
-    item_id: Option<i64>,
-    item_qty: Option<i64>,
-    offset: Option<i64>,
-}
-
-#[derive(Debug, Default)]
-struct ReceiptsUsersParams {
-    r_id: Option<i64>,
-    u_id: Option<i64>,
-}
-
-#[derive(Debug, Default)]
-struct ReceiptParams {
-    r_id: Option<i64>,
-    item_id: Option<i64>,
-    item_qty: Option<i64>,
+impl DbConn {
+    // TODO: gets db_url from Config
+    async fn new() -> Result<Self> {
+        let db_string = env::var("DATABASE_URL")?;
+        Ok(Self(SqlitePool::connect(&db_string).await?))
+    }
+    pub async fn try_get() -> Result<&'static SqlitePool> {
+        let conn = DB.get_or_try_init(Self::new).await?;
+        Ok(&conn.0)
+    }
+    pub fn try_get_time() -> Result<i64> {
+        Ok(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() as i64)
+    }
 }

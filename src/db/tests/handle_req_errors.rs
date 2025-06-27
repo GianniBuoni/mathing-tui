@@ -56,7 +56,7 @@ async fn test_req_errors(conn: SqlitePool) {
         (
             DbPayload::ItemParams(
                 ItemParams::builder()
-                    .item_id(ParamOption::new().map_value(1).clone())
+                    .with_item_id(ParamOption::new().map_value(1).clone())
                     .build(),
             ),
             RequestType::Get,
