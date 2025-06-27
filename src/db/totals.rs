@@ -23,7 +23,7 @@ impl StoreTotal {
         .iter_mut()
         .try_fold(StoreTotal::default(), |mut acc, next| {
             anyhow::Ok::<StoreTotal>({
-                acc.add(next.calc()?);
+                acc.add(next.try_calc()?);
                 acc
             })
         })

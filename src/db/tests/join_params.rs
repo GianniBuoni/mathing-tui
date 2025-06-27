@@ -340,8 +340,8 @@ async fn test_get_totals(conn: SqlitePool) -> Result<()> {
         .zip(intermediate_totals())
         .try_for_each(|(row, want)| {
             anyhow::Ok({
-                assert_eq!(want, row.calc()?);
-                got.add(row.calc()?);
+                assert_eq!(want, row.try_calc()?);
+                got.add(row.try_calc()?);
             })
         })?;
 

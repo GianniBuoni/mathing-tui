@@ -24,7 +24,7 @@ impl StoreJoinRaw {
     }
 }
 impl StoreJoinRow {
-    pub fn calc(&self) -> Result<HashMap<i64, Decimal>> {
+    pub fn try_calc(&self) -> Result<HashMap<i64, Decimal>> {
         let err = "Decimal Error: Could not convert float to Decimal";
         let total = Decimal::from_f64(
             self.item_price * self.item_qty as f64 / self.user_count as f64,

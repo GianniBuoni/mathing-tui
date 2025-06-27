@@ -35,7 +35,7 @@ impl Home {
         StoreTotal::try_get()?
             .lock()
             .unwrap()
-            .subtract(current_r.calc()?);
+            .subtract(current_r.try_calc()?);
 
         Ok(())
     }

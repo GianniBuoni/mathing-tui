@@ -55,7 +55,7 @@ pub(super) fn try_add_store_total(
     store_total
         .lock()
         .map_err(|_| anyhow::Error::msg(err))?
-        .add(receipt.calc()?);
+        .add(receipt.try_calc()?);
 
     Ok(())
 }
