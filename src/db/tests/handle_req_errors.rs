@@ -50,7 +50,7 @@ async fn test_req_errors(conn: SqlitePool) {
         (
             DbPayload::ItemParams(ItemParams::builder().build()),
             RequestType::Post,
-            RequestError::missing_param("item name"),
+            RequestError::missing_param(RequestType::Post, "item", "item name"),
             "Test invalid request params.",
         ),
         (

@@ -223,7 +223,8 @@ async fn test_rec_param_errors(conn: SqlitePool) -> Result<()> {
                 };
 
                 assert_eq!(
-                    RequestError::missing_param(want).to_string(),
+                    RequestError::missing_param(req, "receipt", want)
+                        .to_string(),
                     got,
                     "Tests if req type {req_t} returned expected error."
                 )

@@ -22,8 +22,12 @@ impl<'e> Request<'e> for ReceiptsUsersParams {
     type Output = Vec<StoreReceiptsUsers>;
     type Connection = &'e mut SqliteConnection;
 
-    fn check_id(&self) -> Result<i64> {
-        Ok(self.r_id.ok_or(RequestError::missing_param("receipt id"))?)
+    fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError> {
+        self.r_id.ok_or(RequestError::missing_param(
+            req_type,
+            "receipts users",
+            "receipt id",
+        ))
     }
 
     /// get_all for Receipt Params should not be called directly
@@ -38,7 +42,7 @@ impl<'e> Request<'e> for ReceiptsUsersParams {
     }
 
     async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
-        let id = self.check_id()?;
+        let id = self.check_id(RequestType::Get)?;
 
         let res = sqlx::query_as!(
             StoreReceiptsUsers,
@@ -58,8 +62,13 @@ impl<'e> Request<'e> for ReceiptsUsersParams {
     }
 
     async fn post(&self, conn: Self::Connection) -> Result<Self::Output> {
-        let r_id = self.check_id()?;
-        let u_id = self.u_id.ok_or(RequestError::missing_param("user id"))?;
+        let r_id = self.check_id(RequestType::Post)?;
+
+        let u_id = self.u_id.ok_or(RequestError::missing_param(
+            RequestType::Post,
+            "receipts users",
+            "user id",
+        ))?;
         let now = get_time()?;
 
         Ok(sqlx::query_as!(
@@ -80,8 +89,12 @@ impl<'e> Request<'e> for ReceiptsUsersParams {
     }
 
     async fn delete(&self, conn: Self::Connection) -> Result<u64> {
-        let id = self.check_id()?;
-        let u_id = self.u_id.ok_or(RequestError::missing_param("user id"))?;
+        let id = self.check_id(RequestType::Delete)?;
+        let u_id = self.u_id.ok_or(RequestError::missing_param(
+            RequestType::Delete,
+            "receipts users",
+            "user id",
+        ))?;
 
         Ok(sqlx::query!(
             "

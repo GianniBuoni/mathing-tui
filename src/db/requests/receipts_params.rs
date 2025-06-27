@@ -24,8 +24,9 @@ impl<'e> Request<'e> for ReceiptParams {
     type Output = StoreReceipt;
     type Connection = &'e mut SqliteConnection;
 
-    fn check_id(&self) -> Result<i64> {
-        Ok(self.r_id.ok_or(RequestError::missing_param("id"))?)
+    fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError> {
+        self.r_id
+            .ok_or(RequestError::missing_param(req_type, "receipt", "id"))
     }
 
     /// get_all for Receipt Params should not be called directly
@@ -40,7 +41,7 @@ impl<'e> Request<'e> for ReceiptParams {
     }
 
     async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
-        let id = self.check_id()?;
+        let id = self.check_id(RequestType::Get)?;
 
         Ok(sqlx::query_as!(
             StoreReceipt,
@@ -53,11 +54,16 @@ impl<'e> Request<'e> for ReceiptParams {
     }
 
     async fn post(&self, conn: Self::Connection) -> Result<Self::Output> {
-        let item_id =
-            self.item_id.ok_or(RequestError::missing_param("item id"))?;
-        let qty = self
-            .item_qty
-            .ok_or(RequestError::missing_param("item qty"))?;
+        let item_id = self.item_id.ok_or(RequestError::missing_param(
+            RequestType::Post,
+            "receipt",
+            "item id",
+        ))?;
+        let qty = self.item_qty.ok_or(RequestError::missing_param(
+            RequestType::Post,
+            "receipt",
+            "item qty",
+        ))?;
         let now = get_time()?;
 
         Ok(sqlx::query_as!(
@@ -79,7 +85,7 @@ impl<'e> Request<'e> for ReceiptParams {
     }
 
     async fn delete(&self, conn: Self::Connection) -> Result<u64> {
-        let id = self.check_id()?;
+        let id = self.check_id(RequestType::Delete)?;
 
         Ok(sqlx::query!("DELETE FROM receipts WHERE id=?1", id)
             .execute(conn)
@@ -88,11 +94,15 @@ impl<'e> Request<'e> for ReceiptParams {
     }
 
     async fn update(&self, conn: Self::Connection) -> Result<Self::Output> {
-        let id = self.check_id()?;
+        let id = self.check_id(RequestType::Delete)?;
+
         if self.item_id.is_none() && self.item_qty.is_none() {
-            return Err(
-                RequestError::missing_param("item id and item qty").into()
-            );
+            return Err(RequestError::missing_param(
+                RequestType::Update,
+                "receipt",
+                "item id and item qty",
+            )
+            .into());
         }
 
         if let Some(item_id) = self.item_id {

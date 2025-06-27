@@ -1,4 +1,4 @@
-use std::ops::Deref;
+use std::{fmt::Display, ops::Deref};
 
 use super::*;
 
@@ -24,7 +24,7 @@ pub trait Request<'e> {
     type Output;
     type Connection: sqlx::SqliteExecutor<'e>;
 
-    fn check_id(&self) -> Result<i64>;
+    fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError>;
     fn get(
         &self,
         conn: Self::Connection,

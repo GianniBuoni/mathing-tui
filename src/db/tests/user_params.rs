@@ -150,7 +150,8 @@ async fn test_invalid_params(conn: SqlitePool) -> Result<()> {
         Ok(_) => panic!("Test user delete suceeded, but expected an error."),
         Err(e) => {
             assert_eq!(
-                RequestError::missing_param("id").to_string(),
+                RequestError::missing_param(RequestType::Delete, "user", "id")
+                    .to_string(),
                 e.to_string(),
                 "Test if expected error matches."
             );
@@ -161,7 +162,12 @@ async fn test_invalid_params(conn: SqlitePool) -> Result<()> {
         Ok(_) => panic!("Test user update suceeded, but expected an error."),
         Err(e) => {
             assert_eq!(
-                RequestError::missing_param("name").to_string(),
+                RequestError::missing_param(
+                    RequestType::Update,
+                    "user",
+                    "name"
+                )
+                .to_string(),
                 e.to_string(),
                 "Test if expected error matches."
             )

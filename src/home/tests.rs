@@ -134,9 +134,9 @@ fn test_tracker_sync() {
 
 #[test]
 fn handle_response() -> Result<()> {
-    let res = DbResponse::new()
-        .req_type(RequestType::Update)
-        .error(RequestError::missing_param("id"));
+    let res = DbResponse::new().req_type(RequestType::Update).error(
+        RequestError::missing_param(RequestType::Update, "item", "id"),
+    );
 
     let mut home = Home::mock();
     home.handle_response(Some(&res))?;
