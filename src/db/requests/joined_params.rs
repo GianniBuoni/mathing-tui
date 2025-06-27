@@ -205,23 +205,31 @@ impl<'e> Request<'e> for JoinedReceiptParams {
             Into::<ReceiptParams>::into(self).update(&mut *tx).await?;
         }
 
+        // update users if user params are included
         if !self.users.is_empty() {
-            let ru = ReceiptsUsersParams::new()
+            // reset receipt_user rows
+            let current_users = ReceiptsUsersParams::new()
                 .r_id(id)
                 .get(&mut *tx)
                 .await?
                 .iter()
-                .map(|ru| ru.user_id)
+                .map(|f| f.user_id)
                 .collect::<Vec<i64>>();
 
-            for u_id in ru {
-                if !self.users.clone().contains(&u_id) {
-                    ReceiptsUsersParams::new()
-                        .r_id(id)
-                        .u_id(u_id)
-                        .delete(&mut *tx)
-                        .await?;
-                }
+            for user in current_users {
+                ReceiptsUsersParams::new()
+                    .r_id(id)
+                    .u_id(user)
+                    .delete(&mut *tx)
+                    .await?;
+            }
+            // add all users back in
+            for user in &self.users {
+                ReceiptsUsersParams::new()
+                    .u_id(*user)
+                    .r_id(id)
+                    .post(&mut *tx)
+                    .await?;
             }
         }
         tx.commit().await?;
