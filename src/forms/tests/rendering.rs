@@ -30,7 +30,7 @@ fn test_form_render_block() {
 #[test]
 fn test_form_render() -> Result<()> {
     let mut form = Form::test_valid();
-    form.map_err(FormErrors::malformed("fields"));
+    form.map_err(FormError::malformed("fields"));
 
     // set up terminal
     let viewport = Viewport::Fixed(Form::test_rect_buffer());

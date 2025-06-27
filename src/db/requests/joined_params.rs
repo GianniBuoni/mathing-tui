@@ -68,16 +68,23 @@ impl<'e> Request<'e> for JoinedReceiptParams {
     type Output = StoreJoinRow;
     type Connection = &'e SqlitePool;
 
-    fn check_id(&self) -> Result<i64> {
-        Ok(self.r_id.ok_or(RequestError::missing_param("receipt id"))?)
+    fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError> {
+        self.r_id.ok_or(RequestError::missing_param(
+            req_type,
+            "joined receipt",
+            "receipt id",
+        ))
     }
 
     async fn get_all(
         &self,
         conn: Self::Connection,
     ) -> Result<Vec<Self::Output>> {
-        let offset =
-            self.offset.ok_or(RequestError::missing_param("offset"))?;
+        let offset = self.offset.ok_or(RequestError::missing_param(
+            RequestType::GetAll,
+            "joined receipt",
+            "offset",
+        ))?;
 
         let raw = sqlx::query_file_as!(
             StoreJoinRaw,
@@ -88,7 +95,8 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         .await?;
 
         Ok(try_join_all(
-            raw.iter().map(async |raw| raw.as_join_row(conn).await),
+            raw.into_iter()
+                .map(async |raw| raw.try_join_row(conn).await),
         )
         .await?
         .into_iter()
@@ -98,17 +106,27 @@ impl<'e> Request<'e> for JoinedReceiptParams {
     async fn post(&self, conn: Self::Connection) -> Result<Self::Output> {
         let mut tx = conn.begin().await?;
 
-        let item_id =
-            self.item_id.ok_or(RequestError::missing_param("item id"))?;
-        let item_qty = self
-            .item_qty
-            .ok_or(RequestError::missing_param("item qty"))?;
+        let item_id = self.item_id.ok_or(RequestError::missing_param(
+            RequestType::Post,
+            "joined receipt",
+            "item id",
+        ))?;
+        let item_qty = self.item_qty.ok_or(RequestError::missing_param(
+            RequestType::Post,
+            "joined receipt",
+            "item qty",
+        ))?;
 
         // check if item exists
         ItemParams::new().item_id(item_id).get(conn).await?;
 
         if self.users.is_empty() {
-            return Err(RequestError::missing_param("user id(s)").into());
+            return Err(RequestError::missing_param(
+                RequestType::Post,
+                "joined receipt",
+                "user id(s)",
+            )
+            .into());
         }
 
         let receipt = ReceiptParams::new()
@@ -134,7 +152,7 @@ impl<'e> Request<'e> for JoinedReceiptParams {
     }
 
     async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
-        let r_id = self.check_id()?;
+        let r_id = self.check_id(RequestType::Get)?;
         let offset = if self.offset.is_some() {
             self.offset.unwrap()
         } else {
@@ -153,12 +171,12 @@ impl<'e> Request<'e> for JoinedReceiptParams {
             RequestError::not_found(r_id, "receipts_users (joined)")
         })?;
 
-        Ok(raw_rows.as_join_row(conn).await?)
+        Ok(raw_rows.try_join_row(conn).await?)
     }
 
     async fn delete(&self, conn: Self::Connection) -> Result<u64> {
         let mut tx = conn.begin().await?;
-        let id = self.check_id()?;
+        let id = self.check_id(RequestType::Delete)?;
 
         ReceiptParams::new().r_id(id).get(&mut *tx).await?;
 
@@ -170,13 +188,15 @@ impl<'e> Request<'e> for JoinedReceiptParams {
 
     async fn update(&self, conn: Self::Connection) -> Result<Self::Output> {
         let mut tx = conn.begin().await?;
-        let id = self.check_id()?;
+        let id = self.check_id(RequestType::Update)?;
 
         if self.item_id.is_none()
             && self.item_qty.is_none()
             && self.users.is_empty()
         {
             return Err(RequestError::missing_param(
+                RequestType::Update,
+                "joined receipt",
                 "item id, item qty, or users",
             )
             .into());
@@ -186,23 +206,31 @@ impl<'e> Request<'e> for JoinedReceiptParams {
             Into::<ReceiptParams>::into(self).update(&mut *tx).await?;
         }
 
+        // update users if user params are included
         if !self.users.is_empty() {
-            let ru = ReceiptsUsersParams::new()
+            // reset receipt_user rows
+            let current_users = ReceiptsUsersParams::new()
                 .r_id(id)
                 .get(&mut *tx)
                 .await?
                 .iter()
-                .map(|ru| ru.user_id)
+                .map(|f| f.user_id)
                 .collect::<Vec<i64>>();
 
-            for u_id in ru {
-                if !self.users.clone().contains(&u_id) {
-                    ReceiptsUsersParams::new()
-                        .r_id(id)
-                        .u_id(u_id)
-                        .delete(&mut *tx)
-                        .await?;
-                }
+            for user in current_users {
+                ReceiptsUsersParams::new()
+                    .r_id(id)
+                    .u_id(user)
+                    .delete(&mut *tx)
+                    .await?;
+            }
+            // add all users back in
+            for user in &self.users {
+                ReceiptsUsersParams::new()
+                    .u_id(*user)
+                    .r_id(id)
+                    .post(&mut *tx)
+                    .await?;
             }
         }
         tx.commit().await?;

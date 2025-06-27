@@ -12,13 +12,13 @@ fn test_input_validation_f64() {
         (
             InputField::<f64>::test_item_price(),
             Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('a')))),
-            Some(FormErrors::validation("a", "f64").to_string()),
+            Some(FormError::validation("a", "f64").to_string()),
             "Test invalid input.",
         ),
         (
             InputField::<f64>::test_item_price(),
             None,
-            Some(FormErrors::no_data("Item Price").to_string()),
+            Some(FormError::no_data("Item Price").to_string()),
             "Test unset data.",
         ),
     ];
@@ -57,7 +57,7 @@ fn test_multi_selection_submit() {
         ),
         (
             vec![None],
-            FormErrors::no_data("choices").to_string(),
+            FormError::no_data("choices").to_string(),
             "Test no selection.",
         ),
     ];
@@ -88,12 +88,12 @@ fn test_single_selection_submit() {
         ),
         (
             vec![make_selection, next_choice, make_selection],
-            FormErrors::validation("multi-select", "single select").to_string(),
+            FormError::validation("multi-select", "single select").to_string(),
             "Test multi selection.",
         ),
         (
             vec![None],
-            FormErrors::no_data("choices").to_string(),
+            FormError::no_data("choices").to_string(),
             "Test no selection.",
         ),
     ];

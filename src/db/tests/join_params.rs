@@ -208,14 +208,22 @@ async fn test_joined_errors(conn: SqlitePool) -> Result<()> {
                 .add_user(0)
                 .build(),
             RequestType::Get,
-            RequestError::missing_param("receipt id"),
+            RequestError::missing_param(
+                RequestType::Get,
+                "joined receipt",
+                "receipt id",
+            ),
         ),
         (
             JoinedReceiptParams::builder()
                 .r_id(ParamOption::new().map_value(0).clone())
                 .build(),
             RequestType::GetAll,
-            RequestError::missing_param("offset"),
+            RequestError::missing_param(
+                RequestType::GetAll,
+                "joined receipt",
+                "offset",
+            ),
         ),
         (
             JoinedReceiptParams::builder()
@@ -223,7 +231,11 @@ async fn test_joined_errors(conn: SqlitePool) -> Result<()> {
                 .item_id(ParamOption::new().map_value(0).clone())
                 .build(),
             RequestType::Post,
-            RequestError::missing_param("item qty"),
+            RequestError::missing_param(
+                RequestType::Post,
+                "joined receipt",
+                "item qty",
+            ),
         ),
         (
             JoinedReceiptParams::builder()
@@ -231,12 +243,20 @@ async fn test_joined_errors(conn: SqlitePool) -> Result<()> {
                 .item_qty(ParamOption::new().map_value(0).clone())
                 .build(),
             RequestType::Post,
-            RequestError::missing_param("item id"),
+            RequestError::missing_param(
+                RequestType::Post,
+                "joined receipt",
+                "item id",
+            ),
         ),
         (
             JoinedReceiptParams::builder().build(),
             RequestType::Delete,
-            RequestError::missing_param("receipt id"),
+            RequestError::missing_param(
+                RequestType::Delete,
+                "joined receipt",
+                "receipt id",
+            ),
         ),
         (
             JoinedReceiptParams::builder()
@@ -248,14 +268,22 @@ async fn test_joined_errors(conn: SqlitePool) -> Result<()> {
         (
             JoinedReceiptParams::builder().build(),
             RequestType::Update,
-            RequestError::missing_param("receipt id"),
+            RequestError::missing_param(
+                RequestType::Update,
+                "joined receipt",
+                "receipt id",
+            ),
         ),
         (
             JoinedReceiptParams::builder()
                 .r_id(ParamOption::new().map_value(0).clone())
                 .build(),
             RequestType::Update,
-            RequestError::missing_param("item id, item qty, or users"),
+            RequestError::missing_param(
+                RequestType::Update,
+                "joined receipt",
+                "item id, item qty, or users",
+            ),
         ),
         (
             JoinedReceiptParams::builder()
@@ -310,10 +338,12 @@ async fn test_get_totals(conn: SqlitePool) -> Result<()> {
         .await?
         .into_iter()
         .zip(intermediate_totals())
-        .for_each(|(row, want)| {
-            assert_eq!(want, row.calc());
-            got.add(row.calc());
-        });
+        .try_for_each(|(row, want)| {
+            anyhow::Ok({
+                assert_eq!(want, row.try_calc()?);
+                got.add(row.try_calc()?);
+            })
+        })?;
 
     assert_eq!(want, got.0, "Test if all the math is right ✨");
 

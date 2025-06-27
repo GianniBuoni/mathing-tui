@@ -1,4 +1,5 @@
 use super::*;
+use crate::home::HomeBuilder;
 
 impl PluginInit for TableData {
     fn init(&mut self, index: usize, tracker: ComponentTracker) {

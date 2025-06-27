@@ -16,27 +16,21 @@ where
         self.values.replace(choice_values);
         // error if value is empty
         if self.values.borrow().is_empty() {
-            let e = FormErrors::no_data("choices").into();
+            let e = FormError::no_data("choices").into();
             return Err(e);
         }
         // error if value is longer than expected
         if !self.multiselect && self.values.borrow().len() > 1 {
             let e =
-                FormErrors::validation("multi-select", "single select").into();
+                FormError::validation("multi-select", "single select").into();
             return Err(e);
         }
         Ok(())
     }
     fn get_rect_height(&self) -> u16 {
-        let Some(height) = self
-            .choices
+        self.choices
             .iter()
-            .map(|f| f.get_rect_height())
-            .reduce(|acc, f| acc + f)
-        else {
-            return Self::HEIGHT;
-        };
-        Self::HEIGHT + height
+            .fold(Self::HEIGHT, |acc, next| acc + next.get_rect_height())
     }
 }
 

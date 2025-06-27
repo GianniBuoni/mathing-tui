@@ -1,4 +1,5 @@
 use super::*;
+use crate::forms::FormBuilder;
 
 pub mod prelude {
     pub use super::items::*;
@@ -15,15 +16,15 @@ fn try_get_params(
     parent: &mut FormBuilder,
 ) -> Result<(&mut DbPayloadBuilder, AppArm)> {
     let Some(form_type) = &parent.form_type else {
-        let e = FormErrors::malformed("form type").into();
+        let e = FormError::malformed("form type").into();
         return Err(e);
     };
     if !(app_arm == *form_type) {
-        let e = FormErrors::mapping(app_arm, *form_type).into();
+        let e = AppError::Mapping(app_arm, *form_type).into();
         return Err(e);
     }
     let Some(payload_builder) = &mut parent.payload else {
-        let e = FormErrors::malformed("payload").into();
+        let e = FormError::malformed("payload").into();
         return Err(e);
     };
 
@@ -35,7 +36,7 @@ fn try_get_item_params(
 ) -> Result<&mut ItemParamsBuilder> {
     let (payload_builder, form_type) = try_get_params(AppArm::Items, parent)?;
     let DbPayloadBuilder::ItemParams(params) = payload_builder else {
-        let e = FormErrors::mapping(AppArm::Items, form_type).into();
+        let e = AppError::Mapping(AppArm::Items, form_type).into();
         return Err(e);
     };
 
@@ -47,7 +48,7 @@ fn try_get_user_params(
 ) -> Result<&mut UserParamsBuilder> {
     let (payload_builder, form_type) = try_get_params(AppArm::Users, parent)?;
     let DbPayloadBuilder::UserParams(params) = payload_builder else {
-        let e = FormErrors::mapping(AppArm::Users, form_type).into();
+        let e = AppError::Mapping(AppArm::Users, form_type).into();
         return Err(e);
     };
 
@@ -60,7 +61,7 @@ fn try_get_receipt_params(
     let (payload_builder, form_type) =
         try_get_params(AppArm::Receipts, parent)?;
     let DbPayloadBuilder::ReceiptParams(params) = payload_builder else {
-        let e = FormErrors::mapping(AppArm::Receipts, form_type).into();
+        let e = AppError::Mapping(AppArm::Receipts, form_type).into();
         return Err(e);
     };
 

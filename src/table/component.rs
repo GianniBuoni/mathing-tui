@@ -1,4 +1,7 @@
-use super::*;
+use super::{
+    response_handling::{match_post_get, match_update, try_add_store_total},
+    *,
+};
 
 impl Component for TableData {
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
@@ -7,7 +10,6 @@ impl Component for TableData {
         let block = self
             .render_block(styles.block_style)
             .padding(Padding::uniform(1));
-
         {
             use ratatui::widgets::StatefulWidget;
             let mut state = TableState::new().with_selected(self.table_index);
@@ -18,7 +20,6 @@ impl Component for TableData {
                 &mut state,
             );
         }
-
         block.render(rect, frame.buffer_mut())
     }
     fn is_active(&self) -> bool {
@@ -38,66 +39,40 @@ impl Component for TableData {
             _ => {}
         }
     }
-    fn handle_response(&mut self, res: Option<&DbResponse>) {
+    fn handle_response(&mut self, res: Option<&DbResponse>) -> Result<()> {
         let Some(res) = res else {
-            return;
+            return Ok(());
         };
-        let Some(table_type) = &self.table_type else {
-            return;
-        };
+        let table_type = &self
+            .table_type
+            .ok_or(ComponentError::not_found("Table type"))?;
 
         match (table_type, &res.req_type, &res.payload) {
             // Get and Post Responses
-            item if matches!(
-                item,
-                (
-                    AppArm::Items,
-                    RequestType::Get | RequestType::GetAll | RequestType::Post,
-                    DbPayload::Item(_) | DbPayload::Items(_),
-                )
-            ) || matches!(
-                item,
-                (
-                    AppArm::Receipts,
-                    RequestType::Get | RequestType::GetAll | RequestType::Post,
-                    DbPayload::Receipt(_) | DbPayload::Receipts(_),
-                )
-            ) || matches!(
-                item,
-                (
-                    AppArm::Users,
-                    RequestType::Get | RequestType::GetAll | RequestType::Post,
-                    DbPayload::User(_) | DbPayload::Users(_),
-                ),
-            ) =>
-            {
+            item if match_post_get(item) => {
                 self.add_items(res.payload.clone().into());
+                try_add_store_total(item)?;
+                Ok(())
             }
             // Update Responses
-            item if matches!(
-                item,
-                (AppArm::Items, RequestType::Update, DbPayload::Item(_))
-            ) || matches!(
-                item,
-                (AppArm::Users, RequestType::Update, DbPayload::User(_))
-            ) || matches!(
-                item,
-                (AppArm::Receipts, RequestType::Update, DbPayload::Receipt(_))
-            ) =>
-            {
+            item if match_update(item) => {
                 let new_element: Vec<DbTable> = res.payload.clone().into();
-                let Some(new_element) = new_element.first() else {
-                    return;
-                };
+                // Update Response payloads should not be empty
+                let new_element =
+                    new_element.first().ok_or(ComponentError::NoData)?;
+
                 self.items[self.table_index] = new_element.to_owned();
+                try_add_store_total(item)?;
+                Ok(())
             }
             // Delete responses
             (_, RequestType::Delete, DbPayload::AffectedRows(i)) => {
                 if self.is_active() && !self.items.is_empty() && *i == 1 {
                     self.items.remove(self.table_index);
                 }
+                Ok(())
             }
-            _ => {}
+            _ => Ok(()),
         }
     }
 }

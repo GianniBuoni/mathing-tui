@@ -192,20 +192,29 @@ async fn test_blank_item_update(conn: SqlitePool) -> Result<()> {
         }
         Err(e) => {
             assert_eq!(
-                "Malformed params: required field \"item name, item price\" is missing.",
+                RequestError::missing_param(
+                    RequestType::Update,
+                    "item",
+                    "item name, item price"
+                )
+                .to_string(),
                 e.to_string(),
                 "Test malformed update params."
             );
         }
     }
-
     match params.post(&conn).await {
         std::result::Result::Ok(_) => {
             panic!("POST suceeded, but an error was expected.")
         }
         Err(e) => {
             assert_eq!(
-                "Malformed params: required field \"item name\" is missing.",
+                RequestError::missing_param(
+                    RequestType::Post,
+                    "item",
+                    "item name"
+                )
+                .to_string(),
                 e.to_string(),
                 "Test malformed post param"
             )

@@ -20,15 +20,15 @@ where
 
     fn plugin(self, parent: &mut Self::Parent) -> Result<()> {
         let Some(input) = &self.field_type else {
-            let e = FormErrors::malformed("field type").into();
+            let e = FormError::malformed("field type").into();
             return Err(e);
         };
         let Some(form) = &parent.form_type else {
-            let e = FormErrors::malformed("form type").into();
+            let e = FormError::malformed("form type").into();
             return Err(e);
         };
         if !(input == form) {
-            let e = FormErrors::mapping(*input, *form).into();
+            let e = AppError::Mapping(*input, *form).into();
             return Err(e);
         }
         parent.with_field(self);

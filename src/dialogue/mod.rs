@@ -23,7 +23,7 @@ impl Dialogue {
         self.payload
             .as_ref()
             .map(|payload| payload.build())
-            .ok_or(FormErrors::malformed("payload").into())
+            .ok_or(FormError::malformed("payload").into())
     }
     pub fn get_req_type(&self) -> RequestType {
         self.request_type

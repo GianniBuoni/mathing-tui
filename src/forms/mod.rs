@@ -18,9 +18,7 @@ mod plugin;
 mod tests;
 
 pub mod prelude {
-    pub use super::errors::FormErrors;
-    #[allow(unused_imports)]
-    pub use super::{Form, FormBuilder};
+    pub use super::Form;
 }
 
 impl Form {

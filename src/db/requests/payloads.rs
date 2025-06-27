@@ -1,7 +1,18 @@
-use std::fmt::Display;
-
 use super::*;
 
+impl Display for RequestType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::None => write!(f, "None"),
+            Self::GetAll => write!(f, "Get all"),
+            Self::Get => write!(f, "Get"),
+            Self::Post => write!(f, "Post"),
+            Self::Update => write!(f, "Update"),
+            Self::Delete => write!(f, "Delete"),
+            Self::Reset => write!(f, "Reset"),
+        }
+    }
+}
 impl Display for DbPayload {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -19,7 +30,6 @@ impl Display for DbPayload {
         }
     }
 }
-
 impl DbPayloadBuilder {
     pub fn build(&self) -> DbPayload {
         match self {

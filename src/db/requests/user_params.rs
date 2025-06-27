@@ -1,4 +1,4 @@
-use super::{errors::RequestError, *};
+use super::*;
 
 impl UserParamsBuilder {
     pub fn user_id(&mut self, id: ParamOption<i64>) -> &mut Self {
@@ -34,8 +34,9 @@ impl<'e> Request<'e> for UserParams {
     type Output = StoreUser;
     type Connection = &'e SqlitePool;
 
-    fn check_id(&self) -> Result<i64> {
-        Ok(self.u_id.ok_or(RequestError::missing_param("id"))?)
+    fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError> {
+        self.u_id
+            .ok_or(RequestError::missing_param(req_type, "user", "id"))
     }
 
     async fn get_all(
@@ -50,7 +51,7 @@ impl<'e> Request<'e> for UserParams {
     }
 
     async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
-        let id = self.check_id()?;
+        let id = self.check_id(RequestType::Get)?;
         Ok(
             sqlx::query_as!(StoreUser, "SELECT * FROM users WHERE id=?1", id)
                 .fetch_one(conn)
@@ -63,10 +64,11 @@ impl<'e> Request<'e> for UserParams {
         let mut tx = conn.begin().await?;
         let now = get_time()?;
 
-        let name = self
-            .name
-            .clone()
-            .ok_or(RequestError::missing_param("name"))?;
+        let name = self.name.clone().ok_or(RequestError::missing_param(
+            RequestType::Post,
+            "user",
+            "name",
+        ))?;
 
         let user = sqlx::query_as!(
             StoreUser,
@@ -89,7 +91,7 @@ impl<'e> Request<'e> for UserParams {
     }
 
     async fn delete(&self, conn: Self::Connection) -> Result<u64> {
-        let id = self.check_id()?;
+        let id = self.check_id(RequestType::Delete)?;
         let mut tx = conn.begin().await?;
 
         let res = sqlx::query!("DELETE FROM users WHERE id=?1", id)
@@ -103,12 +105,13 @@ impl<'e> Request<'e> for UserParams {
     async fn update(&self, conn: Self::Connection) -> Result<Self::Output> {
         let mut tx = conn.begin().await?;
 
-        let id = self.check_id()?;
+        let id = self.check_id(RequestType::Update)?;
         let now = get_time()?;
-        let name = self
-            .name
-            .clone()
-            .ok_or(RequestError::missing_param("name"))?;
+        let name = self.name.clone().ok_or(RequestError::missing_param(
+            RequestType::Update,
+            "user",
+            "name",
+        ))?;
 
         sqlx::query!(
             "UPDATE users SET updated_at=?1, name=?2 WHERE id=?3",

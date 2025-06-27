@@ -39,7 +39,7 @@ impl Form {
     }
     pub fn new_receipt(
         item: &StoreItem,
-        users: Vec<&StoreUser>,
+        users: Rc<[StoreUser]>,
     ) -> Result<Self> {
         let mut form = Self::builder();
         let title = format!("Add {} to Receipt", item.name);
@@ -53,7 +53,7 @@ impl Form {
     }
     pub fn edit_receipt(
         receipt: &StoreJoinRow,
-        users: Vec<&StoreUser>,
+        users: Rc<[StoreUser]>,
     ) -> Result<Self> {
         let mut form = Self::builder();
         form.with_title("Edit Receipt")

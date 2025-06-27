@@ -1,4 +1,5 @@
 use super::*;
+use crate::forms::FormBuilder;
 
 mod builder;
 mod component;

@@ -10,174 +10,64 @@ impl Component for Home {
     }
 
     fn handle_action(&mut self, action: Option<Action>) {
-        let Some(action) = action else {
+        let Some(act) = action else {
             return;
         };
         match self.mode {
-            Mode::Insert => match action {
-                Action::EnterNormal => {
-                    self.form = None;
-                    self.message = None;
-                    self.mode = Mode::Normal
-                }
-                Action::Submit => {
-                    self.handle_submit();
-                }
+            Mode::Insert => match act {
+                Action::EnterNormal => self.reset_mode(),
+                Action::Submit => self.handle_submit(),
+                // pass any other action to an active form
                 _ => {
                     if let Some(form) = &mut self.form {
-                        form.handle_action(Some(action));
+                        form.handle_action(action);
                     }
                 }
             },
-            Mode::Normal => match action {
-                Action::AddToReceipt => {
-                    let Some(table) = self.components.first() else {
-                        return;
-                    };
-                    let Some(item) = table.get_active_item() else {
-                        return;
-                    };
-                    let DbTable::Item(item) = item else {
-                        let err = "Error getting item id for new receipt. First table is not the item table.";
-                        self.map_err(err);
-                        return;
-                    };
-                    let Some(table) = self.components.get(2) else {
-                        return;
-                    };
-                    let users = table.get_items();
-                    let users = users
-                        .iter()
-                        .filter_map(|f| match f {
-                            DbTable::User(u) => Some(u),
-                            _ => None,
-                        })
-                        .collect::<Vec<&StoreUser>>();
-
-                    match Form::new_receipt(item, users) {
-                        Ok(form) => {
-                            self.component_tracker.go_to(0);
-                            self.form = Some(form);
-                            self.mode = Mode::Insert;
-                        }
-                        Err(err) => self.map_err(err),
-                    }
-                }
-                Action::EnterInsert => {
-                    let Some(table) =
-                        self.components.get(self.component_tracker.inner())
-                    else {
-                        return;
-                    };
-                    let Some(form) = table.new_form() else {
-                        return;
-                    };
-                    match form {
-                        Ok(form) => {
-                            self.form = Some(form);
-                            self.mode = Mode::Insert;
-                        }
-                        Err(err) => self.map_err(err),
-                    }
-                }
-                Action::DeleteSelected => {
-                    let Some(table) =
-                        self.components.get(self.component_tracker.inner())
-                    else {
-                        return;
-                    };
-                    let Some(dialogue) = table.delete_form() else {
-                        return;
-                    };
-                    match dialogue {
-                        Ok(dialogue) => {
-                            self.message = Some(dialogue);
-                            self.mode = Mode::Insert;
-                        }
-                        Err(err) => self.map_err(err),
-                    }
-                }
-                Action::EditSelected => {
-                    let Some(table) =
-                        self.components.get(self.component_tracker.inner())
-                    else {
-                        return;
-                    };
-
-                    if let Some(AppArm::Receipts) = table.table_type {
-                        // get receipts
-                        let Some(DbTable::Receipt(current_r)) =
-                            table.get_active_item()
-                        else {
-                            return;
-                        };
-                        // get users
-                        let Some(table) = self.components.get(2) else {
-                            return;
-                        };
-                        let users = table.get_items();
-                        let users = users
-                            .iter()
-                            .filter_map(|f| match f {
-                                DbTable::User(u) => Some(u),
-                                _ => None,
-                            })
-                            .collect::<Vec<&StoreUser>>();
-
-                        match Form::edit_receipt(current_r, users) {
-                            Ok(form) => {
-                                self.form = Some(form);
-                                self.mode = Mode::Insert;
-                            }
-                            Err(err) => self.map_err(err),
-                        }
-                    } else {
-                        let Some(form) = table.edit_form() else {
-                            return;
-                        };
-                        match form {
-                            Ok(form) => {
-                                self.form = Some(form);
-                                self.mode = Mode::Insert
-                            }
-                            Err(err) => self.map_err(err),
-                        }
-                    }
-                }
+            Mode::Normal => match act {
+                Action::AddToReceipt => self.new_receipt(),
+                Action::EnterInsert => self.enter_insert(),
+                Action::DeleteSelected => self.delete_selected(),
+                Action::EditSelected => self.edit_selected(),
                 Action::SelectForward => {
                     self.cycle_active(1);
                     self.components
                         .iter_mut()
-                        .for_each(|c| c.handle_action(Some(action)));
+                        .for_each(|c| c.handle_action(action));
                 }
                 Action::SelectBackward => {
                     self.cycle_active(-1);
                     self.components
                         .iter_mut()
-                        .for_each(|c| c.handle_action(Some(action)));
+                        .for_each(|c| c.handle_action(action));
                 }
                 _ => {
                     self.components.iter_mut().for_each(|c| {
-                        c.handle_action(Some(action));
+                        c.handle_action(action);
                     });
                 }
             },
         }
     }
-
-    fn handle_response(&mut self, res: Option<&DbResponse>) {
+    /// Home's response handler maps any error into a dialoge message.
+    fn handle_response(&mut self, res: Option<&DbResponse>) -> Result<()> {
         let Some(res) = res else {
-            return;
+            return Ok(());
         };
         if let Some(err) = &res.error {
             self.map_err(err);
-            return;
+            return Ok(());
         }
-        self.components
+        let res = self
+            .components
             .iter_mut()
-            .for_each(|component| component.handle_response(Some(res)));
-    }
+            .try_for_each(|component| component.handle_response(Some(res)));
 
+        if let Err(err) = res {
+            self.map_err(err);
+        }
+        Ok(())
+    }
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
         let context_menu = Line::from(vec![
             " Quit ".gray(),

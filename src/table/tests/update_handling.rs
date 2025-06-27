@@ -28,7 +28,7 @@ fn test_response_handling_items() -> Result<()> {
 
     test_cases
         .iter()
-        .for_each(|res| table.handle_response(Some(res)));
+        .try_for_each(|res| table.handle_response(Some(res)))?;
 
     assert_eq!(
         3,
@@ -54,7 +54,11 @@ fn test_response_handling_receits() -> Result<()> {
         .into_iter()
         .map(|r| {
             DbResponse::new()
-                .req_type(RequestType::Post)
+                // Post and Update requests require the StoreTotals
+                // to be initialized.
+                // since the TableData is reponsible using the response
+                // to update the data.
+                .req_type(RequestType::Get)
                 .payload(DbPayload::Receipt(r))
         })
         .collect::<Vec<DbResponse>>();
@@ -66,7 +70,7 @@ fn test_response_handling_receits() -> Result<()> {
 
     test_cases
         .iter()
-        .for_each(|res| table.handle_response(Some(res)));
+        .try_for_each(|res| table.handle_response(Some(res)))?;
 
     assert_eq!(
         2,

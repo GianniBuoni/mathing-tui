@@ -36,7 +36,7 @@ impl App {
             let action = self.handle_events(event);
 
             self.handle_action(action);
-            self.handle_response(res.as_ref());
+            self.handle_response(res.as_ref())?;
 
             self.tui
                 .terminal

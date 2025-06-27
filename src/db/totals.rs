@@ -1,15 +1,13 @@
 use std::sync::Mutex;
 use tokio::sync::OnceCell;
 
-use super::{
-    prelude::{RequestError, get_db},
-    *,
-};
+use super::*;
 
 static TOTALS: OnceCell<Mutex<StoreTotal>> = OnceCell::const_new();
 
 impl StoreTotal {
-    async fn new() -> Result<Mutex<Self>> {
+    // setters
+    async fn new() -> Result<Self> {
         let conn = get_db().await?;
 
         let rows_to_calc =
@@ -18,35 +16,57 @@ impl StoreTotal {
                 .await
                 .map_err(|_| RequestError::not_found("all", "recipts_users"))?;
 
-        let calcs = try_join_all(rows_to_calc.into_iter().map(async |raw| {
-            anyhow::Ok::<StoreJoinRow>(raw.as_join_row(conn).await?)
+        Ok(try_join_all(rows_to_calc.into_iter().map(async |raw| {
+            anyhow::Ok::<StoreJoinRow>(raw.try_join_row(conn).await?)
         }))
         .await?
         .iter_mut()
-        .map(|row| row.calc())
-        .reduce(|mut acc, next| {
-            for (key, value) in next {
-                acc.entry(key)
-                    .and_modify(|mut f| f += value)
-                    .or_insert(value);
-            }
-            acc
+        .try_fold(StoreTotal::default(), |mut acc, next| {
+            anyhow::Ok::<StoreTotal>({
+                acc.add(next.try_calc()?);
+                acc
+            })
         })
-        .unwrap_or_default();
-
-        Ok(Mutex::new(Self(calcs)))
+        .unwrap_or_default())
     }
-
-    pub async fn get_or_init() -> Result<&'static Mutex<Self>> {
-        TOTALS.get_or_try_init(Self::new).await
+    /// Takes a hashmap and adds Decimal values to the StoreTotal
+    /// if a key already exists.
+    /// Adds a key to the underlying StoreTotal hashmap
+    /// if said key does not already extist.
+    pub fn add(&mut self, other: HashMap<i64, Decimal>) {
+        other.into_iter().for_each(|(key, val)| {
+            self.0.entry(key).and_modify(|e| *e += val).or_insert(val);
+        });
     }
-
-    pub fn get(key: i64) -> Result<Decimal> {
-        let totals = TOTALS
+    /// Takes a hashmap and subtracts Decimal values
+    /// from the StoreTotal if a key in the provided hashmap
+    /// already exists in the Storetotal's underlying hashmap.
+    pub fn subtract(&mut self, other: HashMap<i64, Decimal>) {
+        other.into_iter().for_each(|(key, val)| {
+            self.0.entry(key).and_modify(|f| *f -= val);
+        });
+    }
+    // getters
+    /// Returns the StoreTotal Mutex. Errors out if there the OnecCell
+    /// variable hasn't been initialized yet.
+    pub fn try_get() -> Result<&'static Mutex<Self>> {
+        TOTALS
             .get()
-            .ok_or(anyhow::Error::msg("TOTALS mutex is empty"))?
+            .ok_or(ComponentError::not_found("StoreTotal Mutex").into())
+    }
+    /// Returns the StoreTotal Mutex. Initializes the OnceCell if there is
+    /// no value contained within.
+    pub async fn get_or_init() -> Result<&'static Mutex<Self>> {
+        let init = async || anyhow::Ok(Mutex::new(Self::new().await?));
+        TOTALS.get_or_try_init(init).await
+    }
+    /// Returns value of specific value for a given key in StoreTotal.
+    pub fn try_get_inner(key: i64) -> Result<Decimal> {
+        let message =
+            "Mutex error: Current thread can't obtain lock for StoreTotal.";
+        let totals = Self::try_get()?
             .lock()
-            .map_err(|_| anyhow::Error::msg("Read lock failed for TOTALS"))?;
+            .map_err(|_| anyhow::Error::msg(message))?;
 
         totals
             .0

@@ -1,12 +1,8 @@
-use std::ops::Deref;
-
-use errors::RequestError;
-use sqlx::SqliteExecutor;
+use std::{fmt::Display, ops::Deref};
 
 use super::*;
 
 pub mod prelude {
-    pub use super::errors::RequestError;
     pub use super::handle_requests::handle_requests;
     pub use super::{
         DbPayload, DbPayloadBuilder, DbRequest, DbResponse, ItemParamsBuilder,
@@ -16,7 +12,6 @@ pub mod prelude {
 }
 
 mod builders;
-mod errors;
 mod handle_requests;
 mod item_params;
 mod joined_params;
@@ -27,9 +22,9 @@ mod user_params;
 
 pub trait Request<'e> {
     type Output;
-    type Connection: SqliteExecutor<'e>;
+    type Connection: sqlx::SqliteExecutor<'e>;
 
-    fn check_id(&self) -> Result<i64>;
+    fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError>;
     fn get(
         &self,
         conn: Self::Connection,

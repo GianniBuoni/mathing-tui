@@ -1,10 +1,19 @@
+use std::fmt::Display;
+
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::prelude::*;
 
+// private methods
+mod form_building;
+mod form_submission;
+mod receipt_actions;
+mod state_management;
+
+// public methods
 mod builder;
 mod component;
-mod methods;
+mod fetch_all;
 mod plugin;
 #[cfg(test)]
 mod test_cases;
@@ -12,7 +21,7 @@ mod test_cases;
 mod tests;
 
 pub(crate) mod prelude {
-    pub(crate) use super::{Home, HomeBuilder};
+    pub(crate) use super::Home;
 }
 
 #[derive(Default, Debug)]

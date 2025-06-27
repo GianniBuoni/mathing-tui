@@ -37,14 +37,13 @@ impl FormBuilder {
         self
     }
 
-    pub fn calc_rect(&mut self) -> Option<Rect> {
+    pub fn calc_rect(&mut self) -> Rect {
         let height = self
             .fields
             .iter()
-            .map(|f| f.get_rect_height())
-            .reduce(|acc, f| acc + f)?;
+            .fold(Form::HEIGHT, |acc, next| acc + next.get_rect_height());
 
-        Some(Rect::new(0, 0, Form::WIDTH, height + Form::HEIGHT))
+        Rect::new(0, 0, Form::WIDTH, height)
     }
 }
 
@@ -54,25 +53,22 @@ impl ComponentBuilder for FormBuilder {
     type Output = Form;
     fn build(mut self) -> Result<Self::Output> {
         if self.request_type == RequestType::None {
-            let err = FormErrors::malformed("request type").into();
+            let err = FormError::malformed("request type").into();
             return Err(err);
         }
         let Some(_) = self.form_type else {
-            let err = FormErrors::malformed("form type").into();
+            let err = FormError::malformed("form type").into();
             return Err(err);
         };
         let Some(_) = self.payload else {
-            let err = FormErrors::malformed("payload").into();
+            let err = FormError::malformed("payload").into();
             return Err(err);
         };
         if self.fields.is_empty() {
-            let err = FormErrors::malformed("fields").into();
+            let err = FormError::malformed("fields").into();
             return Err(err);
         }
-        let Some(rect) = self.calc_rect() else {
-            let err = FormErrors::malformed("rect").into();
-            return Err(err);
-        };
+        let rect = self.calc_rect();
 
         self.fields
             .iter_mut()

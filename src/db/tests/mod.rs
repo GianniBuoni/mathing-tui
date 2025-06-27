@@ -1,9 +1,9 @@
-use super::*;
-use super::{connection::get_db, requests::prelude::*};
-
 use std::time::Duration;
 
 use tokio::time::{Instant, sleep_until};
+
+use super::*;
+use super::{connection::get_db, requests::prelude::*};
 
 mod handle_req_errors;
 mod handle_requests;
