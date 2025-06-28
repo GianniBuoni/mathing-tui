@@ -1,5 +1,16 @@
 use super::*;
 
+impl Home {
+    pub fn mock() -> Self {
+        let mut home = Home::builder();
+
+        home.add_component(TableData::mock_items())
+            .add_component(TableData::mock_receipts());
+
+        home.build().unwrap()
+    }
+}
+
 #[test]
 fn test_key_events() {
     Config::get_config();
@@ -17,7 +28,7 @@ fn test_key_events() {
             "Test default pane switch.",
         ),
         (
-            KeyEvent::new(KeyCode::Tab, KeyModifiers::SHIFT),
+            KeyEvent::new(KeyCode::Tab, KeyModifiers::ALT),
             Some(Action::SelectBackward),
             "Test pane switch backwards",
         ),
