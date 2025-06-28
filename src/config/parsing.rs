@@ -1,6 +1,6 @@
 use super::*;
 
-pub(super) fn parse_key_event(raw: &str) -> Result<KeyEvent, String> {
+pub(super) fn parse_key_event(raw: &str) -> Result<KeyEvent, AppError> {
     let raw_lower = raw.to_ascii_lowercase();
     let (keycode, modifiers) = parse_key_modifiers(&raw_lower);
     parse_key_code_add_modifier(keycode, modifiers)
@@ -21,8 +21,9 @@ fn parse_key_modifiers(raw: &str) -> (&str, KeyModifiers) {
 fn parse_key_code_add_modifier(
     raw: &str,
     modifiers: KeyModifiers,
-) -> Result<KeyEvent, String> {
-    let err_msg = format!("unable to parse {}; invalid or unsupported", raw);
+) -> Result<KeyEvent, AppError> {
+    let message = format!("unable to parse {raw}; invalid or unsupported");
+    let err = AppError::config(message);
 
     let code = match raw {
         "esc" => KeyCode::Esc,
@@ -35,11 +36,11 @@ fn parse_key_code_add_modifier(
         "up" => KeyCode::Up,
         "right" => KeyCode::Right,
         s if s.len() == 1 => {
-            let c = s.chars().next().ok_or(err_msg)?;
+            let c = s.chars().next().ok_or(err)?;
             KeyCode::Char(c)
         }
         _ => {
-            return Err(err_msg);
+            return Err(err);
         }
     };
 
@@ -51,7 +52,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_key_event() -> Result<(), String> {
+    fn test_parse_key_event() -> Result<()> {
         let test_cases = [
             ("esc", KeyCode::Esc),
             ("delete", KeyCode::Delete),
@@ -68,7 +69,7 @@ mod tests {
         ];
 
         test_cases.iter().try_for_each(|(raw, want)| {
-            Ok::<(), String>({
+            Aok::<()>({
                 let desc =
                     format!("Testing string \"{}\" with no modifiers", raw);
                 let got = parse_key_code_add_modifier(raw, KeyModifiers::NONE)?;
@@ -84,6 +85,7 @@ mod tests {
         let test_cases = [
             ("ctrl-c", ("c", KeyModifiers::CONTROL)),
             ("shift-q", ("q", KeyModifiers::SHIFT)),
+            ("ctrl-tab", ("tab", KeyModifiers::CONTROL)),
             ("alt-tab", ("tab", KeyModifiers::ALT)),
         ];
 
