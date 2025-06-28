@@ -102,7 +102,7 @@ fn test_component_cycling_forward() {
 #[test]
 fn test_component_cycling_backwards() {
     let mut test_home = Home::mock();
-    let key_event = KeyEvent::new(KeyCode::Tab, KeyModifiers::SHIFT);
+    let key_event = KeyEvent::new(KeyCode::Tab, KeyModifiers::ALT);
 
     assert_eq!(
         test_home.component_tracker.inner(),
