@@ -4,6 +4,8 @@ use super::*;
 pub enum AppError {
     Mapping(AppArm, AppArm),
     Config(String),
+    StoreTotalMutex,
+    StoreTotalKey(i64),
 }
 
 impl Display for AppError {
@@ -17,6 +19,18 @@ impl Display for AppError {
             }
             Self::Config(msg) => {
                 write!(f, "Config error: {msg}")
+            }
+            Self::StoreTotalMutex => {
+                write!(
+                    f,
+                    "StoreTotal Mutex Error: Current thread couldn't obtain lock."
+                )
+            }
+            Self::StoreTotalKey(key) => {
+                write!(
+                    f,
+                    "StoreTotal Error: No total found for given key \"{key}\"."
+                )
             }
         }
     }

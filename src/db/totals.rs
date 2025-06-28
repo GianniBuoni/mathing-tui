@@ -62,23 +62,36 @@ impl StoreTotal {
     }
     /// Returns the StoreTotal Mutex. Initializes the OnceCell if there is
     /// no value contained within.
-    pub async fn get_or_init() -> Result<&'static Mutex<Self>> {
+    pub async fn get_or_try_init() -> Result<&'static Mutex<Self>> {
         let init = async || anyhow::Ok(Mutex::new(Self::new().await?));
         TOTALS.get_or_try_init(init).await
     }
+    /// Calculates a new StoreTotal and replaces the current one
+    /// with this new total.
+    /// This method should only be called after the StoreTotal struct
+    /// has been initialized elsewhere.
+    pub async fn try_refresh() -> Result<()> {
+        // using try_get here to avoid potentailly initalizing the value
+        // only to replace the value later in the function.
+        let mut current = Self::try_get()?
+            .lock()
+            .map_err(|_| AppError::StoreTotalMutex)?;
+        let new_value = Self::new().await?;
+        *current = new_value;
+
+        Ok(())
+    }
     /// Returns value of specific value for a given key in StoreTotal.
     pub fn try_get_inner(key: i64) -> Result<Decimal> {
-        let message =
-            "Mutex error: Current thread can't obtain lock for StoreTotal.";
         let totals = Self::try_get()?
             .lock()
-            .map_err(|_| anyhow::Error::msg(message))?;
+            .map_err(|_| AppError::StoreTotalMutex)?;
 
         totals
             .0
             .get(&key)
             .copied()
-            .ok_or(anyhow::Error::msg("No total found for given key."))
+            .ok_or(AppError::StoreTotalKey(key).into())
     }
 }
 
