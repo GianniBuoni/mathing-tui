@@ -1,28 +1,15 @@
-use std::{fmt::Display, ops::Deref};
-
 use super::*;
 
 pub mod prelude {
     pub use super::handle_requests::handle_requests;
-    pub use super::{
-        DbPayload, DbPayloadBuilder, DbRequest, DbResponse, ItemParamsBuilder,
-        JoinParamsBuilder, ParamOption, Request, RequestType,
-        UserParamsBuilder,
-    };
+    pub use super::{DbRequest, Request, RequestType};
 }
 
-mod builders;
 mod handle_requests;
-mod item_params;
-mod joined_params;
-mod payloads;
-mod receipts_params;
-mod receipts_users_params;
-mod user_params;
 
 pub trait Request<'e> {
     type Output;
-    type Connection: sqlx::SqliteExecutor<'e>;
+    type Connection: SqliteExecutor<'e>;
 
     fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError>;
     fn get(
@@ -48,39 +35,54 @@ pub trait Request<'e> {
 }
 
 #[derive(Debug, Default, PartialEq)]
-pub struct DbResponse {
-    pub req_type: RequestType,
-    pub payload: DbPayload,
-    pub error: Option<String>,
-}
-
-#[derive(Debug, Default, PartialEq)]
 pub struct DbRequest {
     pub req_type: RequestType,
     pub payload: DbPayload,
 }
 
-#[derive(Debug, Default, PartialEq, Clone)]
-pub enum DbPayload {
-    #[default]
-    None,
-    AffectedRows(u64),
-    ItemParams(ItemParams),
-    Item(StoreItem),
-    Items(Vec<StoreItem>),
-    ReceiptParams(JoinedReceiptParams),
-    Receipt(StoreJoinRow),
-    Receipts(Vec<StoreJoinRow>),
-    UserParams(UserParams),
-    User(StoreUser),
-    Users(Vec<StoreUser>),
-}
+impl DbRequest {
+    /// Returns an array of DbRequests related to fetching all table data
+    /// with offsets of 0.
+    pub fn init() -> Vec<Self> {
+        [
+            DbPayload::ItemParams(ItemParams::builder().with_offset(0).build()),
+            DbPayload::UserParams(UserParams::builder().build()),
+            DbPayload::ReceiptParams(
+                JoinedReceiptParams::builder().with_offset(0).build(),
+            ),
+        ]
+        .into_iter()
+        .map(|payload| {
+            let mut req = Self::new();
+            req.with_req_type(RequestType::GetAll).with_payload(payload);
+            req
+        })
+        .collect()
+    }
+    // TODO: make refresh offsets configurable
+    /// Returns a pre-built DbRequest for refetching StoreTotals and table data.
+    /// This is Vec with a Refresh Requests and the three init requests.
+    pub fn refresh() -> Vec<Self> {
+        let mut refresh = Self::new();
+        refresh.with_req_type(RequestType::Refresh);
 
-#[derive(Debug)]
-pub enum DbPayloadBuilder {
-    ItemParams(ItemParamsBuilder),
-    UserParams(UserParamsBuilder),
-    ReceiptParams(JoinParamsBuilder),
+        let mut requests = Vec::with_capacity(4);
+        requests.push(refresh);
+        requests.append(&mut Self::init());
+
+        requests
+    }
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn with_req_type(&mut self, req_type: RequestType) -> &mut Self {
+        self.req_type = req_type;
+        self
+    }
+    pub fn with_payload(&mut self, payload: DbPayload) -> &mut Self {
+        self.payload = payload;
+        self
+    }
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -93,50 +95,20 @@ pub enum RequestType {
     Update,
     Delete,
     Reset,
+    Refresh,
 }
 
-#[derive(Debug, Default, Clone)]
-pub struct ParamOption<T>(Rc<RefCell<Option<T>>>)
-where
-    T: Default + Debug;
-
-impl<T> ParamOption<T>
-where
-    T: Default + Debug + Clone,
-{
-    pub fn new() -> Self {
-        Self::default()
-    }
-    pub fn unwrap(&self) -> Option<T> {
-        self.0.borrow().deref().clone()
-    }
-    pub fn map_value(&self, value: impl Into<T>) -> &Self {
-        {
-            *self.0.borrow_mut() = Some(value.into());
+impl Display for RequestType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::None => write!(f, "None"),
+            Self::GetAll => write!(f, "Get all"),
+            Self::Get => write!(f, "Get"),
+            Self::Post => write!(f, "Post"),
+            Self::Update => write!(f, "Update"),
+            Self::Delete => write!(f, "Delete"),
+            Self::Reset => write!(f, "Reset"),
+            Self::Refresh => write!(f, "Refresh"),
         }
-        self
     }
-}
-
-#[derive(Debug, Default)]
-pub struct UserParamsBuilder {
-    pub u_id: ParamOption<i64>,
-    pub name: ParamOption<String>,
-}
-
-#[derive(Debug, Default)]
-pub struct ItemParamsBuilder {
-    pub offset: Option<i64>,
-    pub item_id: ParamOption<i64>,
-    pub item_name: ParamOption<String>,
-    pub item_price: ParamOption<f64>,
-}
-
-#[derive(Debug, Default)]
-pub struct JoinParamsBuilder {
-    pub offset: Option<i64>,
-    pub users: Rc<RefCell<Vec<i64>>>,
-    pub r_id: ParamOption<i64>,
-    pub item_id: ParamOption<i64>,
-    pub item_qty: ParamOption<i64>,
 }

@@ -1,22 +1,4 @@
-use sqlx::SqliteConnection;
-
 use super::*;
-
-impl ReceiptsUsersParams {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    pub fn r_id(mut self, r_id: i64) -> Self {
-        self.r_id = Some(r_id);
-        self
-    }
-
-    pub fn u_id(mut self, u_id: i64) -> Self {
-        self.u_id = Some(u_id);
-        self
-    }
-}
 
 impl<'e> Request<'e> for ReceiptsUsersParams {
     type Output = Vec<StoreReceiptsUsers>;
@@ -69,7 +51,7 @@ impl<'e> Request<'e> for ReceiptsUsersParams {
             "receipts users",
             "user id",
         ))?;
-        let now = get_time()?;
+        let now = DbConn::try_get_time()?;
 
         Ok(sqlx::query_as!(
             StoreReceiptsUsers,

@@ -1,45 +1,5 @@
 use super::*;
 
-impl ItemParamsBuilder {
-    pub fn item_id(&mut self, id: ParamOption<i64>) -> &mut Self {
-        self.item_id = id;
-        self
-    }
-    pub fn item_name(&mut self, name: ParamOption<String>) -> &mut Self {
-        self.item_name = name;
-        self
-    }
-    pub fn item_price(&mut self, price: ParamOption<f64>) -> &mut Self {
-        self.item_price = price;
-        self
-    }
-    pub fn offset(mut self, offset: i64) -> Self {
-        self.offset = Some(offset);
-        self
-    }
-    pub fn build(&self) -> ItemParams {
-        ItemParams {
-            item_id: self.item_id.unwrap(),
-            item_name: self.item_name.unwrap(),
-            item_price: self.item_price.unwrap(),
-            offset: self.offset,
-        }
-    }
-}
-
-impl ItemParams {
-    pub fn builder() -> ItemParamsBuilder {
-        ItemParamsBuilder::default()
-    }
-    pub(super) fn new() -> Self {
-        Self::default()
-    }
-    pub(super) fn item_id(mut self, id: i64) -> Self {
-        self.item_id = Some(id);
-        self
-    }
-}
-
 impl<'e> Request<'e> for ItemParams {
     type Output = StoreItem;
     type Connection = &'e SqlitePool;
@@ -90,7 +50,7 @@ impl<'e> Request<'e> for ItemParams {
             "item price",
         ))?;
 
-        let now = get_time()?;
+        let now = DbConn::try_get_time()?;
 
         Ok(sqlx::query_as!(
             StoreItem,
@@ -122,7 +82,7 @@ impl<'e> Request<'e> for ItemParams {
             )
             .into());
         }
-        let now = get_time()?;
+        let now = DbConn::try_get_time()?;
 
         if let Some(name) = self.item_name.clone() {
             sqlx::query!("UPDATE items SET name=?1 WHERE id=?2", name, id)

@@ -1,24 +1,4 @@
-use sqlx::SqliteConnection;
-
 use super::*;
-
-impl ReceiptParams {
-    pub fn new() -> Self {
-        ReceiptParams::default()
-    }
-    pub fn r_id(mut self, r_id: i64) -> Self {
-        self.r_id = Some(r_id);
-        self
-    }
-    pub fn item_id(mut self, item_id: i64) -> Self {
-        self.item_id = Some(item_id);
-        self
-    }
-    pub fn item_qty(mut self, item_qty: i64) -> Self {
-        self.item_qty = Some(item_qty);
-        self
-    }
-}
 
 impl<'e> Request<'e> for ReceiptParams {
     type Output = StoreReceipt;
@@ -28,7 +8,6 @@ impl<'e> Request<'e> for ReceiptParams {
         self.r_id
             .ok_or(RequestError::missing_param(req_type, "receipt", "id"))
     }
-
     /// get_all for Receipt Params should not be called directly
     /// consider getting data needed from [`JoinedReceiptsParams`]
     /// instead
@@ -64,7 +43,7 @@ impl<'e> Request<'e> for ReceiptParams {
             "receipt",
             "item qty",
         ))?;
-        let now = get_time()?;
+        let now = DbConn::try_get_time()?;
 
         Ok(sqlx::query_as!(
             StoreReceipt,
@@ -124,22 +103,12 @@ impl<'e> Request<'e> for ReceiptParams {
             .execute(&mut *conn)
             .await?;
         }
+        let now = DbConn::try_get_time()?;
 
-        let now = get_time()?;
         sqlx::query!("UPDATE receipts SET updated_at=?1 WHERE id=?2", now, id)
             .execute(&mut *conn)
             .await?;
 
         self.get(conn).await
-    }
-}
-
-impl From<&JoinedReceiptParams> for ReceiptParams {
-    fn from(value: &JoinedReceiptParams) -> Self {
-        ReceiptParams {
-            r_id: value.r_id,
-            item_id: value.item_id,
-            item_qty: value.item_qty,
-        }
     }
 }

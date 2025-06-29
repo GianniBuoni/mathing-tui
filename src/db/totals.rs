@@ -1,14 +1,20 @@
 use std::sync::Mutex;
-use tokio::sync::OnceCell;
 
 use super::*;
 
+pub mod prelude {
+    pub use super::StoreTotal;
+}
+
 static TOTALS: OnceCell<Mutex<StoreTotal>> = OnceCell::const_new();
+
+#[derive(Debug, Default, PartialEq)]
+pub struct StoreTotal(HashMap<i64, Decimal>);
 
 impl StoreTotal {
     // setters
     async fn new() -> Result<Self> {
-        let conn = get_db().await?;
+        let conn = DbConn::try_get().await?;
 
         let rows_to_calc =
             sqlx::query_file_as!(StoreJoinRaw, "sql/get_ru_no_offset.sql")
@@ -56,22 +62,77 @@ impl StoreTotal {
     }
     /// Returns the StoreTotal Mutex. Initializes the OnceCell if there is
     /// no value contained within.
-    pub async fn get_or_init() -> Result<&'static Mutex<Self>> {
+    pub async fn get_or_try_init() -> Result<&'static Mutex<Self>> {
         let init = async || anyhow::Ok(Mutex::new(Self::new().await?));
         TOTALS.get_or_try_init(init).await
     }
+    /// Calculates a new StoreTotal and replaces the current one
+    /// with this new total.
+    /// This method should only be called after the StoreTotal struct
+    /// has been initialized elsewhere.
+    pub async fn try_refresh() -> Result<()> {
+        // using try_get here to avoid potentailly initalizing the value
+        // only to replace the value later in the function.
+        let new_value = Self::new().await?;
+        let mut current = Self::try_get()?
+            .lock()
+            .map_err(|_| AppError::StoreTotalMutex)?;
+        *current = new_value;
+
+        Ok(())
+    }
     /// Returns value of specific value for a given key in StoreTotal.
     pub fn try_get_inner(key: i64) -> Result<Decimal> {
-        let message =
-            "Mutex error: Current thread can't obtain lock for StoreTotal.";
         let totals = Self::try_get()?
             .lock()
-            .map_err(|_| anyhow::Error::msg(message))?;
+            .map_err(|_| AppError::StoreTotalMutex)?;
 
         totals
             .0
             .get(&key)
             .copied()
-            .ok_or(anyhow::Error::msg("No total found for given key."))
+            .ok_or(AppError::StoreTotalKey(key).into())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::db::params::tests::init_join_rows;
+
+    fn intermediate_totals() -> Vec<HashMap<i64, Decimal>> {
+        vec![
+            HashMap::from([(3, dec!(9.98))]),
+            HashMap::from([(2, dec!(9.49))]),
+            HashMap::from([(2, dec!(8.32)), (3, dec!(8.32))]),
+        ]
+    }
+    fn expected_totals() -> HashMap<i64, Decimal> {
+        HashMap::from([(3, dec!(18.30)), (2, dec!(17.81))])
+    }
+
+    #[sqlx::test]
+    async fn test_get_totals(conn: SqlitePool) -> Result<()> {
+        init_join_rows(&conn).await?;
+        let want = expected_totals();
+        let mut got = StoreTotal::default();
+
+        JoinedReceiptParams::builder()
+            .with_offset(0)
+            .build()
+            .get_all(&conn)
+            .await?
+            .into_iter()
+            .zip(intermediate_totals())
+            .try_for_each(|(row, want)| {
+                anyhow::Ok({
+                    assert_eq!(want, row.try_calc()?);
+                    got.add(row.try_calc()?);
+                })
+            })?;
+
+        assert_eq!(want, got.0, "Test if all the math is right ✨");
+
+        Ok(())
     }
 }

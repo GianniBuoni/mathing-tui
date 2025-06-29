@@ -17,7 +17,7 @@ mod tests;
 
 const DEFAULT_CONFIG_PATH: [&str; 2] = ["mathing", "config.toml"];
 
-const DEFAULT_CONFIG: &[u8; 421] = b"[keymap]
+const DEFAULT_CONFIG: &[u8; 440] = b"[keymap]
 \"CTRL-c\" = \"Quit\"
 \"a\" = \"AddToReceipt\"
 \"d\" = \"DeleteSelected\"
@@ -33,8 +33,9 @@ const DEFAULT_CONFIG: &[u8; 421] = b"[keymap]
 \"k\" = \"NavigateUp\"
 \"RIGHT\" = \"NavigateRight\"
 \"l\" = \"NavigateRight\"
+\"CTRL-r\" = \"Refresh\"
 \"TAB\" = \"SelectForward\"
-\"SHIFT-TAB\" = \"SelectBackward\"
+\"ALT-TAB\" = \"SelectBackward\"
 \"y\" = \"Submit\"
 \"ENTER\" = \"Submit\"";
 

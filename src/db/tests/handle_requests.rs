@@ -13,8 +13,10 @@ async fn test_req_handler_items(conn: SqlitePool) {
         (
             ReqItem(
                 ItemParams::builder()
-                    .item_name(ParamOption::new().map_value("Slamon").clone())
-                    .item_price(ParamOption::new().map_value(9.49).clone())
+                    .with_item_name(
+                        ParamOption::new().map_value("Slamon").clone(),
+                    )
+                    .with_item_price(ParamOption::new().map_value(9.49).clone())
                     .build(),
             ),
             RequestType::Post,
@@ -27,7 +29,7 @@ async fn test_req_handler_items(conn: SqlitePool) {
         (
             ReqItem(
                 ItemParams::builder()
-                    .item_id(ParamOption::new().map_value(1).clone())
+                    .with_item_id(ParamOption::new().map_value(1).clone())
                     .build(),
             ),
             RequestType::Get,
@@ -40,9 +42,11 @@ async fn test_req_handler_items(conn: SqlitePool) {
         (
             ReqItem(
                 ItemParams::builder()
-                    .item_id(ParamOption::new().map_value(1).clone())
-                    .item_name(ParamOption::new().map_value("New name").clone())
-                    .item_price(ParamOption::new().map_value(0.).clone())
+                    .with_item_id(ParamOption::new().map_value(1).clone())
+                    .with_item_name(
+                        ParamOption::new().map_value("New name").clone(),
+                    )
+                    .with_item_price(ParamOption::new().map_value(0.).clone())
                     .build(),
             ),
             RequestType::Update,
@@ -55,7 +59,7 @@ async fn test_req_handler_items(conn: SqlitePool) {
         (
             ReqItem(
                 ItemParams::builder()
-                    .item_id(ParamOption::new().map_value(1).clone())
+                    .with_item_id(ParamOption::new().map_value(1).clone())
                     .build(),
             ),
             RequestType::Delete,
@@ -66,7 +70,7 @@ async fn test_req_handler_items(conn: SqlitePool) {
     // desired payload
     for (payload, req_type, want) in test_cases {
         let mut req = DbRequest::new();
-        req.req_type(req_type).payload(payload);
+        req.with_req_type(req_type).with_payload(payload);
 
         let got = handle_requests(req, &conn).await.payload;
 
@@ -101,7 +105,7 @@ fn test_req_handler_users(conn: SqlitePool) {
         (
             ReqUser(
                 UserParams::builder()
-                    .user_name(ParamOption::new().map_value("Jon").clone())
+                    .with_user_name(ParamOption::new().map_value("Jon").clone())
                     .build(),
             ),
             RequestType::Post,
@@ -113,7 +117,7 @@ fn test_req_handler_users(conn: SqlitePool) {
         (
             ReqUser(
                 UserParams::builder()
-                    .user_id(ParamOption::new().map_value(1).clone())
+                    .with_user_id(ParamOption::new().map_value(1).clone())
                     .build(),
             ),
             RequestType::Get,
@@ -125,8 +129,10 @@ fn test_req_handler_users(conn: SqlitePool) {
         (
             ReqUser(
                 UserParams::builder()
-                    .user_id(ParamOption::new().map_value(1).clone())
-                    .user_name(ParamOption::new().map_value("Noodle").clone())
+                    .with_user_id(ParamOption::new().map_value(1).clone())
+                    .with_user_name(
+                        ParamOption::new().map_value("Noodle").clone(),
+                    )
                     .build(),
             ),
             RequestType::Update,
@@ -138,7 +144,7 @@ fn test_req_handler_users(conn: SqlitePool) {
         (
             ReqUser(
                 UserParams::builder()
-                    .user_id(ParamOption::new().map_value(1).clone())
+                    .with_user_id(ParamOption::new().map_value(1).clone())
                     .build(),
             ),
             RequestType::Delete,
@@ -148,7 +154,7 @@ fn test_req_handler_users(conn: SqlitePool) {
 
     for (payload, req_type, want) in test_cases {
         let mut req = DbRequest::new();
-        req.req_type(req_type).payload(payload);
+        req.with_req_type(req_type).with_payload(payload);
 
         let got = handle_requests(req, &conn).await.payload;
 
@@ -177,14 +183,14 @@ fn test_req_handler_users(conn: SqlitePool) {
 async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
     // init test
     ItemParams::builder()
-        .item_name(ParamOption::new().map_value("Slamon").clone())
-        .item_price(ParamOption::new().map_value(9.49).clone())
+        .with_item_name(ParamOption::new().map_value("Slamon").clone())
+        .with_item_price(ParamOption::new().map_value(9.49).clone())
         .build()
         .post(&conn)
         .await?;
 
     UserParams::builder()
-        .user_name(ParamOption::new().map_value("Jon").clone())
+        .with_user_name(ParamOption::new().map_value("Jon").clone())
         .build()
         .post(&conn)
         .await?;
@@ -193,9 +199,9 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
         (
             ReqReceipt(
                 JoinedReceiptParams::builder()
-                    .add_user(1)
-                    .item_id(ParamOption::new().map_value(1).clone())
-                    .item_qty(ParamOption::new().map_value(1).clone())
+                    .with_user(1)
+                    .with_item_id(ParamOption::new().map_value(1).clone())
+                    .with_item_qty(ParamOption::new().map_value(1).clone())
                     .build(),
             ),
             RequestType::Post,
@@ -215,7 +221,7 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
         (
             ReqReceipt(
                 JoinedReceiptParams::builder()
-                    .r_id(ParamOption::new().map_value(1).clone())
+                    .with_r_id(ParamOption::new().map_value(1).clone())
                     .build(),
             ),
             RequestType::Get,
@@ -235,8 +241,8 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
         (
             ReqReceipt(
                 JoinedReceiptParams::builder()
-                    .r_id(ParamOption::new().map_value(1).clone())
-                    .item_qty(ParamOption::new().map_value(3).clone())
+                    .with_r_id(ParamOption::new().map_value(1).clone())
+                    .with_item_qty(ParamOption::new().map_value(3).clone())
                     .build(),
             ),
             RequestType::Update,
@@ -256,7 +262,7 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
         (
             ReqReceipt(
                 JoinedReceiptParams::builder()
-                    .r_id(ParamOption::new().map_value(1).clone())
+                    .with_r_id(ParamOption::new().map_value(1).clone())
                     .build(),
             ),
             RequestType::Delete,
@@ -271,7 +277,7 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
 
     for (payload, req_type, want) in test_cases {
         let mut req = DbRequest::new();
-        req.req_type(req_type).payload(payload);
+        req.with_req_type(req_type).with_payload(payload);
 
         let got = handle_requests(req, &conn).await.payload;
 
@@ -313,26 +319,26 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
 async fn test_req_inits(conn: SqlitePool) -> Result<()> {
     // init test
     ItemParams::builder()
-        .item_name(ParamOption::new().map_value("Slamon").clone())
-        .item_price(ParamOption::new().map_value(9.49).clone())
+        .with_item_name(ParamOption::new().map_value("Slamon").clone())
+        .with_item_price(ParamOption::new().map_value(9.49).clone())
         .build()
         .post(&conn)
         .await?;
     UserParams::builder()
-        .user_name(ParamOption::new().map_value("Jon").clone())
+        .with_user_name(ParamOption::new().map_value("Jon").clone())
         .build()
         .post(&conn)
         .await?;
     UserParams::builder()
-        .user_name(ParamOption::new().map_value("Noodle").clone())
+        .with_user_name(ParamOption::new().map_value("Noodle").clone())
         .build()
         .post(&conn)
         .await?;
     JoinedReceiptParams::builder()
-        .item_id(ParamOption::new().map_value(1).clone())
-        .item_qty(ParamOption::new().map_value(3).clone())
-        .add_user(1)
-        .add_user(2)
+        .with_item_id(ParamOption::new().map_value(1).clone())
+        .with_item_qty(ParamOption::new().map_value(3).clone())
+        .with_user(1)
+        .with_user(2)
         .build()
         .post(&conn)
         .await?;
@@ -340,9 +346,13 @@ async fn test_req_inits(conn: SqlitePool) -> Result<()> {
     // test cases
     let test_cases = [
         (ReqUser(UserParams::builder().build()), 2, "users"),
-        (ReqItem(ItemParams::builder().offset(0).build()), 1, "items"),
         (
-            ReqReceipt(JoinedReceiptParams::builder().offset(0).build()),
+            ReqItem(ItemParams::builder().with_offset(0).build()),
+            1,
+            "items",
+        ),
+        (
+            ReqReceipt(JoinedReceiptParams::builder().with_offset(0).build()),
             1,
             "receipts",
         ),
@@ -350,7 +360,7 @@ async fn test_req_inits(conn: SqlitePool) -> Result<()> {
 
     for (payload, want, desc) in test_cases {
         let mut req = DbRequest::new();
-        req.req_type(RequestType::GetAll).payload(payload);
+        req.with_req_type(RequestType::GetAll).with_payload(payload);
 
         let res = handle_requests(req, &conn).await;
 

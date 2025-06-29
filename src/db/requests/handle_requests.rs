@@ -4,6 +4,19 @@ use super::*;
 /// Param methods. In the event of an error, it will be mapped to the Response
 /// and the rest of the struct will be empty.
 pub async fn handle_requests(req: DbRequest, conn: &SqlitePool) -> DbResponse {
+    // match refresh request
+    if let RequestType::Refresh = req.req_type {
+        match StoreTotal::try_refresh().await {
+            Ok(_) => {
+                return DbResponse::new();
+            }
+            Err(e) => {
+                return DbResponse::new().req_type(req.req_type).error(e);
+            }
+        }
+    }
+
+    // match non-refresh requests
     let res: Result<DbPayload> = match req.payload {
         DbPayload::ItemParams(i) => match req.req_type {
             RequestType::GetAll => i.get_all(conn).await.map(DbPayload::Items),

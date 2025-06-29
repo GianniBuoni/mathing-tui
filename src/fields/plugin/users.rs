@@ -9,7 +9,7 @@ pub fn new_user_inputs(parent: &mut FormBuilder) -> Result<()> {
         .with_field_type(AppArm::Users);
     let name = name_input.value.clone();
 
-    params.user_name(name);
+    params.with_user_name(name);
     name_input.plugin(parent)?;
 
     Ok(())
@@ -28,8 +28,8 @@ pub fn edit_user_inputs(
             .with_default_value(user.name.clone());
         let name = name_input.value.clone();
 
-        params.user_id(ParamOption::new().map_value(user.id).to_owned());
-        params.user_name(name);
+        params.with_user_id(ParamOption::new().map_value(user.id).to_owned());
+        params.with_user_name(name);
         name_input.plugin(parent)?;
 
         Ok(())

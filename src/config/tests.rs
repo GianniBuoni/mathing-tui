@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn test_parse_key_event() -> Result<(), String> {
+fn test_parse_key_event() -> Result<()> {
     let test_cases = [
         (
             "ctrl-c",
@@ -19,14 +19,14 @@ fn test_parse_key_event() -> Result<(), String> {
             "Test variable capitalization",
         ),
         (
-            "Shift-tab",
-            KeyEvent::new(KeyCode::Tab, KeyModifiers::SHIFT),
-            "Test shift modifier and non-char keycode",
+            "alt-tab",
+            KeyEvent::new(KeyCode::Tab, KeyModifiers::ALT),
+            "Test modifier and non-char keycode",
         ),
     ];
 
     test_cases.iter().try_for_each(|(raw, want, desc)| {
-        Ok::<(), String>({
+        Aok::<()>({
             let got = parse_key_event(raw)?;
             assert_eq!(*want, got, "{desc}");
         })
@@ -36,7 +36,7 @@ fn test_parse_key_event() -> Result<(), String> {
 }
 
 #[test]
-fn test_config_builder() {
+fn test_config_builder() -> Result<()> {
     let config = Config::get_config();
 
     let test_cases = [
@@ -46,6 +46,11 @@ fn test_config_builder() {
             "c",
         ),
         (KeyEvent::from(KeyCode::Tab), Action::SelectForward, "tab"),
+        (
+            KeyEvent::new(KeyCode::Tab, KeyModifiers::ALT),
+            Action::SelectBackward,
+            "alt-tab",
+        ),
         (KeyEvent::from(KeyCode::Esc), Action::EnterNormal, "esc"),
         (KeyEvent::from(KeyCode::Char('i')), Action::EnterInsert, "i"),
         (
@@ -58,8 +63,16 @@ fn test_config_builder() {
         (KeyEvent::from(KeyCode::Up), Action::NavigateUp, "up"),
     ];
 
-    test_cases.into_iter().for_each(|(event, want, string)| {
-        let got = config.get(event).unwrap();
-        assert_eq!(want, got, "Testing default config for {string}");
-    });
+    test_cases
+        .into_iter()
+        .try_for_each(|(event, want, string)| {
+            Aok({
+                let got = config.get(event).ok_or(Error::msg(format!(
+                    "Event: {string:?} not found in config keymap."
+                )))?;
+                assert_eq!(want, got, "Testing default config for {string}");
+            })
+        })?;
+
+    Ok(())
 }

@@ -5,8 +5,10 @@ async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreReceipt>> {
         try_join_all(TEST_ITEMS.into_iter().map(async |(name, price, _)| {
             anyhow::Ok::<StoreItem>({
                 ItemParams::builder()
-                    .item_name(ParamOption::new().map_value(name).clone())
-                    .item_price(ParamOption::new().map_value(price).clone())
+                    .with_item_name(ParamOption::new().map_value(name).clone())
+                    .with_item_price(
+                        ParamOption::new().map_value(price).clone(),
+                    )
                     .build()
                     .post(&conn)
                     .await?
@@ -89,7 +91,7 @@ async fn test_cascade_del(conn: SqlitePool) -> Result<()> {
     let cmp = init_test(&conn).await?;
 
     if ItemParams::builder()
-        .item_id(
+        .with_item_id(
             ParamOption::new()
                 .map_value(cmp.get(0).unwrap().item_id)
                 .clone(),

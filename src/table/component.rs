@@ -50,7 +50,7 @@ impl Component for TableData {
         match (table_type, &res.req_type, &res.payload) {
             // Get and Post Responses
             item if match_post_get(item) => {
-                self.add_items(res.payload.clone().into());
+                self.add_items(res.payload.to_owned());
                 try_add_store_total(item)?;
                 Ok(())
             }

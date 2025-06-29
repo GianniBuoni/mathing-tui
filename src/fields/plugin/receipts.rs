@@ -22,9 +22,9 @@ pub fn new_receipt_inputs_middleware(
         let user_select = user_select.build()?;
         let users = user_select.values.clone();
 
-        params.item_id(ParamOption::new().map_value(item.id).to_owned());
-        params.item_qty(item_qty);
-        params.users(users);
+        params.with_item_id(ParamOption::new().map_value(item.id).to_owned());
+        params.with_item_qty(item_qty);
+        params.with_users(users);
 
         qty_input.plugin(parent)?;
         user_select.plugin(parent)?;
@@ -56,10 +56,11 @@ pub fn edit_receipt_intputs(
         let user_select = user_select.build()?;
         let users = user_select.values.clone();
 
-        params
-            .r_id(ParamOption::new().map_value(receipt.receipt_id).to_owned());
-        params.item_qty(item_qty);
-        params.users(users);
+        params.with_r_id(
+            ParamOption::new().map_value(receipt.receipt_id).to_owned(),
+        );
+        params.with_item_qty(item_qty);
+        params.with_users(users);
 
         qty_input.plugin(parent)?;
         user_select.plugin(parent)?;

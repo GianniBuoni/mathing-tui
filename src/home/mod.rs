@@ -16,8 +16,6 @@ mod component;
 mod fetch_all;
 mod plugin;
 #[cfg(test)]
-mod test_cases;
-#[cfg(test)]
 mod tests;
 
 pub(crate) mod prelude {

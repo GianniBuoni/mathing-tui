@@ -17,7 +17,7 @@ impl TableData {
             .with_table_type(AppArm::Items);
 
         let mut table = table.build().unwrap();
-        let items = StoreItem::mock().into_iter().map(DbTable::Item).collect();
+        let items = DbPayload::Items(StoreItem::mock().into());
         table.add_items(items);
 
         table
@@ -34,11 +34,7 @@ impl TableData {
             .with_table_type(AppArm::Receipts);
 
         let mut table = table.build().unwrap();
-
-        let items = StoreJoinRow::mock()
-            .into_iter()
-            .map(DbTable::Receipt)
-            .collect();
+        let items = DbPayload::Receipts(StoreJoinRow::mock().into());
         table.add_items(items);
 
         table

@@ -29,8 +29,8 @@ async fn ru_init_test(conn: &SqlitePool) -> Result<()> {
                 Ok::<(), Error>({
                     let mut tx = conn.begin().await?;
                     ReceiptsUsersParams::new()
-                        .u_id(u_id)
-                        .r_id(r.id)
+                        .with_u_id(u_id)
+                        .with_r_id(r.id)
                         .post(&mut *tx)
                         .await?;
                     tx.commit().await?;
@@ -55,7 +55,7 @@ async fn test_get_receipts_users(conn: SqlitePool) -> Result<()> {
     ru_init_test(&conn).await?;
 
     let got = ReceiptsUsersParams::new()
-        .r_id(3)
+        .with_r_id(3)
         .get(&mut *conn.acquire().await?)
         .await?;
 
@@ -72,7 +72,10 @@ async fn test_get_receipts_users(conn: SqlitePool) -> Result<()> {
 async fn test_del_receipts_users(conn: SqlitePool) -> Result<()> {
     ru_init_test(&conn).await?;
 
-    let (test, want) = (ReceiptsUsersParams::new().r_id(1).u_id(3), 1 as u64);
+    let (test, want) = (
+        ReceiptsUsersParams::new().with_r_id(1).with_u_id(3),
+        1 as u64,
+    );
 
     let mut tx = conn.begin().await?;
     let got_1 = test.delete(&mut *tx).await?;
@@ -92,7 +95,7 @@ async fn test_del_cascade(conn: SqlitePool) -> Result<()> {
     //TODO get accurate amount of rows deleted when a receipt is deleted;
 
     match ReceiptsUsersParams::new()
-        .r_id(3)
+        .with_r_id(3)
         .get(&mut *conn.acquire().await?)
         .await
     {

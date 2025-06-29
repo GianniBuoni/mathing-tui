@@ -4,12 +4,17 @@ impl TableData {
     fn max(&self) -> usize {
         self.items.len() - 1
     }
-    pub(super) fn add_items(&mut self, items: Vec<DbTable>) {
-        match items.len() {
-            1 => {
+    pub(super) fn add_items(&mut self, payload: DbPayload) {
+        let filter = matches!(
+            payload,
+            DbPayload::Receipts(_) | DbPayload::Items(_) | DbPayload::Users(_)
+        );
+        let items: Vec<DbTable> = payload.into();
+        match filter {
+            true => self.items = items,
+            false => {
                 self.items.push(items.first().unwrap().clone());
             }
-            _ => self.items = items,
         }
     }
     pub(super) fn next_row(&mut self) {
