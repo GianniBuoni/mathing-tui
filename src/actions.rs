@@ -13,6 +13,7 @@ pub enum Action {
     NavigateDown,
     NavigateUp,
     NavigateRight,
+    Refresh,
     SelectForward,
     SelectBackward,
     Submit,
