@@ -73,10 +73,10 @@ impl StoreTotal {
     pub async fn try_refresh() -> Result<()> {
         // using try_get here to avoid potentailly initalizing the value
         // only to replace the value later in the function.
+        let new_value = Self::new().await?;
         let mut current = Self::try_get()?
             .lock()
             .map_err(|_| AppError::StoreTotalMutex)?;
-        let new_value = Self::new().await?;
         *current = new_value;
 
         Ok(())
