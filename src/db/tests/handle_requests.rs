@@ -70,7 +70,7 @@ async fn test_req_handler_items(conn: SqlitePool) {
     // desired payload
     for (payload, req_type, want) in test_cases {
         let mut req = DbRequest::new();
-        req.req_type(req_type).payload(payload);
+        req.with_req_type(req_type).with_payload(payload);
 
         let got = handle_requests(req, &conn).await.payload;
 
@@ -154,7 +154,7 @@ fn test_req_handler_users(conn: SqlitePool) {
 
     for (payload, req_type, want) in test_cases {
         let mut req = DbRequest::new();
-        req.req_type(req_type).payload(payload);
+        req.with_req_type(req_type).with_payload(payload);
 
         let got = handle_requests(req, &conn).await.payload;
 
@@ -277,7 +277,7 @@ async fn test_req_handler_receipts(conn: SqlitePool) -> Result<()> {
 
     for (payload, req_type, want) in test_cases {
         let mut req = DbRequest::new();
-        req.req_type(req_type).payload(payload);
+        req.with_req_type(req_type).with_payload(payload);
 
         let got = handle_requests(req, &conn).await.payload;
 
@@ -360,7 +360,7 @@ async fn test_req_inits(conn: SqlitePool) -> Result<()> {
 
     for (payload, want, desc) in test_cases {
         let mut req = DbRequest::new();
-        req.req_type(RequestType::GetAll).payload(payload);
+        req.with_req_type(RequestType::GetAll).with_payload(payload);
 
         let res = handle_requests(req, &conn).await;
 

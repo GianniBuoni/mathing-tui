@@ -44,11 +44,11 @@ impl DbRequest {
     pub fn new() -> Self {
         Self::default()
     }
-    pub fn req_type(&mut self, req_type: RequestType) -> &mut Self {
+    pub fn with_req_type(&mut self, req_type: RequestType) -> &mut Self {
         self.req_type = req_type;
         self
     }
-    pub fn payload(&mut self, payload: DbPayload) -> &mut Self {
+    pub fn with_payload(&mut self, payload: DbPayload) -> &mut Self {
         self.payload = payload;
         self
     }
@@ -64,6 +64,7 @@ pub enum RequestType {
     Update,
     Delete,
     Reset,
+    Refresh,
 }
 
 impl Display for RequestType {
@@ -76,6 +77,7 @@ impl Display for RequestType {
             Self::Update => write!(f, "Update"),
             Self::Delete => write!(f, "Delete"),
             Self::Reset => write!(f, "Reset"),
+            Self::Refresh => write!(f, "Refresh"),
         }
     }
 }

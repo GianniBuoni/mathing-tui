@@ -67,7 +67,7 @@ async fn test_req_errors(conn: SqlitePool) {
 
     for (payload, req_type, want, desc) in test_cases {
         let mut req = DbRequest::new();
-        req.payload(payload).req_type(req_type);
+        req.with_payload(payload).with_req_type(req_type);
 
         let got = handle_requests(req, &conn).await;
 

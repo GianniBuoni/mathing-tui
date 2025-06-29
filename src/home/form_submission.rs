@@ -44,7 +44,7 @@ impl Home {
         {
             self.try_subtract_store_total()?
         }
-        req.req_type(req_type).payload(payload);
+        req.with_req_type(req_type).with_payload(payload);
         Ok(())
     }
 
@@ -60,7 +60,7 @@ impl Home {
         {
             self.try_subtract_store_total()?;
         }
-        req.req_type(req_type).payload(payload);
+        req.with_req_type(req_type).with_payload(payload);
 
         Ok(())
     }

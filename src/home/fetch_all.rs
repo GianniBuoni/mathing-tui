@@ -15,7 +15,7 @@ impl Home {
             .into_iter()
             .for_each(|payload| {
                 let mut req = DbRequest::new();
-                req.payload(payload).req_type(RequestType::GetAll);
+                req.with_payload(payload).with_req_type(RequestType::GetAll);
 
                 let Some(tx) = self.req_tx.clone() else {
                     self.map_err(FormError::malformed("req_tx"));
