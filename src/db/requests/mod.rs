@@ -41,6 +41,37 @@ pub struct DbRequest {
 }
 
 impl DbRequest {
+    /// Returns an array of DbRequests related to fetching all table data
+    /// with offsets of 0.
+    pub fn init() -> Vec<Self> {
+        [
+            DbPayload::ItemParams(ItemParams::builder().with_offset(0).build()),
+            DbPayload::UserParams(UserParams::builder().build()),
+            DbPayload::ReceiptParams(
+                JoinedReceiptParams::builder().with_offset(0).build(),
+            ),
+        ]
+        .into_iter()
+        .map(|payload| {
+            let mut req = Self::new();
+            req.with_req_type(RequestType::GetAll).with_payload(payload);
+            req
+        })
+        .collect()
+    }
+    // TODO: make refresh offsets configurable
+    /// Returns a pre-built DbRequest for refetching StoreTotals and table data.
+    /// This is Vec with a Refresh Requests and the three init requests.
+    pub fn refresh() -> Vec<Self> {
+        let mut refresh = Self::new();
+        refresh.with_req_type(RequestType::Refresh);
+
+        let mut requests = Vec::with_capacity(4);
+        requests.push(refresh);
+        requests.append(&mut Self::init());
+
+        requests
+    }
     pub fn new() -> Self {
         Self::default()
     }

@@ -4,26 +4,15 @@ impl Home {
     /// [`Home`]'s init method is responsible for making all the initial
     /// requests to the Db
     pub fn fetch_all(&mut self) {
-        let item_payload =
-            DbPayload::ItemParams(ItemParams::builder().with_offset(0).build());
-        let user_payload = DbPayload::UserParams(UserParams::builder().build());
-        let r_payload = DbPayload::ReceiptParams(
-            JoinedReceiptParams::builder().with_offset(0).build(),
-        );
-
-        [item_payload, user_payload, r_payload]
-            .into_iter()
-            .for_each(|payload| {
-                let mut req = DbRequest::new();
-                req.with_payload(payload).with_req_type(RequestType::GetAll);
-
-                let Some(tx) = self.req_tx.clone() else {
-                    self.map_err(FormError::malformed("req_tx"));
-                    return;
-                };
-                if let Err(err) = tx.send(req) {
-                    self.map_err(err);
-                }
-            });
+        if let Err(err) = (|| -> Result<()> {
+            let tx = self
+                .req_tx
+                .clone()
+                .ok_or(ComponentError::not_found("req_tx"))?;
+            DbRequest::init().into_iter().try_for_each(|f| tx.send(f))?;
+            Ok(())
+        })() {
+            self.map_err(err);
+        }
     }
 }
