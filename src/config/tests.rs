@@ -36,7 +36,7 @@ fn test_parse_key_event() -> Result<()> {
 }
 
 #[test]
-fn test_config_builder() {
+fn test_config_builder() -> Result<()> {
     let config = Config::get_config();
 
     let test_cases = [
@@ -63,8 +63,16 @@ fn test_config_builder() {
         (KeyEvent::from(KeyCode::Up), Action::NavigateUp, "up"),
     ];
 
-    test_cases.into_iter().for_each(|(event, want, string)| {
-        let got = config.get(event).unwrap();
-        assert_eq!(want, got, "Testing default config for {string}");
-    });
+    test_cases
+        .into_iter()
+        .try_for_each(|(event, want, string)| {
+            Aok({
+                let got = config.get(event).ok_or(Error::msg(format!(
+                    "Event: {string:?} not found in config keymap."
+                )))?;
+                assert_eq!(want, got, "Testing default config for {string}");
+            })
+        })?;
+
+    Ok(())
 }
