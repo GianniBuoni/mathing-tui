@@ -71,4 +71,16 @@ impl Dialogue {
 
         Ok(dialogue)
     }
+
+    pub fn refresh() -> Result<Self> {
+        let message = "Confirm refetch of all table data?";
+        let mut dialogue = Self::builder();
+
+        dialogue
+            .with_message(message)
+            .with_req_type(RequestType::Refresh)
+            .with_from_type(AppArm::Receipts);
+
+        dialogue.build()
+    }
 }

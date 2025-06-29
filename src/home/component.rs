@@ -41,6 +41,7 @@ impl Component for Home {
                         .iter_mut()
                         .for_each(|c| c.handle_action(action));
                 }
+                Action::Refresh => self.handle_refresh(),
                 _ => {
                     self.components.iter_mut().for_each(|c| {
                         c.handle_action(action);
