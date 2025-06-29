@@ -3,7 +3,7 @@ use super::*;
 impl Home {
     pub(super) fn enter_insert(&mut self) {
         match (|| {
-            anyhow::Ok::<Option<Form>>({
+            Aok::<Option<Form>>({
                 self.try_get_current_table()?.try_new_form()?
             })
         })() {
@@ -18,7 +18,7 @@ impl Home {
     }
     pub(super) fn delete_selected(&mut self) {
         match (|| {
-            anyhow::Ok::<Option<Dialogue>>({
+            Aok::<Option<Dialogue>>({
                 self.try_get_current_table()?.try_delete_form()?
             })
         })() {
@@ -33,7 +33,7 @@ impl Home {
     }
     pub(super) fn edit_selected(&mut self) {
         match (|| {
-            anyhow::Ok::<Option<Form>>({
+            Aok::<Option<Form>>({
                 let table = self.try_get_current_table()?;
                 if let Some(AppArm::Receipts) = table.table_type {
                     let (r, users) = self.edit_r_parms()?;
@@ -48,6 +48,15 @@ impl Home {
                     self.form = Some(form);
                     self.mode = Mode::Insert;
                 }
+            }
+            Err(err) => self.map_err(err),
+        }
+    }
+    pub(super) fn handle_refresh(&mut self) {
+        match Dialogue::refresh() {
+            Ok(dialogue) => {
+                self.message = Some(dialogue);
+                self.mode = Mode::Insert;
             }
             Err(err) => self.map_err(err),
         }
