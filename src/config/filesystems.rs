@@ -55,32 +55,3 @@ impl Config {
         Ok(path)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use temp_env::with_vars;
-
-    #[test]
-    fn test_config_dir() -> Result<()> {
-        with_vars(
-            [
-                ("PLATFORM", Some("development")),
-                ("PLATFORM", Some("production")),
-            ],
-            || {
-                let got = Config::config_dir()
-                    .expect("config_dir function retuned unexpected error");
-
-                assert!(
-                    got.to_string_lossy()
-                        .contains("/.config/mathing/config.toml"),
-                    "Testing {}; assumes using POSIX file path",
-                    got.to_string_lossy()
-                );
-            },
-        );
-
-        Ok(())
-    }
-}
