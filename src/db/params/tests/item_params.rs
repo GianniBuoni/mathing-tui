@@ -32,31 +32,43 @@ async fn test_get_items(conn: SqlitePool) -> Result<()> {
         (
             ItemParams::builder().build(),
             3 as usize,
+            "Chips and Dip",
             "GetAll w/ no params.",
         ),
         (
             ItemParams::builder().with_limit(1).build(),
             1,
+            "Chips and Dip",
             "GetAll w/ custom limit.",
+        ),
+        (
+            ItemParams::builder()
+                .with_search(ParamOption::new().map_value("salmon").to_owned())
+                .build(),
+            1,
+            "Slamin' Salmon",
+            "GetAll w/ search param.",
         ),
     ];
 
     try_join_all({
-        test_cases.iter().map(async |(param, want, desc)| {
-            Aok({
-                let got = param.get_all(&conn).await?;
-                assert_eq!(
-                    *want,
-                    got.len(),
-                    "Test if {desc} row count matches expected"
-                );
-                assert_eq!(
-                    "Chips and Dip",
-                    got.first().unwrap().name,
-                    "Test if returned items are ordered alphabetically."
-                );
-            })
-        })
+        test_cases.into_iter().map(
+            async |(param, want_index, want_name, desc)| {
+                Aok({
+                    let got = param.get_all(&conn).await?;
+                    assert_eq!(
+                        want_index,
+                        got.len(),
+                        "Test if {desc} row count matches expected"
+                    );
+                    assert_eq!(
+                        want_name,
+                        got.first().unwrap().name,
+                        "Test if returned items are ordered alphabetically."
+                    );
+                })
+            },
+        )
     })
     .await?;
 
