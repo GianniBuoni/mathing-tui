@@ -1,3 +1,5 @@
+use sqlx::prelude::FromRow;
+
 use super::*;
 
 pub mod prelude {
@@ -23,7 +25,7 @@ pub struct StoreUser {
     pub name: String,
 }
 
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, FromRow)]
 pub struct StoreItem {
     pub id: i64,
     pub(super) created_at: i64,

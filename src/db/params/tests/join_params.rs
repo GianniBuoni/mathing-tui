@@ -181,17 +181,6 @@ async fn test_joined_errors(conn: SqlitePool) -> Result<()> {
         (
             JoinedReceiptParams::builder()
                 .with_r_id(ParamOption::new().map_value(0).clone())
-                .build(),
-            RequestType::GetAll,
-            RequestError::missing_param(
-                RequestType::GetAll,
-                "joined receipt",
-                "offset",
-            ),
-        ),
-        (
-            JoinedReceiptParams::builder()
-                .with_r_id(ParamOption::new().map_value(0).clone())
                 .with_item_id(ParamOption::new().map_value(0).clone())
                 .build(),
             RequestType::Post,

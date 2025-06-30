@@ -1,3 +1,5 @@
+use sqlx::{QueryBuilder, Sqlite};
+
 use super::*;
 
 impl<'e> Request<'e> for ItemParams {
@@ -13,19 +15,21 @@ impl<'e> Request<'e> for ItemParams {
         &self,
         conn: Self::Connection,
     ) -> Result<Vec<Self::Output>> {
-        let offset = self.offset.ok_or(RequestError::missing_param(
-            RequestType::GetAll,
-            "items",
-            "offset",
-        ))?;
+        let mut query = QueryBuilder::<Sqlite>::new("SELECT * FROM items");
 
-        Ok(sqlx::query_as!(
-            StoreItem,
-            "SELECT * FROM items ORDER BY name LIMIT 20 OFFSET ?1",
-            offset
-        )
-        .fetch_all(conn)
-        .await?)
+        if let Some(search) = self.search_filter.as_ref() {
+            query
+                .push(" WHERE name LIKE concat('%', ")
+                .push_bind(search)
+                .push(", '%')");
+        }
+        let limit = self.limit.unwrap_or(20);
+        query.push(" ORDER BY name LIMIT ").push_bind(limit);
+
+        if let Some(offset) = self.offset.as_ref() {
+            query.push(" OFFSET ").push_bind(offset);
+        }
+        Ok(query.build_query_as().fetch_all(conn).await?)
     }
 
     async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
@@ -54,13 +58,11 @@ impl<'e> Request<'e> for ItemParams {
 
         Ok(sqlx::query_as!(
             StoreItem,
-            "
-            INSERT INTO items (
+            "INSERT INTO items (
                 name, price, created_at, updated_at
             ) VALUES (
                 ?1, ?2, ?3, ?4
-            ) RETURNING *
-            ",
+            ) RETURNING *",
             name,
             price,
             now,
@@ -73,6 +75,7 @@ impl<'e> Request<'e> for ItemParams {
     async fn update(&self, conn: Self::Connection) -> Result<Self::Output> {
         let mut tx = conn.begin().await?;
         let id = self.check_id(RequestType::Update)?;
+        let now = DbConn::try_get_time()?;
 
         if self.item_name.is_none() && self.item_price.is_none() {
             return Err(RequestError::missing_param(
@@ -82,21 +85,22 @@ impl<'e> Request<'e> for ItemParams {
             )
             .into());
         }
-        let now = DbConn::try_get_time()?;
+        let mut query =
+            QueryBuilder::<Sqlite>::new("UPDATE items SET updated_at=");
 
-        if let Some(name) = self.item_name.clone() {
-            sqlx::query!("UPDATE items SET name=?1 WHERE id=?2", name, id)
-                .execute(&mut *tx)
-                .await?;
+        query.push_bind(now);
+
+        if let Some(name) = self.item_name.as_ref() {
+            query.push(", name=").push_bind(name);
         }
-
         if let Some(price) = self.item_price {
-            sqlx::query!("UPDATE items SET price=?1 WHERE id=?2", price, id)
-                .execute(&mut *tx)
-                .await?;
+            query.push(", price=").push_bind(price);
         };
 
-        sqlx::query!("UPDATE items SET updated_at=?1 WHERE id=?2", now, id)
+        query
+            .push(" WHERE id=")
+            .push_bind(id)
+            .build()
             .execute(&mut *tx)
             .await?;
 

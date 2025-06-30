@@ -61,4 +61,13 @@ impl Home {
             Err(err) => self.map_err(err),
         }
     }
+    pub(super) fn handle_search(&mut self) {
+        match Form::search_item() {
+            Ok(form) => {
+                self.form = Some(form);
+                self.mode = Mode::Insert;
+            }
+            Err(err) => self.map_err(err),
+        }
+    }
 }

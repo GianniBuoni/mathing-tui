@@ -52,3 +52,18 @@ pub fn edit_item_inputs(
         Ok(())
     }
 }
+
+pub fn search_item_imputs(parent: &mut FormBuilder) -> Result<()> {
+    let params = try_get_item_params(parent)?;
+
+    let mut search_input = InputField::<String>::new();
+    search_input
+        .with_field_type(AppArm::Items)
+        .with_title("Search for Item");
+    let search_term = search_input.value.clone();
+
+    params.with_search(search_term);
+    search_input.plugin(parent)?;
+
+    Ok(())
+}
