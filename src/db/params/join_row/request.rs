@@ -16,11 +16,7 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         &self,
         conn: Self::Connection,
     ) -> Result<Vec<Self::Output>> {
-        let offset = self.offset.ok_or(RequestError::missing_param(
-            RequestType::GetAll,
-            "joined receipt",
-            "offset",
-        ))?;
+        let offset = self.offset.unwrap_or_default();
 
         let raw = sqlx::query_file_as!(
             StoreJoinRaw,
