@@ -19,6 +19,14 @@ impl Form {
 
         form.build()
     }
+    pub fn search_item() -> Result<Self> {
+        let mut form = Self::builder();
+        form.with_request_type(RequestType::GetAll)
+            .with_form_type(AppArm::Items)
+            .add_plugins(search_item_imputs)?;
+
+        form.build()
+    }
     pub fn new_user() -> Result<Self> {
         let mut form = Self::builder();
         form.with_title("New User")

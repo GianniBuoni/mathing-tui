@@ -29,6 +29,7 @@ impl Component for Home {
                 Action::EnterInsert => self.enter_insert(),
                 Action::DeleteSelected => self.delete_selected(),
                 Action::EditSelected => self.edit_selected(),
+                Action::Search => self.handle_search(),
                 Action::SelectForward => {
                     self.cycle_active(1);
                     self.components
