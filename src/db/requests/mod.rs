@@ -45,11 +45,9 @@ impl DbRequest {
     /// with offsets of 0.
     pub fn init() -> Vec<Self> {
         [
-            DbPayload::ItemParams(ItemParams::builder().with_offset(0).build()),
-            DbPayload::UserParams(UserParams::builder().build()),
-            DbPayload::ReceiptParams(
-                JoinedReceiptParams::builder().with_offset(0).build(),
-            ),
+            DbPayload::ItemParams(ItemParams::default()),
+            DbPayload::UserParams(UserParams::default()),
+            DbPayload::ReceiptParams(JoinedReceiptParams::default()),
         ]
         .into_iter()
         .map(|payload| {
@@ -59,7 +57,7 @@ impl DbRequest {
         })
         .collect()
     }
-    // TODO: make refresh offsets configurable
+    // TODO: make refresh offsets and limits configurable
     /// Returns a pre-built DbRequest for refetching StoreTotals and table data.
     /// This is Vec with a Refresh Requests and the three init requests.
     pub fn refresh() -> Vec<Self> {
