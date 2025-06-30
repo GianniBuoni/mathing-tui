@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            INSERT INTO items (\n                name, price, created_at, updated_at\n            ) VALUES (\n                ?1, ?2, ?3, ?4\n            ) RETURNING *\n            ",
+  "query": "INSERT INTO items (\n                name, price, created_at, updated_at\n            ) VALUES (\n                ?1, ?2, ?3, ?4\n            ) RETURNING *",
   "describe": {
     "columns": [
       {
@@ -40,5 +40,5 @@
       false
     ]
   },
-  "hash": "fdc027794f28dc270a9dbb819304d82aa347245d07871ec8c1d706b7d5241a85"
+  "hash": "d27c4f21c43ef60b10921b93f3004582ff46e44df1f5ac08160d35514fd025d4"
 }
