@@ -13,19 +13,38 @@ impl<'e> Request<'e> for ItemParams {
         &self,
         conn: Self::Connection,
     ) -> Result<Vec<Self::Output>> {
-        let offset = self.offset.ok_or(RequestError::missing_param(
-            RequestType::GetAll,
-            "items",
-            "offset",
-        ))?;
+        let limit = self.limit.unwrap_or(20);
+        let offset = self.offset.unwrap_or_default();
 
-        Ok(sqlx::query_as!(
-            StoreItem,
-            "SELECT * FROM items ORDER BY name LIMIT 20 OFFSET ?1",
-            offset
-        )
-        .fetch_all(conn)
-        .await?)
+        // TODO: make limt configurable as well
+        let query = match self.search_filter.as_ref() {
+            Some(like) => {
+                sqlx::query_as!(
+                    StoreItem,
+                    "SELECT * FROM items
+                    WHERE name LIKE '%?1%'
+                    ORDER BY name LIMIT ?2
+                    OFFSET ?3",
+                    like,
+                    limit,
+                    offset
+                )
+                .fetch_all(conn)
+                .await?
+            }
+            None => {
+                sqlx::query_as!(
+                    StoreItem,
+                    "SELECT * FROM items ORDER BY name LIMIT ?1 OFFSET ?2",
+                    limit,
+                    offset
+                )
+                .fetch_all(conn)
+                .await?
+            }
+        };
+
+        Ok(query)
     }
 
     async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
@@ -54,13 +73,11 @@ impl<'e> Request<'e> for ItemParams {
 
         Ok(sqlx::query_as!(
             StoreItem,
-            "
-            INSERT INTO items (
+            "INSERT INTO items (
                 name, price, created_at, updated_at
             ) VALUES (
                 ?1, ?2, ?3, ?4
-            ) RETURNING *
-            ",
+            ) RETURNING *",
             name,
             price,
             now,

@@ -47,6 +47,8 @@ pub struct UserParams {
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct ItemParams {
     item_id: Option<i64>,
+    limit: Option<i64>,
+    search_filter: Option<String>,
     item_name: Option<String>,
     item_price: Option<f64>,
     offset: Option<i64>,

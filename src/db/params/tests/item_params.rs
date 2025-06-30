@@ -1,5 +1,3 @@
-use anyhow::Ok;
-
 use std::rc::Rc;
 
 use super::*;
@@ -20,29 +18,47 @@ async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreItem>> {
     try_join_all(
         test_items()
             .iter()
-            .map(async |params| Ok::<StoreItem>(params.post(conn).await?)),
+            .map(async |params| Aok::<StoreItem>(params.post(conn).await?)),
     )
     .await
 }
 
 #[sqlx::test]
 async fn test_get_items(conn: SqlitePool) -> Result<()> {
-    let unordered = init_test(&conn).await?;
-    let ordered = ItemParams::builder()
-        .with_offset(0)
-        .build()
-        .get_all(&conn)
-        .await?;
+    let _ = init_test(&conn).await?;
 
-    assert_eq!(
-        ordered.len(),
-        unordered.len(),
-        "Test row count and amount items added match."
-    );
-    assert_eq!(
-        "Chips and Dip", ordered[0].name,
-        "Test if returned items are ordered alphabetically."
-    );
+    // test configured limits and offset
+    let test_cases = [
+        (
+            ItemParams::builder().build(),
+            3 as usize,
+            "GetAll w/ no params.",
+        ),
+        (
+            ItemParams::builder().with_limit(1).build(),
+            1,
+            "GetAll w/ custom limit.",
+        ),
+    ];
+
+    try_join_all({
+        test_cases.iter().map(async |(param, want, desc)| {
+            Aok({
+                let got = param.get_all(&conn).await?;
+                assert_eq!(
+                    *want,
+                    got.len(),
+                    "Test if {desc} row count matches expected"
+                );
+                assert_eq!(
+                    "Chips and Dip",
+                    got.first().unwrap().name,
+                    "Test if returned items are ordered alphabetically."
+                );
+            })
+        })
+    })
+    .await?;
 
     Ok(())
 }
@@ -51,7 +67,7 @@ async fn test_get_items(conn: SqlitePool) -> Result<()> {
 async fn test_add_items(conn: SqlitePool) -> Result<()> {
     try_join_all(test_items().into_iter().zip(TEST_ITEMS.into_iter()).map(
         async |(params, (want_name, want_price, _))| {
-            Ok::<()>({
+            Aok({
                 let got = params.post(&conn).await?;
 
                 assert_eq!(
@@ -75,7 +91,7 @@ async fn test_add_items(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_get_item_single(conn: SqlitePool) -> Result<()> {
     try_join_all(init_test(&conn).await?.into_iter().map(async |want| {
-        Ok::<()>({
+        Aok({
             let param = ItemParams::builder()
                 .with_item_id(ParamOption::new().map_value(want.id).clone())
                 .build();
@@ -158,7 +174,7 @@ async fn test_update_item(conn: SqlitePool) -> Result<()> {
     ];
 
     let got = try_join_all(update_params.into_iter().map(async |param| {
-        Ok::<StoreItem>({
+        Aok::<StoreItem>({
             sleep_until(Instant::now() + Duration::from_secs(1)).await;
             let item = param.update(&conn).await?;
             item
