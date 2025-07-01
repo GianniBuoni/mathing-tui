@@ -16,16 +16,18 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         &self,
         conn: Self::Connection,
     ) -> Result<Vec<Self::Output>> {
+        let mut q = QueryBuilder::<Sqlite>::new(JOIN_QUERY_BASE);
+        let limit = self.limit.unwrap_or(20);
         let offset = self.offset.unwrap_or_default();
 
-        let raw = sqlx::query_file_as!(
-            StoreJoinRaw,
-            "sql/get_receipts_users.sql",
-            offset
-        )
-        .fetch_all(conn)
-        .await?;
-
+        let raw: Vec<StoreJoinRaw> = q
+            .push(" GROUP BY ru.receipt_id LIMIT ")
+            .push_bind(limit)
+            .push(" OFFSET ")
+            .push_bind(offset)
+            .build_query_as()
+            .fetch_all(conn)
+            .await?;
         Ok(try_join_all(
             raw.into_iter()
                 .map(async |raw| raw.try_join_row(conn).await),
@@ -85,25 +87,24 @@ impl<'e> Request<'e> for JoinedReceiptParams {
 
     async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
         let r_id = self.check_id(RequestType::Get)?;
-        let offset = if self.offset.is_some() {
-            self.offset.unwrap()
-        } else {
-            0
-        };
+        let mut q = QueryBuilder::<Sqlite>::new(JOIN_QUERY_BASE);
 
-        let raw_rows = sqlx::query_file_as!(
-            StoreJoinRaw,
-            "sql/get_ru_single.sql",
-            r_id,
-            offset,
-        )
-        .fetch_one(conn)
-        .await
-        .map_err(|_| {
-            RequestError::not_found(r_id, "receipts_users (joined)")
-        })?;
-
-        raw_rows.try_join_row(conn).await
+        let mut raw: Vec<StoreJoinRaw> = q
+            .push(" WHERE ru.receipt_id =")
+            .push_bind(r_id)
+            .push(" GROUP BY ru.receipt_id")
+            .build_query_as()
+            .fetch_all(conn)
+            .await?;
+        // check if query returned an empy Vec
+        if raw.is_empty() {
+            return Err(RequestError::not_found(
+                r_id,
+                "receipts_users (joined)",
+            )
+            .into());
+        }
+        raw.remove(0).try_join_row(conn).await
     }
 
     async fn delete(&self, conn: Self::Connection) -> Result<u64> {

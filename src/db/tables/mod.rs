@@ -64,7 +64,7 @@ pub(super) struct StoreReceiptsUsers {
     pub(super) user_id: i64,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, FromRow)]
 pub(super) struct StoreJoinRaw {
     pub(super) item_name: String,
     pub(super) user_ids: String,
