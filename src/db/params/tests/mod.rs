@@ -8,6 +8,7 @@ mod item_params;
 mod join_params;
 mod receipts_params;
 mod receipts_users_params;
+mod total_params;
 mod user_params;
 
 pub const TEST_USERS: [&str; 3] = ["Thing", "Noodle", "Jon"];
@@ -17,6 +18,42 @@ pub const TEST_ITEMS: [(&str, f64, i64); 3] = [
     ("Slamin' Salmon", 9.49, 1),
     ("Chips and Dip", 5.55, 3),
 ];
+
+impl StoreJoinPrices {
+    fn mock() -> Vec<Self> {
+        let r_1 = Self {
+            user_ids: "3".into(),
+            user_count: 1,
+            item_price: 4.99,
+            item_qty: 2,
+        };
+        let r_2 = Self {
+            user_ids: "2".into(),
+            user_count: 1,
+            item_price: 9.49,
+            item_qty: 1,
+        };
+        let r_3 = Self {
+            user_ids: "2,3".into(),
+            user_count: 2,
+            item_price: 5.55,
+            item_qty: 3,
+        };
+
+        vec![r_1, r_2, r_3]
+    }
+}
+
+impl StoreTotal {
+    fn mock() -> Self {
+        [(3, dec!(18.30)), (2 as i64, dec!(17.81))]
+            .into_iter()
+            .fold(StoreTotal::default(), |mut acc, next| {
+                acc.add(HashMap::from([next]));
+                acc
+            })
+    }
+}
 
 async fn init_users(conn: &SqlitePool) -> Result<Vec<StoreUser>> {
     let mut res = vec![];

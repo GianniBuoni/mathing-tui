@@ -14,7 +14,9 @@ use sqlx::{SqliteConnection, SqliteExecutor, SqlitePool};
 use tokio::sync::OnceCell;
 
 use crate::prelude::*;
-use tables::{StoreJoinRaw, StoreReceipt, StoreReceiptsUsers};
+use tables::{
+    StoreCount, StoreJoinPrices, StoreJoinRaw, StoreReceipt, StoreReceiptsUsers,
+};
 
 mod params;
 mod payloads;
@@ -33,7 +35,7 @@ pub mod prelude {
     pub use super::response::prelude::*;
     pub use super::tables::prelude::*;
     pub use super::totals::prelude::*;
-    // TODO: remove later when ifgure out how to make param building
+    // TODO: remove later when i fgure out how to make param building
     // a consuming operation?
     pub use super::params::{
         items::ItemParamsBuilder, join_row::JoinParamsBuilder,

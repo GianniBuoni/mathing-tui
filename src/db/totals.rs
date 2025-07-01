@@ -112,7 +112,7 @@ mod tests {
     }
 
     #[sqlx::test]
-    async fn test_get_totals(conn: SqlitePool) -> Result<()> {
+    async fn test_totals_adding(conn: SqlitePool) -> Result<()> {
         init_join_rows(&conn).await?;
         let want = expected_totals();
         let mut got = StoreTotal::default();

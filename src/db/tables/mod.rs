@@ -70,6 +70,14 @@ pub(super) struct StoreReceiptsUsers {
 }
 
 #[derive(Debug, PartialEq, FromRow)]
+pub(super) struct StoreJoinPrices {
+    pub(super) user_ids: String,
+    pub(super) user_count: i64,
+    pub(super) item_price: f64,
+    pub(super) item_qty: i64,
+}
+
+#[derive(Debug, PartialEq, FromRow)]
 pub(super) struct StoreJoinRaw {
     pub(super) item_name: String,
     pub(super) user_ids: String,
