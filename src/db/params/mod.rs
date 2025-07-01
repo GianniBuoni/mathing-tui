@@ -62,6 +62,7 @@ pub struct JoinedReceiptParams {
     item_id: Option<i64>,
     item_qty: Option<i64>,
     offset: Option<i64>,
+    limit: Option<i64>,
 }
 
 #[derive(Debug, Default)]
