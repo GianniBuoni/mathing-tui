@@ -1,8 +1,5 @@
 use super::*;
 
-// TODO
-// Add ordering by to the params GET query
-
 #[sqlx::test]
 async fn test_join_post(conn: SqlitePool) -> Result<()> {
     init_join_rows(&conn).await?;
@@ -151,15 +148,21 @@ async fn test_joined_update(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_joined_reset(conn: SqlitePool) -> Result<()> {
     init_join_rows(&conn).await?;
-    let rows = JoinedReceiptParams::builder().build().reset(&conn).await?;
+    let rows = JoinedReceiptParams::default().reset(&conn).await?;
     assert_eq!(3, rows, "Test if expected amount of rows were affected.");
 
-    let got = JoinedReceiptParams::builder()
-        .with_offset(0)
-        .build()
-        .get_all(&conn)
-        .await?;
+    let got = JoinedReceiptParams::default().get_all(&conn).await?;
     assert_eq!(0, got.len(), "Test if reset deleted all receipt records.");
+
+    Ok(())
+}
+
+#[sqlx::test]
+async fn test_join_count(conn: SqlitePool) -> Result<()> {
+    init_join_rows(&conn).await?;
+    let got = JoinedReceiptParams::default().count(&conn).await;
+    assert_eq!(3, got, "Test if row count matches expected value.");
+
     Ok(())
 }
 

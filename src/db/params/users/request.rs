@@ -95,4 +95,12 @@ impl<'e> Request<'e> for UserParams {
         tx.commit().await?;
         self.get(conn).await
     }
+
+    async fn count(&self, conn: Self::Connection) -> i64 {
+        sqlx::query_as!(StoreCount, "SELECT COUNT(*) AS rows FROM users")
+            .fetch_one(conn)
+            .await
+            .unwrap_or_default()
+            .rows
+    }
 }

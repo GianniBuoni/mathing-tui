@@ -170,4 +170,24 @@ impl<'e> Request<'e> for JoinedReceiptParams {
 
         JoinedReceiptParams::new().with_r_id(id).get(conn).await
     }
+
+    async fn count(&self, conn: Self::Connection) -> i64 {
+        sqlx::query_as!(
+            StoreCount,
+            "SELECT
+                COUNT(DISTINCT receipt_id) AS rows
+            FROM receipts_users"
+        )
+        .fetch_one(conn)
+        .await
+        .unwrap_or_default()
+        .rows
+    }
+
+    async fn reset(&self, conn: &SqlitePool) -> Result<u64> {
+        Ok(sqlx::query!("DELETE FROM receipts")
+            .execute(conn)
+            .await?
+            .rows_affected())
+    }
 }

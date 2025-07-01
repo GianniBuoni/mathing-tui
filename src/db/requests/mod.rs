@@ -39,10 +39,7 @@ pub trait Request<'e> {
     ) -> impl Future<Output = Result<u64>>;
 
     // optional methods
-    fn count(
-        &self,
-        conn: Self::Connection,
-    ) -> impl Future<Output = Result<i64>> {
+    fn count(&self, conn: Self::Connection) -> impl Future<Output = i64> {
         async {
             let _ = conn;
             todo!()

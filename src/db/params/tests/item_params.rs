@@ -209,6 +209,15 @@ async fn test_update_item(conn: SqlitePool) -> Result<()> {
 }
 
 #[sqlx::test]
+async fn test_item_count(conn: SqlitePool) -> Result<()> {
+    init_test(&conn).await?;
+    let got = ItemParams::default().count(&conn).await;
+    assert_eq!(3, got, "Test if item count matches expected.");
+
+    Ok(())
+}
+
+#[sqlx::test]
 async fn test_blank_item_update(conn: SqlitePool) -> Result<()> {
     let originals = init_test(&conn).await?;
     let params = ItemParams::builder()

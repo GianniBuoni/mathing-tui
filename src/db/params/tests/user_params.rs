@@ -140,6 +140,15 @@ async fn test_update_user(conn: SqlitePool) -> Result<()> {
 }
 
 #[sqlx::test]
+async fn test_user_count(conn: SqlitePool) -> Result<()> {
+    init_test(&conn).await?;
+    let got = UserParams::default().count(&conn).await;
+    assert_eq!(3, got, "Test if item count matches expected.");
+
+    Ok(())
+}
+
+#[sqlx::test]
 async fn test_invalid_params(conn: SqlitePool) -> Result<()> {
     let no_id = UserParams::builder().build();
     let no_name = UserParams::builder()

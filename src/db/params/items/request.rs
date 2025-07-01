@@ -117,4 +117,12 @@ impl<'e> Request<'e> for ItemParams {
         tx.commit().await?;
         Ok(res.rows_affected())
     }
+
+    async fn count(&self, conn: Self::Connection) -> i64 {
+        sqlx::query_as!(StoreCount, "SELECT COUNT(*) AS rows FROM items")
+            .fetch_one(conn)
+            .await
+            .unwrap_or_default()
+            .rows
+    }
 }
