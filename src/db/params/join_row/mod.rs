@@ -8,16 +8,13 @@ impl JoinedReceiptParams {
     pub fn builder() -> JoinParamsBuilder {
         JoinParamsBuilder::default()
     }
-    fn new() -> Self {
-        Self::default()
-    }
     fn with_r_id(mut self, r_id: i64) -> Self {
         self.r_id = Some(r_id);
         self
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct JoinParamsBuilder {
     pub offset: Option<i64>,
     pub limit: Option<i64>,

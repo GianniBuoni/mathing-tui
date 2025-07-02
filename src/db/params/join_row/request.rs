@@ -79,7 +79,7 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         }
         tx.commit().await?;
 
-        JoinedReceiptParams::new()
+        JoinedReceiptParams::default()
             .with_r_id(receipt.id)
             .get(conn)
             .await
@@ -168,7 +168,7 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         }
         tx.commit().await?;
 
-        JoinedReceiptParams::new().with_r_id(id).get(conn).await
+        JoinedReceiptParams::default().with_r_id(id).get(conn).await
     }
 
     async fn count(&self, conn: Self::Connection) -> i64 {

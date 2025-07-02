@@ -2,7 +2,7 @@ use super::*;
 
 mod request;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct UserParamsBuilder {
     pub u_id: ParamOption<i64>,
     pub name: ParamOption<String>,

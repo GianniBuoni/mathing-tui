@@ -16,7 +16,7 @@ pub(super) mod tests;
 pub(super) mod totals;
 pub(super) mod users;
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct ParamOption<T>(Rc<RefCell<Option<T>>>)
 where
     T: Default + Debug;
