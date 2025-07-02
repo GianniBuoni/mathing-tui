@@ -75,11 +75,7 @@ async fn test_delete_cascade(conn: SqlitePool) -> Result<()> {
     // PB Pretzel should be deleted
     // Chips and Dip should not be deleted since Noodle is still
     // attached to the receipt
-    let got = JoinedReceiptParams::builder()
-        .with_offset(0)
-        .build()
-        .get_all(&conn)
-        .await?;
+    let got = JoinedReceiptParams::default().get_all(&conn).await?;
     assert_eq!(2, got.len(), "Test delete cascade for joined rows.");
 
     Ok(())
@@ -277,6 +273,5 @@ async fn test_joined_errors(conn: SqlitePool) -> Result<()> {
             "Test invalid {req_type:?} param returns correct error."
         )
     }
-
     Ok(())
 }

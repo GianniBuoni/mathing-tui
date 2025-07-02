@@ -18,7 +18,7 @@ async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreItem>> {
     try_join_all(
         test_items()
             .iter()
-            .map(async |params| Aok::<StoreItem>(params.post(conn).await?)),
+            .map(async |params| (params.post(conn).await)),
     )
     .await
 }
@@ -186,11 +186,8 @@ async fn test_update_item(conn: SqlitePool) -> Result<()> {
     ];
 
     let got = try_join_all(update_params.into_iter().map(async |param| {
-        Aok::<StoreItem>({
-            sleep_until(Instant::now() + Duration::from_secs(1)).await;
-            let item = param.update(&conn).await?;
-            item
-        })
+        sleep_until(Instant::now() + Duration::from_secs(1)).await;
+        param.update(&conn).await
     }))
     .await?;
 
@@ -262,6 +259,5 @@ async fn test_blank_item_update(conn: SqlitePool) -> Result<()> {
             )
         }
     }
-
     Ok(())
 }

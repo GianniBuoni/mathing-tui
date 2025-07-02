@@ -142,6 +142,5 @@ pub async fn init_join_rows(conn: &SqlitePool) -> Result<Vec<StoreJoinRow>> {
         }
         res.push(param.build().post(conn).await?);
     }
-
     Ok(res)
 }

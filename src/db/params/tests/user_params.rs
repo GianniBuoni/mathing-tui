@@ -1,18 +1,14 @@
 use super::*;
 
 async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreUser>> {
-    Ok(try_join_all(TEST_USERS.into_iter().map(async |user_name| {
-        Ok::<StoreUser, Error>({
-            UserParams::builder()
-                .with_user_name(ParamOption::new().map_value(user_name).clone())
-                .build()
-                .post(conn)
-                .await?
-        })
+    try_join_all(TEST_USERS.into_iter().map(async |user_name| {
+        UserParams::builder()
+            .with_user_name(ParamOption::new().map_value(user_name).clone())
+            .build()
+            .post(conn)
+            .await
     }))
-    .await?
-    .into_iter()
-    .collect())
+    .await
 }
 
 #[sqlx::test]
@@ -48,7 +44,7 @@ async fn test_get_users(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_get_user(conn: SqlitePool) -> Result<()> {
     try_join_all(init_test(&conn).await?.into_iter().map(async |want| {
-        anyhow::Ok::<()>({
+        Aok({
             let got = UserParams::builder()
                 .with_user_id(ParamOption::new().map_value(want.id).clone())
                 .build()
@@ -100,22 +96,14 @@ async fn test_update_user(conn: SqlitePool) -> Result<()> {
     let users = init_test(&conn).await?;
     let want = ["Doodle", "Schmoodle", "Floofus"];
 
-    let params = users
-        .iter()
-        .zip(want)
-        .map(|(user, name)| {
-            UserParams::builder()
-                .with_user_id(ParamOption::new().map_value(user.id).clone())
-                .with_user_name(ParamOption::new().map_value(name).clone())
-                .build()
-        })
-        .collect::<Vec<UserParams>>();
-
-    let got = try_join_all(params.into_iter().map(async |param| {
-        Ok::<StoreUser, Error>({
-            sleep_until(Instant::now() + Duration::from_secs(1)).await;
-            param.update(&conn).await?
-        })
+    let got = try_join_all(users.iter().zip(want).map(async |(user, name)| {
+        sleep_until(Instant::now() + Duration::from_secs(1)).await;
+        UserParams::builder()
+            .with_user_id(ParamOption::new().map_value(user.id).clone())
+            .with_user_name(ParamOption::new().map_value(name).clone())
+            .build()
+            .update(&conn)
+            .await
     }))
     .await?
     .into_iter()
@@ -135,7 +123,6 @@ async fn test_update_user(conn: SqlitePool) -> Result<()> {
             )
         },
     );
-
     Ok(())
 }
 
@@ -182,6 +169,5 @@ async fn test_invalid_params(conn: SqlitePool) -> Result<()> {
             )
         }
     }
-
     Ok(())
 }

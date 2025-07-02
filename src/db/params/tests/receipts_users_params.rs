@@ -17,27 +17,25 @@ async fn ru_init_test(conn: &SqlitePool) -> Result<()> {
     };
 
     try_join_all(receipts.into_iter().map(async |r| {
-        Ok::<(), Error>({
-            let assignments = match r.id {
-                1 => vec![jon],
-                2 => vec![noodle],
-                3 => vec![noodle, jon],
-                _ => vec![],
-            };
+        let assignments = match r.id {
+            1 => vec![jon],
+            2 => vec![noodle],
+            3 => vec![noodle, jon],
+            _ => vec![],
+        };
 
-            try_join_all(assignments.into_iter().map(async |u_id| {
-                Ok::<(), Error>({
-                    let mut tx = conn.begin().await?;
-                    ReceiptsUsersParams::new()
-                        .with_u_id(u_id)
-                        .with_r_id(r.id)
-                        .post(&mut *tx)
-                        .await?;
-                    tx.commit().await?;
-                })
-            }))
-            .await?;
-        })
+        try_join_all(assignments.into_iter().map(async |u_id| {
+            Aok({
+                let mut tx = conn.begin().await?;
+                ReceiptsUsersParams::new()
+                    .with_u_id(u_id)
+                    .with_r_id(r.id)
+                    .post(&mut *tx)
+                    .await?;
+                tx.commit().await
+            })
+        }))
+        .await
     }))
     .await?;
 
@@ -91,8 +89,6 @@ async fn test_del_cascade(conn: SqlitePool) -> Result<()> {
     let mut tx = conn.begin().await?;
     ReceiptParams::new().r_id(3).delete(&mut *tx).await?;
     tx.commit().await?;
-
-    //TODO get accurate amount of rows deleted when a receipt is deleted;
 
     match ReceiptsUsersParams::new()
         .with_r_id(3)
