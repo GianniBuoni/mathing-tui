@@ -63,7 +63,7 @@ impl Request for JoinedReceiptParams {
         let receipt = ReceiptParams::new()
             .item_id(item_id)
             .item_qty(item_qty)
-            .post(&mut *tx)
+            .post(&mut tx)
             .await?;
 
         for u_id in self.users.clone() {
@@ -71,7 +71,7 @@ impl Request for JoinedReceiptParams {
             ReceiptsUsersParams::new()
                 .with_r_id(receipt.id)
                 .with_u_id(u_id)
-                .post(&mut *tx)
+                .post(&mut tx)
                 .await?;
         }
         tx.commit().await?;
@@ -108,9 +108,9 @@ impl Request for JoinedReceiptParams {
         let mut tx = conn.begin().await?;
         let id = self.check_id(RequestType::Delete)?;
 
-        ReceiptParams::new().r_id(id).get(&mut *tx).await?;
+        ReceiptParams::new().r_id(id).get(&mut tx).await?;
 
-        let res = ReceiptParams::new().r_id(id).delete(&mut *tx).await?;
+        let res = ReceiptParams::new().r_id(id).delete(&mut tx).await?;
         tx.commit().await?;
 
         Ok(res)
@@ -133,7 +133,7 @@ impl Request for JoinedReceiptParams {
         }
 
         if self.item_id.is_some() || self.item_qty.is_some() {
-            Into::<ReceiptParams>::into(self).update(&mut *tx).await?;
+            Into::<ReceiptParams>::into(self).update(&mut tx).await?;
         }
 
         // update users if user params are included
@@ -141,7 +141,7 @@ impl Request for JoinedReceiptParams {
             // reset receipt_user rows
             let current_users = ReceiptsUsersParams::new()
                 .with_r_id(id)
-                .get(&mut *tx)
+                .get(&mut tx)
                 .await?
                 .iter()
                 .map(|f| f.user_id)
@@ -151,7 +151,7 @@ impl Request for JoinedReceiptParams {
                 ReceiptsUsersParams::new()
                     .with_r_id(id)
                     .with_u_id(user)
-                    .delete(&mut *tx)
+                    .delete(&mut tx)
                     .await?;
             }
             // add all users back in
@@ -159,7 +159,7 @@ impl Request for JoinedReceiptParams {
                 ReceiptsUsersParams::new()
                     .with_u_id(*user)
                     .with_r_id(id)
-                    .post(&mut *tx)
+                    .post(&mut tx)
                     .await?;
             }
         }

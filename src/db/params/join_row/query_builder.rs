@@ -1,4 +1,4 @@
-pub(super) const JOIN_QUERY_BASE: &'static str = "
+pub(super) const JOIN_QUERY_BASE: &str = "
 SELECT
   ru.receipt_id as receipt_id,
   GROUP_CONCAT( CAST(ru.user_id as TEXT)) as user_ids,
