@@ -20,7 +20,7 @@ fn test_render_block() {
         "│                                                │",
         "│                                                │",
         "│                                                │",
-        "╰────────────────────────────────────────────────╯",
+        "╰──────────────────────────────────────── 0 of 0 ╯",
     ]);
 
     want.set_style(TableData::test_rect(), Style::default());
@@ -106,7 +106,7 @@ fn test_render_complete_table() -> Result<()> {
         "│  Blueberrie  5.59        4          Jon        │",
         "│                                                │",
         "│                                                │",
-        "╰────────────────────────────────────────────────╯",
+        "╰──────────────────────────────────────── 0 of 0 ╯",
     ]);
 
     let heading_style = Style::new().fg(Color::Black).bg(Color::Magenta).bold();

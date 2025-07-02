@@ -28,6 +28,9 @@ pub struct TableData {
     table_index: usize,
     app_index: usize,
     tracker: ComponentTracker,
+    count: i64,
+    offset: i64,
+    limit: i64,
     pub table_type: Option<AppArm>,
 }
 
@@ -35,5 +38,6 @@ pub struct TableData {
 pub struct TableBuilder {
     title: Rc<str>,
     headings: Vec<Rc<str>>,
+    limit: Option<i64>,
     table_type: Option<AppArm>,
 }
