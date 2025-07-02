@@ -10,10 +10,11 @@ use std::{
 
 use futures::future::try_join_all;
 use rust_decimal::prelude::*;
-use sqlx::{SqliteConnection, SqliteExecutor, SqlitePool};
+use sqlx::{SqliteConnection, SqlitePool};
 use tokio::sync::OnceCell;
 
 use crate::prelude::*;
+use requests::Transaction;
 use tables::{
     StoreCount, StoreJoinPrices, StoreJoinRaw, StoreReceipt, StoreReceiptsUsers,
 };

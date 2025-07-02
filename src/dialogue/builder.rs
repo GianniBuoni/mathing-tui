@@ -26,6 +26,7 @@ impl DialogueBuilder {
                     JoinedReceiptParams::builder(),
                 ))
             }
+            AppArm::Totals => self.payload = Some(DbPayloadBuilder::StoreTotal),
         }
         self.form_type = Some(app_arm);
         self

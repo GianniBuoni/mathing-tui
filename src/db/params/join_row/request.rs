@@ -1,8 +1,8 @@
 use super::*;
 
-impl<'e> Request<'e> for JoinedReceiptParams {
+impl Request for JoinedReceiptParams {
     type Output = StoreJoinRow;
-    type Connection = &'e SqlitePool;
+    type Outputs = Vec<StoreJoinRow>;
 
     fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError> {
         self.r_id.ok_or(RequestError::missing_param(
@@ -12,10 +12,7 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         ))
     }
 
-    async fn get_all(
-        &self,
-        conn: Self::Connection,
-    ) -> Result<Vec<Self::Output>> {
+    async fn get_all(&self, conn: &SqlitePool) -> Result<Self::Outputs> {
         let mut q = QueryBuilder::<Sqlite>::new(JOIN_QUERY_BASE);
         let limit = self.limit.unwrap_or(20);
         let offset = self.offset.unwrap_or_default();
@@ -37,7 +34,7 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         .collect())
     }
 
-    async fn post(&self, conn: Self::Connection) -> Result<Self::Output> {
+    async fn post(&self, conn: &SqlitePool) -> Result<Self::Output> {
         let mut tx = conn.begin().await?;
 
         let item_id = self.item_id.ok_or(RequestError::missing_param(
@@ -85,7 +82,7 @@ impl<'e> Request<'e> for JoinedReceiptParams {
             .await
     }
 
-    async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
+    async fn get(&self, conn: &SqlitePool) -> Result<Self::Output> {
         let r_id = self.check_id(RequestType::Get)?;
         let mut q = QueryBuilder::<Sqlite>::new(JOIN_QUERY_BASE);
 
@@ -107,7 +104,7 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         raw.remove(0).try_join_row(conn).await
     }
 
-    async fn delete(&self, conn: Self::Connection) -> Result<u64> {
+    async fn delete(&self, conn: &SqlitePool) -> Result<u64> {
         let mut tx = conn.begin().await?;
         let id = self.check_id(RequestType::Delete)?;
 
@@ -119,7 +116,7 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         Ok(res)
     }
 
-    async fn update(&self, conn: Self::Connection) -> Result<Self::Output> {
+    async fn update(&self, conn: &SqlitePool) -> Result<Self::Output> {
         let mut tx = conn.begin().await?;
         let id = self.check_id(RequestType::Update)?;
 
@@ -171,8 +168,8 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         JoinedReceiptParams::default().with_r_id(id).get(conn).await
     }
 
-    async fn count(&self, conn: Self::Connection) -> i64 {
-        sqlx::query_as!(
+    async fn count(&self, conn: &SqlitePool) -> Result<i64> {
+        Ok(sqlx::query_as!(
             StoreCount,
             "SELECT
                 COUNT(DISTINCT receipt_id) AS rows
@@ -181,7 +178,7 @@ impl<'e> Request<'e> for JoinedReceiptParams {
         .fetch_one(conn)
         .await
         .unwrap_or_default()
-        .rows
+        .rows)
     }
 
     async fn reset(&self, conn: &SqlitePool) -> Result<u64> {

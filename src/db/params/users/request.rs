@@ -1,18 +1,15 @@
 use super::*;
 
-impl<'e> Request<'e> for UserParams {
+impl Request for UserParams {
     type Output = StoreUser;
-    type Connection = &'e SqlitePool;
+    type Outputs = Vec<StoreUser>;
 
     fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError> {
         self.u_id
             .ok_or(RequestError::missing_param(req_type, "user", "id"))
     }
 
-    async fn get_all(
-        &self,
-        conn: Self::Connection,
-    ) -> Result<Vec<Self::Output>> {
+    async fn get_all(&self, conn: &SqlitePool) -> Result<Self::Outputs> {
         Ok(
             sqlx::query_as!(Self::Output, "SELECT * FROM users ORDER BY name")
                 .fetch_all(conn)
@@ -20,7 +17,7 @@ impl<'e> Request<'e> for UserParams {
         )
     }
 
-    async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
+    async fn get(&self, conn: &SqlitePool) -> Result<Self::Output> {
         let id = self.check_id(RequestType::Get)?;
         Ok(
             sqlx::query_as!(StoreUser, "SELECT * FROM users WHERE id=?1", id)
@@ -30,7 +27,7 @@ impl<'e> Request<'e> for UserParams {
         )
     }
 
-    async fn post(&self, conn: Self::Connection) -> Result<Self::Output> {
+    async fn post(&self, conn: &SqlitePool) -> Result<Self::Output> {
         let mut tx = conn.begin().await?;
         let now = DbConn::try_get_time()?;
 
@@ -60,7 +57,7 @@ impl<'e> Request<'e> for UserParams {
         Ok(user)
     }
 
-    async fn delete(&self, conn: Self::Connection) -> Result<u64> {
+    async fn delete(&self, conn: &SqlitePool) -> Result<u64> {
         let id = self.check_id(RequestType::Delete)?;
         let mut tx = conn.begin().await?;
 
@@ -72,7 +69,7 @@ impl<'e> Request<'e> for UserParams {
         Ok(res.rows_affected())
     }
 
-    async fn update(&self, conn: Self::Connection) -> Result<Self::Output> {
+    async fn update(&self, conn: &SqlitePool) -> Result<Self::Output> {
         let mut tx = conn.begin().await?;
 
         let id = self.check_id(RequestType::Update)?;
@@ -96,11 +93,13 @@ impl<'e> Request<'e> for UserParams {
         self.get(conn).await
     }
 
-    async fn count(&self, conn: Self::Connection) -> i64 {
-        sqlx::query_as!(StoreCount, "SELECT COUNT(*) AS rows FROM users")
-            .fetch_one(conn)
-            .await
-            .unwrap_or_default()
-            .rows
+    async fn count(&self, conn: &SqlitePool) -> Result<i64> {
+        Ok(
+            sqlx::query_as!(StoreCount, "SELECT COUNT(*) AS rows FROM users")
+                .fetch_one(conn)
+                .await
+                .unwrap_or_default()
+                .rows,
+        )
     }
 }

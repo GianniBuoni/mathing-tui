@@ -12,6 +12,7 @@ pub enum AppArm {
     Items,
     Receipts,
     Users,
+    Totals,
 }
 
 #[derive(Debug)]

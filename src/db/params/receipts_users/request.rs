@@ -1,8 +1,7 @@
 use super::*;
 
-impl<'e> Request<'e> for ReceiptsUsersParams {
+impl Transaction for ReceiptsUsersParams {
     type Output = Vec<StoreReceiptsUsers>;
-    type Connection = &'e mut SqliteConnection;
 
     fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError> {
         self.r_id.ok_or(RequestError::missing_param(
@@ -12,18 +11,7 @@ impl<'e> Request<'e> for ReceiptsUsersParams {
         ))
     }
 
-    /// get_all for Receipt Params should not be called directly
-    /// consider getting data needed from [`JoinedReceiptsParams`]
-    /// instead
-    async fn get_all(
-        &self,
-        conn: Self::Connection,
-    ) -> Result<Vec<Self::Output>> {
-        let _ = conn;
-        todo!()
-    }
-
-    async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
+    async fn get(&self, conn: &mut SqliteConnection) -> Result<Self::Output> {
         let id = self.check_id(RequestType::Get)?;
 
         let res = sqlx::query_as!(
@@ -43,7 +31,7 @@ impl<'e> Request<'e> for ReceiptsUsersParams {
         }
     }
 
-    async fn post(&self, conn: Self::Connection) -> Result<Self::Output> {
+    async fn post(&self, conn: &mut SqliteConnection) -> Result<Self::Output> {
         let r_id = self.check_id(RequestType::Post)?;
 
         let u_id = self.u_id.ok_or(RequestError::missing_param(
@@ -70,7 +58,7 @@ impl<'e> Request<'e> for ReceiptsUsersParams {
         .await?)
     }
 
-    async fn delete(&self, conn: Self::Connection) -> Result<u64> {
+    async fn delete(&self, conn: &mut SqliteConnection) -> Result<u64> {
         let id = self.check_id(RequestType::Delete)?;
         let u_id = self.u_id.ok_or(RequestError::missing_param(
             RequestType::Delete,
@@ -90,7 +78,10 @@ impl<'e> Request<'e> for ReceiptsUsersParams {
         .rows_affected())
     }
 
-    async fn update(&self, conn: Self::Connection) -> Result<Self::Output> {
+    async fn update(
+        &self,
+        conn: &mut SqliteConnection,
+    ) -> Result<Self::Output> {
         let _ = conn;
         todo!()
     }

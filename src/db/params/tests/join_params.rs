@@ -160,7 +160,7 @@ async fn test_joined_reset(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_join_count(conn: SqlitePool) -> Result<()> {
     init_join_rows(&conn).await?;
-    let got = JoinedReceiptParams::default().count(&conn).await;
+    let got = JoinedReceiptParams::default().count(&conn).await?;
     assert_eq!(3, got, "Test if row count matches expected value.");
 
     Ok(())

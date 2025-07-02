@@ -32,6 +32,7 @@ impl FormBuilder {
                 let params = UserParams::builder();
                 self.payload = Some(DbPayloadBuilder::UserParams(params))
             }
+            AppArm::Totals => self.payload = Some(DbPayloadBuilder::StoreTotal),
         }
         self.form_type = Some(form_type);
         self

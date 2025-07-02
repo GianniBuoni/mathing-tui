@@ -28,7 +28,9 @@ impl DbRequest {
     /// This is Vec with a Refresh Requests and the three init requests.
     pub fn refresh() -> Vec<Self> {
         let mut refresh = Self::new();
-        refresh.with_req_type(RequestType::Refresh);
+        refresh
+            .with_req_type(RequestType::Refresh)
+            .with_payload(DbPayload::StoreTotal);
 
         let mut requests = Vec::with_capacity(4);
         requests.push(refresh);

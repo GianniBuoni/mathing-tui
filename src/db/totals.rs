@@ -52,7 +52,7 @@ impl StoreTotal {
     /// with this new total.
     /// This method should only be called after the StoreTotal struct
     /// has been initialized elsewhere.
-    pub async fn try_refresh(conn: &SqlitePool) -> Result<()> {
+    pub async fn try_refresh(conn: &SqlitePool) -> Result<DbPayload> {
         let new_value = TotalsParams::get_total(conn).await?;
         // using try_get here to avoid potentailly initalizing the value
         // only to replace the value later in the function.
@@ -61,7 +61,7 @@ impl StoreTotal {
             .map_err(|_| AppError::StoreTotalMutex)?;
         *current = new_value;
 
-        Ok(())
+        Ok(DbPayload::None)
     }
     /// Returns value of specific value for a given key in StoreTotal.
     pub fn try_get_inner(key: i64) -> Result<Decimal> {
