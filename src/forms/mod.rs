@@ -11,7 +11,6 @@ use crate::prelude::*;
 
 mod builder;
 mod component;
-mod errors;
 mod form_data;
 mod plugin;
 #[cfg(test)]
