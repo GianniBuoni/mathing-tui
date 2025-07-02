@@ -1,20 +1,15 @@
-use sqlx::{QueryBuilder, Sqlite};
-
 use super::*;
 
-impl<'e> Request<'e> for ItemParams {
+impl Request for ItemParams {
     type Output = StoreItem;
-    type Connection = &'e SqlitePool;
+    type Outputs = Vec<StoreItem>;
 
     fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError> {
         self.item_id
             .ok_or(RequestError::missing_param(req_type, "item", "id"))
     }
 
-    async fn get_all(
-        &self,
-        conn: Self::Connection,
-    ) -> Result<Vec<Self::Output>> {
+    async fn get_all(&self, conn: &SqlitePool) -> Result<Self::Outputs> {
         let mut query = QueryBuilder::<Sqlite>::new("SELECT * FROM items");
 
         if let Some(search) = self.search_filter.as_ref() {
@@ -32,7 +27,7 @@ impl<'e> Request<'e> for ItemParams {
         Ok(query.build_query_as().fetch_all(conn).await?)
     }
 
-    async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
+    async fn get(&self, conn: &SqlitePool) -> Result<Self::Output> {
         let id = self.check_id(RequestType::Get)?;
 
         Ok(
@@ -43,7 +38,7 @@ impl<'e> Request<'e> for ItemParams {
         )
     }
 
-    async fn post(&self, conn: Self::Connection) -> Result<Self::Output> {
+    async fn post(&self, conn: &SqlitePool) -> Result<Self::Output> {
         let name = self.item_name.clone().ok_or(
             RequestError::missing_param(RequestType::Post, "item", "item name"),
         )?;
@@ -72,7 +67,7 @@ impl<'e> Request<'e> for ItemParams {
         .await?)
     }
 
-    async fn update(&self, conn: Self::Connection) -> Result<Self::Output> {
+    async fn update(&self, conn: &SqlitePool) -> Result<Self::Output> {
         let mut tx = conn.begin().await?;
         let id = self.check_id(RequestType::Update)?;
         let now = DbConn::try_get_time()?;
@@ -108,7 +103,7 @@ impl<'e> Request<'e> for ItemParams {
         self.get(conn).await
     }
 
-    async fn delete(&self, conn: Self::Connection) -> Result<u64> {
+    async fn delete(&self, conn: &SqlitePool) -> Result<u64> {
         let mut tx = conn.begin().await?;
         let id = self.check_id(RequestType::Delete)?;
 
@@ -118,5 +113,15 @@ impl<'e> Request<'e> for ItemParams {
 
         tx.commit().await?;
         Ok(res.rows_affected())
+    }
+
+    async fn count(&self, conn: &SqlitePool) -> Result<i64> {
+        Ok(
+            sqlx::query_as!(StoreCount, "SELECT COUNT(*) AS rows FROM items")
+                .fetch_one(conn)
+                .await
+                .unwrap_or_default()
+                .rows,
+        )
     }
 }

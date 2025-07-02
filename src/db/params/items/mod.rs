@@ -15,7 +15,7 @@ impl ItemParams {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct ItemParamsBuilder {
     pub offset: Option<i64>,
     pub limit: Option<i64>,

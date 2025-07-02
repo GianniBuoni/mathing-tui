@@ -78,8 +78,8 @@ impl Dialogue {
 
         dialogue
             .with_message(message)
-            .with_req_type(RequestType::Refresh)
-            .with_from_type(AppArm::Receipts);
+            .with_req_type(RequestType::Update)
+            .with_from_type(AppArm::Totals);
 
         dialogue.build()
     }

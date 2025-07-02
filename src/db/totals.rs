@@ -13,27 +13,10 @@ pub struct StoreTotal(HashMap<i64, Decimal>);
 
 impl StoreTotal {
     // setters
-    async fn new() -> Result<Self> {
+    async fn init() -> Result<Mutex<Self>> {
         let conn = DbConn::try_get().await?;
-
-        let rows_to_calc =
-            sqlx::query_file_as!(StoreJoinRaw, "sql/get_ru_no_offset.sql")
-                .fetch_all(conn)
-                .await
-                .map_err(|_| RequestError::not_found("all", "recipts_users"))?;
-
-        Ok(try_join_all(rows_to_calc.into_iter().map(async |raw| {
-            anyhow::Ok::<StoreJoinRow>(raw.try_join_row(conn).await?)
-        }))
-        .await?
-        .iter_mut()
-        .try_fold(StoreTotal::default(), |mut acc, next| {
-            anyhow::Ok::<StoreTotal>({
-                acc.add(next.try_calc()?);
-                acc
-            })
-        })
-        .unwrap_or_default())
+        let total = TotalsParams::get_total(conn).await?;
+        Ok(Mutex::new(total))
     }
     /// Takes a hashmap and adds Decimal values to the StoreTotal
     /// if a key already exists.
@@ -63,23 +46,22 @@ impl StoreTotal {
     /// Returns the StoreTotal Mutex. Initializes the OnceCell if there is
     /// no value contained within.
     pub async fn get_or_try_init() -> Result<&'static Mutex<Self>> {
-        let init = async || anyhow::Ok(Mutex::new(Self::new().await?));
-        TOTALS.get_or_try_init(init).await
+        TOTALS.get_or_try_init(Self::init).await
     }
     /// Calculates a new StoreTotal and replaces the current one
     /// with this new total.
     /// This method should only be called after the StoreTotal struct
     /// has been initialized elsewhere.
-    pub async fn try_refresh() -> Result<()> {
+    pub async fn try_refresh(conn: &SqlitePool) -> Result<DbPayload> {
+        let new_value = TotalsParams::get_total(conn).await?;
         // using try_get here to avoid potentailly initalizing the value
         // only to replace the value later in the function.
-        let new_value = Self::new().await?;
         let mut current = Self::try_get()?
             .lock()
             .map_err(|_| AppError::StoreTotalMutex)?;
         *current = new_value;
 
-        Ok(())
+        Ok(DbPayload::None)
     }
     /// Returns value of specific value for a given key in StoreTotal.
     pub fn try_get_inner(key: i64) -> Result<Decimal> {
@@ -112,7 +94,7 @@ mod tests {
     }
 
     #[sqlx::test]
-    async fn test_get_totals(conn: SqlitePool) -> Result<()> {
+    async fn test_totals_adding(conn: SqlitePool) -> Result<()> {
         init_join_rows(&conn).await?;
         let want = expected_totals();
         let mut got = StoreTotal::default();

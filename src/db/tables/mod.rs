@@ -47,6 +47,11 @@ pub struct StoreJoinRow {
 
 // "private" structs. These should onlys be used within
 // the db module.
+#[derive(Debug, Default)]
+pub(super) struct StoreCount {
+    pub(super) rows: i64,
+}
+
 #[derive(Debug, PartialEq)]
 pub(super) struct StoreReceipt {
     pub(super) id: i64,
@@ -64,7 +69,15 @@ pub(super) struct StoreReceiptsUsers {
     pub(super) user_id: i64,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, FromRow)]
+pub(super) struct StoreJoinPrices {
+    pub(super) user_ids: String,
+    pub(super) user_count: i64,
+    pub(super) item_price: f64,
+    pub(super) item_qty: i64,
+}
+
+#[derive(Debug, PartialEq, FromRow)]
 pub(super) struct StoreJoinRaw {
     pub(super) item_name: String,
     pub(super) user_ids: String,

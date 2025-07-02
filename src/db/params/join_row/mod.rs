@@ -1,29 +1,23 @@
 use super::*;
+use query_builder::*;
 
+mod query_builder;
 mod request;
 
 impl JoinedReceiptParams {
     pub fn builder() -> JoinParamsBuilder {
         JoinParamsBuilder::default()
     }
-    fn new() -> Self {
-        Self::default()
-    }
     fn with_r_id(mut self, r_id: i64) -> Self {
         self.r_id = Some(r_id);
         self
     }
-    pub async fn reset(&self, conn: &SqlitePool) -> Result<u64> {
-        Ok(sqlx::query!("DELETE FROM receipts")
-            .execute(conn)
-            .await?
-            .rows_affected())
-    }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct JoinParamsBuilder {
     pub offset: Option<i64>,
+    pub limit: Option<i64>,
     pub users: Rc<RefCell<Vec<i64>>>,
     pub r_id: ParamOption<i64>,
     pub item_id: ParamOption<i64>,
@@ -59,12 +53,17 @@ impl JoinParamsBuilder {
         self.offset = Some(offset);
         self
     }
+    pub fn with_limit(&mut self, limit: i64) -> &mut Self {
+        self.limit = Some(limit);
+        self
+    }
     pub fn build(&self) -> JoinedReceiptParams {
         let users = self.users.clone();
         let users = users.borrow().to_owned();
 
         JoinedReceiptParams {
             offset: self.offset,
+            limit: self.limit,
             users,
             r_id: self.r_id.unwrap(),
             item_id: self.item_id.unwrap(),

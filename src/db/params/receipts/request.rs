@@ -1,25 +1,14 @@
 use super::*;
 
-impl<'e> Request<'e> for ReceiptParams {
+impl Transaction for ReceiptParams {
     type Output = StoreReceipt;
-    type Connection = &'e mut SqliteConnection;
 
     fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError> {
         self.r_id
             .ok_or(RequestError::missing_param(req_type, "receipt", "id"))
     }
-    /// get_all for Receipt Params should not be called directly
-    /// consider getting data needed from [`JoinedReceiptsParams`]
-    /// instead
-    async fn get_all(
-        &self,
-        conn: Self::Connection,
-    ) -> Result<Vec<Self::Output>> {
-        let _ = conn;
-        todo!()
-    }
 
-    async fn get(&self, conn: Self::Connection) -> Result<Self::Output> {
+    async fn get(&self, conn: &mut SqliteConnection) -> Result<Self::Output> {
         let id = self.check_id(RequestType::Get)?;
 
         Ok(sqlx::query_as!(
@@ -32,7 +21,7 @@ impl<'e> Request<'e> for ReceiptParams {
         .map_err(|_| RequestError::not_found(id, "receipts"))?)
     }
 
-    async fn post(&self, conn: Self::Connection) -> Result<Self::Output> {
+    async fn post(&self, conn: &mut SqliteConnection) -> Result<Self::Output> {
         let item_id = self.item_id.ok_or(RequestError::missing_param(
             RequestType::Post,
             "receipt",
@@ -63,7 +52,7 @@ impl<'e> Request<'e> for ReceiptParams {
         .await?)
     }
 
-    async fn delete(&self, conn: Self::Connection) -> Result<u64> {
+    async fn delete(&self, conn: &mut SqliteConnection) -> Result<u64> {
         let id = self.check_id(RequestType::Delete)?;
 
         Ok(sqlx::query!("DELETE FROM receipts WHERE id=?1", id)
@@ -72,7 +61,10 @@ impl<'e> Request<'e> for ReceiptParams {
             .rows_affected())
     }
 
-    async fn update(&self, conn: Self::Connection) -> Result<Self::Output> {
+    async fn update(
+        &self,
+        conn: &mut SqliteConnection,
+    ) -> Result<Self::Output> {
         let id = self.check_id(RequestType::Delete)?;
 
         if self.item_id.is_none() && self.item_qty.is_none() {

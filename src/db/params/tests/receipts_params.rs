@@ -3,16 +3,12 @@ use super::*;
 async fn init_test(conn: &SqlitePool) -> Result<Vec<StoreReceipt>> {
     let items =
         try_join_all(TEST_ITEMS.into_iter().map(async |(name, price, _)| {
-            anyhow::Ok::<StoreItem>({
-                ItemParams::builder()
-                    .with_item_name(ParamOption::new().map_value(name).clone())
-                    .with_item_price(
-                        ParamOption::new().map_value(price).clone(),
-                    )
-                    .build()
-                    .post(&conn)
-                    .await?
-            })
+            ItemParams::builder()
+                .with_item_name(ParamOption::new().map_value(name).clone())
+                .with_item_price(ParamOption::new().map_value(price).clone())
+                .build()
+                .post(&conn)
+                .await
         }))
         .await?;
 
@@ -152,7 +148,7 @@ async fn test_update_receipt(conn: SqlitePool) -> Result<()> {
     sleep_until(Instant::now() + Duration::from_secs(1)).await;
 
     Ok(try_join_all(init.into_iter().map(async |r| {
-        anyhow::Ok::<()>({
+        Aok({
             let mut tx = conn.begin().await?;
             let got = ReceiptParams::new()
                 .r_id(r.id)
@@ -202,7 +198,7 @@ async fn test_rec_param_errors(conn: SqlitePool) -> Result<()> {
 
     Ok(try_join_all(bad_params.into_iter().map(
         async |(param, req, req_t, want)| {
-            Ok::<(), Error>({
+            Aok({
                 let mut tx = conn.begin().await?;
                 let got = match req {
                     RequestType::Delete => match param.delete(&mut *tx).await {

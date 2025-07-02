@@ -21,19 +21,40 @@ impl StoreJoinRaw {
         })
     }
 }
+
+fn calc_decimal(price: f64, qty: i64, users: i64) -> Result<Decimal> {
+    if users == 0 {
+        // avoid divide by zero
+        return Ok(dec!(0));
+    }
+    let err = "Decimal Error: Could not convert float to Decimal";
+    Ok(Decimal::from_f64(price * qty as f64 / users as f64)
+        .ok_or(Error::msg(err))?
+        .round_dp(2))
+}
+
+impl StoreJoinPrices {
+    pub fn try_calc(&self) -> Result<HashMap<i64, Decimal>> {
+        let total =
+            calc_decimal(self.item_price, self.item_qty, self.user_count)?;
+
+        self.user_ids
+            .split(",")
+            .map(|f| {
+                Aok::<(i64, Decimal)>({
+                    let id = f.parse::<i64>()?;
+                    (id, total)
+                })
+            })
+            .collect()
+    }
+}
+
 impl StoreJoinRow {
     pub fn try_calc(&self) -> Result<HashMap<i64, Decimal>> {
-        let err = "Decimal Error: Could not convert float to Decimal";
-        let total = Decimal::from_f64(
-            self.item_price * self.item_qty as f64 / self.user_count as f64,
-        )
-        .ok_or(anyhow::Error::msg(err))?;
+        let total =
+            calc_decimal(self.item_price, self.item_qty, self.user_count)?;
 
-        Ok({
-            self.users
-                .iter()
-                .map(|user| (user.id, total.round_dp(2)))
-                .collect()
-        })
+        Ok(self.users.iter().map(|user| (user.id, total)).collect())
     }
 }

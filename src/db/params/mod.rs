@@ -1,7 +1,10 @@
 use super::*;
+use sqlx::{QueryBuilder, Sqlite};
 
 pub mod prelude {
-    pub use super::{ItemParams, JoinedReceiptParams, ParamOption, UserParams};
+    pub use super::{
+        ItemParams, JoinedReceiptParams, ParamOption, TotalsParams, UserParams,
+    };
 }
 
 pub(super) mod items;
@@ -10,9 +13,10 @@ pub(super) mod receipts;
 pub(super) mod receipts_users;
 #[cfg(test)]
 pub(super) mod tests;
+pub(super) mod totals;
 pub(super) mod users;
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct ParamOption<T>(Rc<RefCell<Option<T>>>)
 where
     T: Default + Debug;
@@ -61,7 +65,11 @@ pub struct JoinedReceiptParams {
     item_id: Option<i64>,
     item_qty: Option<i64>,
     offset: Option<i64>,
+    limit: Option<i64>,
 }
+
+#[derive(Debug, Default, PartialEq, Copy, Clone)]
+pub struct TotalsParams;
 
 #[derive(Debug, Default)]
 pub(super) struct ReceiptsUsersParams {

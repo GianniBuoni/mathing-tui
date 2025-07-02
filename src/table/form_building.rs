@@ -11,6 +11,7 @@ impl TableData {
             AppArm::Items => Form::new_item().map(Some),
             AppArm::Users => Form::new_user().map(Some),
             AppArm::Receipts => Ok(None),
+            AppArm::Totals => Ok(None),
         }
     }
     pub fn try_delete_form(&self) -> Result<Option<Dialogue>> {
@@ -36,6 +37,7 @@ impl TableData {
                 let receipt = current_item.try_get_receipt()?;
                 Dialogue::delete_reciept(receipt).map(Some)
             }
+            AppArm::Totals => Ok(None),
         }
     }
     pub fn edit_form(&self) -> Result<Option<Form>> {
@@ -56,6 +58,7 @@ impl TableData {
                 Form::edit_user(user).map(Some)
             }
             AppArm::Receipts => Ok(None),
+            AppArm::Totals => Ok(None),
         }
     }
 }
