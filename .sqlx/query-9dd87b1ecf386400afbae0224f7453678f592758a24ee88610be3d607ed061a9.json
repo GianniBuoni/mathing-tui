@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "\nSELECT\n  GROUP_CONCAT( CAST(ru.user_id as TEXT)) as user_ids,\n  COUNT(ru.user_id) as user_count,\n  i.price as item_price,\n  r.item_qty as item_qty\nFROM receipts_users ru\nINNER JOIN users u ON ru.user_id= u.id\nINNER JOIN receipts r ON ru.receipt_id = r.id\nINNER JOIN items i ON r.item_id = i.id\nGROUP BY ru.receipt_id\n               ",
+  "describe": {
+    "columns": [
+      {
+        "name": "user_ids",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "user_count",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "item_price",
+        "ordinal": 2,
+        "type_info": "Float"
+      },
+      {
+        "name": "item_qty",
+        "ordinal": 3,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "9dd87b1ecf386400afbae0224f7453678f592758a24ee88610be3d607ed061a9"
+}
