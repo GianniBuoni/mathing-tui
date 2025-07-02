@@ -10,7 +10,6 @@ pub enum RequestType {
     Update,
     Delete,
     Reset,
-    Refresh,
     Count,
 }
 
@@ -24,7 +23,6 @@ impl Display for RequestType {
             Self::Update => write!(f, "Update"),
             Self::Delete => write!(f, "Delete"),
             Self::Reset => write!(f, "Reset"),
-            Self::Refresh => write!(f, "Refresh"),
             Self::Count => write!(f, "Count"),
         }
     }

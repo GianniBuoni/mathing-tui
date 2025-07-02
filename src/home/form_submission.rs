@@ -63,7 +63,10 @@ impl Home {
             (DbPayload::ReceiptParams(_), RequestType::Update) => {
                 self.try_subtract_store_total()?
             }
-            (DbPayload::ItemParams(_), RequestType::Update) => {
+            (
+                DbPayload::ItemParams(_) | DbPayload::UserParams(_),
+                RequestType::Update,
+            ) => {
                 requests.append(&mut DbRequest::refresh());
             }
             _ => {}
@@ -96,7 +99,7 @@ impl Home {
             (DbPayload::ItemParams(_), RequestType::Delete) => {
                 requests.append(&mut DbRequest::refresh())
             }
-            (_, RequestType::Refresh) => {
+            (DbPayload::StoreTotal, _) => {
                 requests.append(&mut DbRequest::init())
             }
             _ => {}
