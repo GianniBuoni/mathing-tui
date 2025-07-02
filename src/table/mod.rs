@@ -29,7 +29,7 @@ pub struct TableData {
     app_index: usize,
     tracker: ComponentTracker,
     count: i64,
-    offset: i64,
+    pages: i64,
     limit: i64,
     pub table_type: Option<AppArm>,
 }

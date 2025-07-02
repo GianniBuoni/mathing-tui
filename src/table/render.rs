@@ -4,7 +4,7 @@ use super::*;
 
 impl TableData {
     pub(super) fn render_block<'a>(&'a self, style: Style) -> Block<'a> {
-        let current = self.count.min(self.limit + self.offset);
+        let current = self.count.min(self.limit * self.pages);
         let title = format!(" {} of {} ", current, self.count);
         let title = Line::from(title).right_aligned();
 
