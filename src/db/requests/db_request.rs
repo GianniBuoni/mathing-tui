@@ -10,7 +10,7 @@ impl DbRequest {
     /// Returns an array of DbRequests related to fetching all table data
     /// with offsets of 0.
     pub fn init() -> Vec<Self> {
-        [
+        let mut init = [
             DbPayload::ItemParams(ItemParams::default()),
             DbPayload::UserParams(UserParams::default()),
             DbPayload::ReceiptParams(JoinedReceiptParams::default()),
@@ -19,6 +19,23 @@ impl DbRequest {
         .map(|payload| {
             let mut req = Self::new();
             req.with_req_type(RequestType::GetAll).with_payload(payload);
+            req
+        })
+        .collect::<Vec<Self>>();
+        init.append(&mut Self::counts());
+
+        init
+    }
+    pub fn counts() -> Vec<Self> {
+        [
+            DbPayload::ItemParams(ItemParams::default()),
+            DbPayload::UserParams(UserParams::default()),
+            DbPayload::ReceiptParams(JoinedReceiptParams::default()),
+        ]
+        .into_iter()
+        .map(|payload| {
+            let mut req = Self::new();
+            req.with_req_type(RequestType::Count).with_payload(payload);
             req
         })
         .collect()

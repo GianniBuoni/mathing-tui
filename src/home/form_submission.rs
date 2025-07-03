@@ -60,6 +60,9 @@ impl Home {
         // if there is un update, check if we need to do
         // some calculations or push a refresh request.
         match (&payload, req_type) {
+            (_, RequestType::Post) => {
+                requests.append(&mut DbRequest::counts());
+            }
             (DbPayload::ReceiptParams(_), RequestType::Update) => {
                 self.try_subtract_store_total()?
             }
@@ -97,10 +100,13 @@ impl Home {
                 self.try_subtract_store_total()?
             }
             (DbPayload::ItemParams(_), RequestType::Delete) => {
-                requests.append(&mut DbRequest::refresh())
+                requests.append(&mut DbRequest::refresh());
             }
-            (DbPayload::StoreTotal, _) => {
-                requests.append(&mut DbRequest::init())
+            (_, RequestType::Delete) => {
+                requests.append(&mut DbRequest::counts());
+            }
+            (DbPayload::StoreTotal, _ /*Refresh to app init*/) => {
+                requests.append(&mut DbRequest::init());
             }
             _ => {}
         }

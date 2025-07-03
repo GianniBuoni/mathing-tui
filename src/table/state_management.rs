@@ -24,7 +24,9 @@ impl TableData {
         match filter {
             true => self.items = items,
             false => {
-                self.items.push(items.first().unwrap().clone());
+                if self.pages == self.max_pages() {
+                    self.items.push(items.first().unwrap().clone());
+                }
             }
         }
     }
