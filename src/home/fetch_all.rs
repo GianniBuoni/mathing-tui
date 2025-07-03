@@ -4,13 +4,11 @@ impl Home {
     /// [`Home`]'s init method is responsible for making all the initial
     /// requests to the Db
     pub fn fetch_all(&mut self) {
-        if let Err(err) = (|| -> Result<()> {
-            let tx = self
-                .req_tx
-                .clone()
-                .ok_or(ComponentError::not_found("req_tx"))?;
-            DbRequest::init().into_iter().try_for_each(|f| tx.send(f))?;
-            Ok(())
+        if let Err(err) = (|| {
+            DbRequest::init()
+                .into_iter()
+                .try_for_each(|f| self.try_send(f))?;
+            Aok(())
         })() {
             self.map_err(err);
         }
