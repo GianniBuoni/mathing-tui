@@ -1,5 +1,7 @@
 use super::{
-    response_handling::{match_post_get, match_update, try_add_store_total},
+    response_handling::{
+        match_count, match_post_get, match_update, try_add_store_total,
+    },
     *,
 };
 
@@ -26,15 +28,24 @@ impl Component for TableData {
         self.tracker.inner() == self.app_index
     }
     fn handle_action(&mut self, action: Option<Action>) {
+        if !self.is_active() || self.items.is_empty() {
+            return;
+        }
         let Some(action) = action else {
             return;
         };
         match action {
             Action::NavigateDown => {
-                self.next_row();
+                self.row_increment(1);
             }
             Action::NavigateUp => {
-                self.prev_row();
+                self.row_increment(-1);
+            }
+            Action::NavigateLeft => {
+                self.page_increment(-1);
+            }
+            Action::NavigateRight => {
+                self.page_increment(1);
             }
             _ => {}
         }
@@ -48,11 +59,15 @@ impl Component for TableData {
             .ok_or(ComponentError::not_found("Table type"))?;
 
         match (table_type, &res.req_type, &res.payload) {
+            // Count Responses
+            item if match_count(item) => {
+                self.set_count(res.payload.to_owned());
+                Ok(())
+            }
             // Get and Post Responses
             item if match_post_get(item) => {
                 self.add_items(res.payload.to_owned());
-                try_add_store_total(item)?;
-                Ok(())
+                try_add_store_total(item)
             }
             // Update Responses
             item if match_update(item) => {
@@ -62,8 +77,7 @@ impl Component for TableData {
                     new_element.first().ok_or(ComponentError::NoData)?;
 
                 self.items[self.table_index] = new_element.to_owned();
-                try_add_store_total(item)?;
-                Ok(())
+                try_add_store_total(item)
             }
             // Delete responses
             (_, RequestType::Delete, DbPayload::AffectedRows(i)) => {

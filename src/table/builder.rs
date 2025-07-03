@@ -22,6 +22,10 @@ impl TableBuilder {
         self.table_type = Some(app_arm);
         self
     }
+    pub fn with_item_limit(&mut self, limit: i64) -> &mut Self {
+        self.limit = Some(limit);
+        self
+    }
 }
 
 impl ComponentBuilder for TableBuilder {
@@ -39,6 +43,8 @@ impl ComponentBuilder for TableBuilder {
             title: self.title,
             headings: self.headings.into(),
             table_type: Some(table_type),
+            limit: self.limit.unwrap_or(20),
+            pages: 1,
             ..Default::default()
         })
     }

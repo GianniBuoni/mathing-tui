@@ -120,8 +120,7 @@ pub async fn init_join_rows(conn: &SqlitePool) -> Result<Vec<StoreJoinRow>> {
         let mut param = JoinedReceiptParams::builder();
         param
             .with_item_id(ParamOption::new().map_value(r.0.id).clone())
-            .with_item_qty(ParamOption::new().map_value(r.1).clone())
-            .with_offset(0);
+            .with_item_qty(ParamOption::new().map_value(r.1).clone());
 
         match index {
             0 => {

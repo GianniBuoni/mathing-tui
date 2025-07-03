@@ -38,6 +38,30 @@ pub(super) fn match_update(item: (&AppArm, &RequestType, &DbPayload)) -> bool {
         (AppArm::Receipts, RequestType::Update, DbPayload::Receipt(_))
     )
 }
+pub(super) fn match_count(item: (&AppArm, &RequestType, &DbPayload)) -> bool {
+    matches!(
+        item,
+        (
+            AppArm::Items,
+            RequestType::Count,
+            DbPayload::Count(AppArm::Items, _)
+        )
+    ) || matches!(
+        item,
+        (
+            AppArm::Receipts,
+            RequestType::Count,
+            DbPayload::Count(AppArm::Receipts, _)
+        )
+    ) || matches!(
+        item,
+        (
+            AppArm::Users,
+            RequestType::Count,
+            DbPayload::Count(AppArm::Users, _)
+        )
+    )
+}
 pub(super) fn try_add_store_total(
     (_, req_type, res_payload): (&AppArm, &RequestType, &DbPayload),
 ) -> Result<()> {

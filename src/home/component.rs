@@ -30,17 +30,10 @@ impl Component for Home {
                 Action::DeleteSelected => self.delete_selected(),
                 Action::EditSelected => self.edit_selected(),
                 Action::Search => self.handle_search(),
-                Action::SelectForward => {
-                    self.cycle_active(1);
-                    self.components
-                        .iter_mut()
-                        .for_each(|c| c.handle_action(action));
-                }
-                Action::SelectBackward => {
-                    self.cycle_active(-1);
-                    self.components
-                        .iter_mut()
-                        .for_each(|c| c.handle_action(action));
+                Action::SelectForward => self.cycle_active(1),
+                Action::SelectBackward => self.cycle_active(-1),
+                Action::NavigateLeft | Action::NavigateRight => {
+                    self.handle_paging(action)
                 }
                 Action::Refresh => self.handle_refresh(),
                 _ => {

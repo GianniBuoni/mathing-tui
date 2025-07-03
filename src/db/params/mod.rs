@@ -31,6 +31,8 @@ where
     // TODO: figure out how to aviod a clone here.
     // the build method needs to operate on a reference
     // since form types own the builder type
+    // additionally the Rc needs to have no other strong
+    // references to successfully move out of.
     pub fn unwrap(&self) -> Option<T> {
         self.0.borrow().deref().clone()
     }

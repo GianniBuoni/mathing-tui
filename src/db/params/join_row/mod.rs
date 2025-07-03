@@ -12,12 +12,18 @@ impl JoinedReceiptParams {
         self.r_id = Some(r_id);
         self
     }
+    pub fn with_offset(mut self, offset: i64) -> Self {
+        self.offset = Some(offset);
+        self
+    }
+    pub fn with_limit(mut self, limit: i64) -> Self {
+        self.limit = Some(limit);
+        self
+    }
 }
 
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct JoinParamsBuilder {
-    pub offset: Option<i64>,
-    pub limit: Option<i64>,
     pub users: Rc<RefCell<Vec<i64>>>,
     pub r_id: ParamOption<i64>,
     pub item_id: ParamOption<i64>,
@@ -49,25 +55,16 @@ impl JoinParamsBuilder {
         }
         self
     }
-    pub fn with_offset(&mut self, offset: i64) -> &mut Self {
-        self.offset = Some(offset);
-        self
-    }
-    pub fn with_limit(&mut self, limit: i64) -> &mut Self {
-        self.limit = Some(limit);
-        self
-    }
     pub fn build(&self) -> JoinedReceiptParams {
         let users = self.users.clone();
         let users = users.borrow().to_owned();
 
         JoinedReceiptParams {
-            offset: self.offset,
-            limit: self.limit,
             users,
             r_id: self.r_id.unwrap(),
             item_id: self.item_id.unwrap(),
             item_qty: self.item_qty.unwrap(),
+            ..Default::default()
         }
     }
 }

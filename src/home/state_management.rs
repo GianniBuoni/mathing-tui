@@ -1,16 +1,22 @@
 use super::*;
 
 impl Home {
-    /// Check wether the main component has table components associated with
-    /// the main comopnents active index. Errors out if none exists.
+    /// Check whether the main component has table components associated with
+    /// the main comopnents active index. Errors out if the Vec is empty.
     pub(super) fn try_get_current_table(
         &self,
     ) -> Result<&TableData, ComponentError> {
-        let Some(table) = self.components.get(self.component_tracker.inner())
-        else {
-            return Err(ComponentError::NoData);
-        };
-        Ok(table)
+        self.components
+            .get(self.component_tracker.inner())
+            .ok_or(ComponentError::NoData)
+    }
+    /// Get the current table for mutation. Errors out if the Vec is empty.
+    pub(super) fn try_get_mut_current_table(
+        &mut self,
+    ) -> Result<&mut TableData, ComponentError> {
+        self.components
+            .get_mut(self.component_tracker.inner())
+            .ok_or(ComponentError::NoData)
     }
     /// Resets main component's form and message fields to None and then resets
     /// the component to Normal mode.
@@ -49,5 +55,19 @@ impl Home {
         }
         self.message = Some(Dialogue::error(err));
         self.mode = Mode::Insert;
+    }
+    pub(super) fn handle_paging(&mut self, action: Option<Action>) {
+        if let Err(err) = (|| {
+            let table = self.try_get_mut_current_table()?;
+            table.handle_action(action);
+
+            if let Some(req) = table.get_paging_req() {
+                self.try_send(req)?
+            }
+
+            Aok(())
+        })() {
+            self.map_err(err);
+        }
     }
 }

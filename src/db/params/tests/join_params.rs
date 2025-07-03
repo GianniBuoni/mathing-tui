@@ -9,9 +9,8 @@ async fn test_join_post(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_join_get_all(conn: SqlitePool) -> Result<()> {
     let want = init_join_rows(&conn).await?;
-    let got = JoinedReceiptParams::builder()
+    let got = JoinedReceiptParams::default()
         .with_offset(0)
-        .build()
         .get_all(&conn)
         .await?;
 
@@ -52,9 +51,8 @@ async fn test_join_delete(conn: SqlitePool) -> Result<()> {
         .delete(&conn)
         .await?;
 
-    let got = JoinedReceiptParams::builder()
+    let got = JoinedReceiptParams::default()
         .with_offset(0)
-        .build()
         .get_all(&conn)
         .await?;
     assert_ne!(initial.len(), got.len(), "Test if entries were deleted.");

@@ -4,6 +4,10 @@ impl Request for ItemParams {
     type Output = StoreItem;
     type Outputs = Vec<StoreItem>;
 
+    fn get_app_arm(&self) -> AppArm {
+        AppArm::Items
+    }
+
     fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError> {
         self.item_id
             .ok_or(RequestError::missing_param(req_type, "item", "id"))

@@ -2,46 +2,35 @@ use super::*;
 
 impl Home {
     pub(super) fn handle_submit(&mut self) {
-        let submission_callback = match true {
-            _ if self.form.is_some() => Self::try_form_submit,
-            _ if self.message.is_some() && !self.is_error() => {
-                Self::try_dialogue_submit
-            }
-            _ => {
-                return;
-            }
-        };
-        let (tx, requests) =
-            match self.try_collect_requests(submission_callback) {
-                Ok(r) => r,
-                Err(err) => {
-                    self.map_err(err);
-                    return;
+        if let Err(err) = (|| {
+            let submission_callback = match true {
+                _ if self.form.is_some() => Self::try_form_submit,
+                _ if self.message.is_some() && !self.is_error() => {
+                    Self::try_dialogue_submit
+                }
+                _ => {
+                    return Aok(());
                 }
             };
-        if let Err(err) = requests.into_iter().try_for_each(|f| tx.send(f)) {
+            let requests = submission_callback(self)?;
+            requests.into_iter().try_for_each(|f| self.try_send(f))?;
+
+            Aok(())
+        })() {
             self.map_err(err);
-            return;
         }
         // defer to resetting
-        self.form = None;
-        self.message = None;
-        self.mode = Mode::Normal;
+        self.reset_mode()
     }
-
-    fn try_collect_requests(
-        &mut self,
-        submission_callback: impl Fn(&mut Home) -> Result<Vec<DbRequest>>,
-    ) -> Result<(UnboundedSender<DbRequest>, Vec<DbRequest>)> {
+    pub(super) fn try_send(&self, req: DbRequest) -> Result<()> {
         let tx = self
             .req_tx
             .clone()
-            .ok_or(ComponentError::not_found("req_tx"))?;
-        let reqs = submission_callback(self)?;
+            .ok_or(ComponentError::not_found("Request tx"))?;
+        tx.send(req)?;
 
-        Ok((tx, reqs))
+        Ok(())
     }
-
     // helper methods
     fn try_form_submit(&mut self) -> Result<Vec<DbRequest>> {
         // unwrap the form. Should only be called if there is a form
@@ -60,6 +49,9 @@ impl Home {
         // if there is un update, check if we need to do
         // some calculations or push a refresh request.
         match (&payload, req_type) {
+            (_, RequestType::Post) => {
+                requests.append(&mut DbRequest::counts());
+            }
             (DbPayload::ReceiptParams(_), RequestType::Update) => {
                 self.try_subtract_store_total()?
             }
@@ -97,10 +89,13 @@ impl Home {
                 self.try_subtract_store_total()?
             }
             (DbPayload::ItemParams(_), RequestType::Delete) => {
-                requests.append(&mut DbRequest::refresh())
+                requests.append(&mut DbRequest::refresh());
             }
-            (DbPayload::StoreTotal, _) => {
-                requests.append(&mut DbRequest::init())
+            (_, RequestType::Delete) => {
+                requests.append(&mut DbRequest::counts());
+            }
+            (DbPayload::StoreTotal, _ /*Refresh to app init*/) => {
+                requests.append(&mut DbRequest::init());
             }
             _ => {}
         }

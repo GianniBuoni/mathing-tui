@@ -4,10 +4,15 @@ use super::*;
 
 impl TableData {
     pub(super) fn render_block<'a>(&'a self, style: Style) -> Block<'a> {
+        let current = self.count.min(self.limit * self.pages);
+        let title = format!(" {} of {} ", current, self.count);
+        let title = Line::from(title).right_aligned();
+
         Block::bordered()
             .border_style(style)
             .border_type(BorderType::Rounded)
             .title(format!(" [{}] {} ", self.app_index, self.title))
+            .title_bottom(title)
     }
 
     pub(super) fn render_rows(&self, style: Style) -> Vec<Row> {

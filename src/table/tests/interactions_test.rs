@@ -24,7 +24,7 @@ fn test_row_increment() {
             items.items.len()
         );
 
-        items.next_row();
+        items.row_increment(1);
         assert_eq!(want, items.table_index, "{desc}")
     }
 }
@@ -40,7 +40,7 @@ fn test_row_decrement() {
             items.items.len()
         );
 
-        items.prev_row();
+        items.row_increment(-1);
         assert_eq!(want, items.table_index, "{desc}")
     }
 }
@@ -63,4 +63,32 @@ fn test_up_down_navigation_input() {
 
         assert_eq!(want, items.table_index.clone(), "{desc}");
     });
+}
+
+#[test]
+fn test_max_pages() {
+    let desc = "Test max page math calculations for tables:";
+    let test_cases = [(3 as i64, "55 / 20"), (2, "40 / 20"), (1, "5 / 13 ")];
+    test_cases
+        .into_iter()
+        .zip(TableData::mock_pages())
+        .for_each(|((want, test), table)| {
+            assert_eq!(want, table.max_pages(), "{desc} {test}.");
+        });
+}
+
+#[test]
+fn test_req_offset() {
+    let desc = "Test request offset calculation for tables:";
+    let test_cases = [
+        (40 as i64, "55 items, page 3, limit 20"),
+        (20, "40 items, page 2, limit 20"),
+        (0, "5 items, page 1, limit 13"),
+    ];
+    test_cases
+        .into_iter()
+        .zip(TableData::mock_pages())
+        .for_each(|((want, test), table)| {
+            assert_eq!(want, table.get_req_offset(), "{desc} {test}.")
+        });
 }
