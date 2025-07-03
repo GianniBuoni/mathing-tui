@@ -4,6 +4,10 @@ impl Request for JoinedReceiptParams {
     type Output = StoreJoinRow;
     type Outputs = Vec<StoreJoinRow>;
 
+    fn get_app_arm(&self) -> AppArm {
+        AppArm::Receipts
+    }
+
     fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError> {
         self.r_id.ok_or(RequestError::missing_param(
             req_type,

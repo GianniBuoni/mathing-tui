@@ -17,6 +17,7 @@ pub trait Request {
 
     // required methods
     fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError>;
+    fn get_app_arm(&self) -> AppArm;
     fn get_all(
         &self,
         conn: &SqlitePool,
@@ -61,6 +62,10 @@ pub trait Request {
                 RequestType::Update => self.update(conn).await?.into(),
                 RequestType::Delete => self.delete(conn).await?.into(),
                 RequestType::Reset => self.reset(conn).await?.into(),
+                RequestType::Count => self
+                    .count(conn)
+                    .await
+                    .map(|count| DbPayload::Count(self.get_app_arm(), count))?,
                 _ => {
                     return Err(RequestError::unhandled(
                         "request type",

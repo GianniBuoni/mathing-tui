@@ -14,7 +14,7 @@ pub enum DbPayload {
     #[default]
     None,
     AffectedRows(u64),
-    Count(i64),
+    Count(AppArm, i64),
     ItemParams(ItemParams),
     Item(StoreItem),
     Items(Vec<StoreItem>),
@@ -40,7 +40,7 @@ impl Display for DbPayload {
         match self {
             Self::None => write!(f, "None"),
             Self::AffectedRows(_) => write!(f, "AffectedRows"),
-            Self::Count(_) => write!(f, "Count"),
+            Self::Count(_, _) => write!(f, "Count"),
             Self::ItemParams(_) => write!(f, "ItemParams"),
             Self::Item(_) => write!(f, "Item"),
             Self::Items(_) => write!(f, "Items"),

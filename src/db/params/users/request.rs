@@ -4,6 +4,10 @@ impl Request for UserParams {
     type Output = StoreUser;
     type Outputs = Vec<StoreUser>;
 
+    fn get_app_arm(&self) -> AppArm {
+        AppArm::Users
+    }
+
     fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError> {
         self.u_id
             .ok_or(RequestError::missing_param(req_type, "user", "id"))
