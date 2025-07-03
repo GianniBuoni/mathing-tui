@@ -24,7 +24,7 @@ fn test_row_increment() {
             items.items.len()
         );
 
-        items.next_row();
+        items.row_increment(1);
         assert_eq!(want, items.table_index, "{desc}")
     }
 }
@@ -40,7 +40,7 @@ fn test_row_decrement() {
             items.items.len()
         );
 
-        items.prev_row();
+        items.row_increment(-1);
         assert_eq!(want, items.table_index, "{desc}")
     }
 }

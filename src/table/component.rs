@@ -28,15 +28,24 @@ impl Component for TableData {
         self.tracker.inner() == self.app_index
     }
     fn handle_action(&mut self, action: Option<Action>) {
+        if !self.is_active() || self.items.is_empty() {
+            return;
+        }
         let Some(action) = action else {
             return;
         };
         match action {
             Action::NavigateDown => {
-                self.next_row();
+                self.row_increment(1);
             }
             Action::NavigateUp => {
-                self.prev_row();
+                self.row_increment(-1);
+            }
+            Action::NavigateLeft => {
+                self.page_increment(-1);
+            }
+            Action::NavigateRight => {
+                self.page_increment(1);
             }
             _ => {}
         }

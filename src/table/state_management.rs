@@ -1,7 +1,7 @@
 use super::*;
 
 impl TableData {
-    fn max(&self) -> usize {
+    fn max_rows(&self) -> usize {
         self.items.len() - 1
     }
     pub(super) fn max_pages(&self) -> i64 {
@@ -11,9 +11,22 @@ impl TableData {
             self.count / self.limit + 1
         }
     }
-    /// Calculates the offset for a GetAll request
-    pub(super) fn get_req_offset(&self) -> i64 {
-        0.max(self.pages - 1) * self.limit
+    /// Increments the table page forward or backward
+    pub(super) fn page_increment(&mut self, add: i64) {
+        let next_page = self.pages + add;
+        match next_page {
+            int if int > self.max_pages() => self.pages = 1,
+            int if int < 1 => self.pages = self.max_pages(),
+            _ => self.pages = next_page,
+        }
+    }
+    pub(super) fn row_increment(&mut self, add: i64) {
+        let next_index = self.table_index as i64 + add;
+        match next_index {
+            int if int > self.max_rows() as i64 => self.table_index = 0,
+            int if int < 0 => self.table_index = self.max_rows(),
+            _ => self.table_index = next_index as usize,
+        }
     }
     pub(super) fn add_items(&mut self, payload: DbPayload) {
         let filter = matches!(
@@ -22,10 +35,13 @@ impl TableData {
         );
         let items: Vec<DbTable> = payload.into();
         match filter {
-            true => self.items = items,
+            true => {
+                self.table_index = 0;
+                self.items = items
+            }
             false => {
                 if self.pages == self.max_pages() {
-                    self.items.push(items.first().unwrap().clone());
+                    self.items.push(items.first().unwrap().clone())
                 }
             }
         }
@@ -34,47 +50,5 @@ impl TableData {
         if let DbPayload::Count(_, i) = payload {
             self.count = i
         }
-    }
-    pub(super) fn next_row(&mut self) {
-        if !self.is_active() || self.items.is_empty() {
-            return;
-        }
-        if self.table_index < self.max() {
-            self.table_index += 1
-        } else {
-            self.table_index = 0
-        }
-    }
-    pub(super) fn prev_row(&mut self) {
-        if !self.is_active() || self.items.is_empty() {
-            return;
-        }
-        if self.table_index > 0 {
-            self.table_index -= 1
-        } else {
-            self.table_index = self.max()
-        }
-    }
-    pub(super) fn next_page(&mut self) {
-        if !self.is_active() || self.items.is_empty() {
-            return;
-        }
-        if self.pages < self.max_pages() {
-            self.pages += 1
-        } else {
-            self.pages = 1
-        }
-        // make req?
-    }
-    pub(super) fn prev_page(&mut self) {
-        if !self.is_active() || self.items.is_empty() {
-            return;
-        }
-        if self.pages > 1 {
-            self.pages -= 1
-        } else {
-            self.pages = self.max_pages()
-        }
-        // make req?
     }
 }
