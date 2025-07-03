@@ -40,9 +40,12 @@ impl DbRequest {
         })
         .collect()
     }
-    // TODO: make refresh offsets and limits configurable
+    // TODO: make refresh offsets and limits configurable. Each table might
+    // have to be responsible for its own refesh state, as this method is
+    // only suitible for full app refresh.
     /// Returns a pre-built DbRequest for refetching StoreTotals and table data.
-    /// This is Vec with a Refresh Requests and the three init requests.
+    /// This is Vec with a Refresh Request the three init requests,
+    /// and the three count Requests.
     pub fn refresh() -> Vec<Self> {
         let mut refresh = Self::new();
         refresh.with_payload(DbPayload::StoreTotal);
