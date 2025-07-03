@@ -99,9 +99,8 @@ mod tests {
         let want = expected_totals();
         let mut got = StoreTotal::default();
 
-        JoinedReceiptParams::builder()
+        JoinedReceiptParams::default()
             .with_offset(0)
-            .build()
             .get_all(&conn)
             .await?
             .into_iter()

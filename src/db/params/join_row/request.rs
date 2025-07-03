@@ -53,7 +53,10 @@ impl Request for JoinedReceiptParams {
         ))?;
 
         // check if item exists
-        ItemParams::new().with_item_id(item_id).get(conn).await?;
+        ItemParams::default()
+            .with_item_id(item_id)
+            .get(conn)
+            .await?;
 
         if self.users.is_empty() {
             return Err(RequestError::missing_param(

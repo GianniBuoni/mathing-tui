@@ -30,13 +30,13 @@ async fn test_get_items(conn: SqlitePool) -> Result<()> {
     // test configured limits and offset
     let test_cases = [
         (
-            ItemParams::builder().build(),
+            ItemParams::default(),
             3 as usize,
             "Chips and Dip",
             "GetAll w/ no params.",
         ),
         (
-            ItemParams::builder().with_limit(1).build(),
+            ItemParams::default().with_limit(1),
             1,
             "Chips and Dip",
             "GetAll w/ custom limit.",
@@ -129,9 +129,8 @@ async fn test_delete_item(conn: SqlitePool) -> Result<()> {
 
     param.delete(&conn).await?;
 
-    let finals = ItemParams::builder()
+    let finals = ItemParams::default()
         .with_offset(0)
-        .build()
         .get_all(&conn)
         .await?
         .into_iter()

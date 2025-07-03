@@ -346,13 +346,9 @@ async fn test_req_inits(conn: SqlitePool) -> Result<()> {
     // test cases
     let test_cases = [
         (ReqUser(UserParams::builder().build()), 2, "users"),
+        (ReqItem(ItemParams::default().with_offset(0)), 1, "items"),
         (
-            ReqItem(ItemParams::builder().with_offset(0).build()),
-            1,
-            "items",
-        ),
-        (
-            ReqReceipt(JoinedReceiptParams::builder().with_offset(0).build()),
+            ReqReceipt(JoinedReceiptParams::default().with_offset(0)),
             1,
             "receipts",
         ),
