@@ -1,58 +1,80 @@
-use std::{collections::HashMap, sync::OnceLock};
+use std::{
+    collections::HashMap,
+    path::PathBuf,
+    sync::Mutex,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
+use rust_decimal::Decimal;
 use serde::Deserialize;
+use sqlx::SqlitePool;
+use tokio::sync::OnceCell;
 
 use crate::prelude::*;
-use parsing::parse_key_event;
+use keymap::DEFAULT_KEYMAP;
 
 pub mod prelude {
-    pub use super::Config;
+    pub use super::AppConfig;
 }
 
-mod builder;
 mod filesystems;
-mod parsing;
+mod keymap;
+mod store;
 #[cfg(test)]
 mod tests;
+mod totals;
 
-const DEFAULT_CONFIG_PATH: [&str; 2] = ["mathing", "config.toml"];
+static CONFIG: OnceCell<AppConfig> = OnceCell::const_new();
 
-const DEFAULT_CONFIG: &[u8; 455] = b"[keymap]
-\"CTRL-c\" = \"Quit\"
-\"a\" = \"AddToReceipt\"
-\"d\" = \"DeleteSelected\"
-\"e\" = \"EditSelected\"
-\"i\" = \"EnterInsert\"
-\"ESC\" = \"EnterNormal\"
-\" \" = \"MakeSelection\"
-\"LEFT\" = \"NavigateLeft\"
-\"h\" = \"NavigateLeft\"
-\"DOWN\" = \"NavigateDown\"
-\"j\" = \"NavigateDown\"
-\"UP\" = \"NavigateUp\"
-\"k\" = \"NavigateUp\"
-\"RIGHT\" = \"NavigateRight\"
-\"l\" = \"NavigateRight\"
-\"CTRL-r\" = \"Refresh\"
-\"/\" = \"Search\"
-\"TAB\" = \"SelectForward\"
-\"ALT-TAB\" = \"SelectBackward\"
-\"y\" = \"Submit\"
-\"ENTER\" = \"Submit\"";
-
-static CONFIG: OnceLock<Config> = OnceLock::new();
-
-#[derive(Default, Debug, Deserialize)]
-pub struct Config {
-    #[serde(default)]
+#[derive(Debug)]
+pub struct AppConfig {
     keymap: KeyMap,
+    store: DbConn,
+    totals: Mutex<StoreTotal>,
+}
+
+impl AppConfig {
+    /// Initializes all static variables in the app.
+    async fn try_init() -> Result<()> {
+        let config = async || {
+            let (config_dir, db_dir) = Self::check()?;
+
+            let keymap = KeyMap::try_init(config_dir)?;
+            let store = DbConn::try_init(db_dir).await?;
+            let totals = StoreTotal::try_init(&store.0).await?;
+
+            Ok(Self {
+                keymap,
+                store,
+                totals,
+            })
+        };
+        CONFIG.get_or_try_init(config).await?;
+        Ok(())
+    }
+    pub fn get_keymap(key_event: KeyEvent) -> Option<Action> {
+        CONFIG.get()?.keymap.0.get(&key_event).copied()
+    }
+    pub fn try_get_totals() -> Result<&'static Mutex<StoreTotal>> {
+        Ok(&CONFIG.get().ok_or(AppError::ConfigInit)?.totals)
+    }
+    pub fn try_get_connection() -> Result<&'static SqlitePool> {
+        Ok(&CONFIG
+            .get()
+            .ok_or(AppError::config("Config hasn't been initialized yet"))?
+            .store
+            .0)
+    }
+    pub fn try_get_time() -> Result<i64> {
+        Ok(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() as i64)
+    }
 }
 
 #[derive(Default, Debug)]
 pub struct KeyMap(pub HashMap<KeyEvent, Action>);
 
-impl Config {
-    pub fn get(&self, key: KeyEvent) -> Option<Action> {
-        self.keymap.0.get(&key).copied()
-    }
-}
+#[derive(Debug)]
+pub struct DbConn(SqlitePool);
+
+#[derive(Debug, Default, PartialEq)]
+pub struct StoreTotal(HashMap<i64, Decimal>);

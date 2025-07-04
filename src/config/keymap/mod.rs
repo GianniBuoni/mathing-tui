@@ -1,39 +1,49 @@
-use core::panic;
-
 use serde::de::{self, Visitor};
 
 use super::*;
+use parsing::parse_key_event;
 
-impl Config {
-    fn new() -> Self {
-        let config_dir = match Self::check() {
-            Ok(p) => p,
-            Err(e) => {
-                panic!("Issue with checking config dir: {e}.")
-            }
-        };
-        let config = match config::Config::builder()
+mod parsing;
+#[cfg(test)]
+mod tests;
+
+pub const DEFAULT_KEYMAP: &[u8; 455] = b"[keymap]
+\"CTRL-c\" = \"Quit\"
+\"a\" = \"AddToReceipt\"
+\"d\" = \"DeleteSelected\"
+\"e\" = \"EditSelected\"
+\"i\" = \"EnterInsert\"
+\"ESC\" = \"EnterNormal\"
+\" \" = \"MakeSelection\"
+\"LEFT\" = \"NavigateLeft\"
+\"h\" = \"NavigateLeft\"
+\"DOWN\" = \"NavigateDown\"
+\"j\" = \"NavigateDown\"
+\"UP\" = \"NavigateUp\"
+\"k\" = \"NavigateUp\"
+\"RIGHT\" = \"NavigateRight\"
+\"l\" = \"NavigateRight\"
+\"CTRL-r\" = \"Refresh\"
+\"/\" = \"Search\"
+\"TAB\" = \"SelectForward\"
+\"ALT-TAB\" = \"SelectBackward\"
+\"y\" = \"Submit\"
+\"ENTER\" = \"Submit\"";
+
+impl KeyMap {
+    pub fn try_init(config_dir: PathBuf) -> Result<Self> {
+        let config_src = config::Config::builder()
             .add_source(
                 config::File::from(config_dir)
                     .format(config::FileFormat::Toml)
                     .required(false),
             )
-            .build()
-        {
-            Ok(c) => c,
-            Err(e) => {
-                panic!("Issue building config struct: {e}.")
-            }
-        };
-        match config.try_deserialize::<Self>() {
-            Ok(c) => c,
-            Err(e) => {
-                panic!("Issue deserializing config file: {e}")
-            }
-        }
+            .build()?;
+
+        Ok(config_src.try_deserialize::<KeyMap>()?)
     }
-    pub fn get_config() -> &'static Self {
-        CONFIG.get_or_init(Self::new)
+    pub fn get_action(&self, key: KeyEvent) -> Option<Action> {
+        self.0.get(&key).copied()
     }
 }
 
