@@ -82,9 +82,7 @@ impl Tui {
         let conn = match AppConfig::try_get_connection() {
             Ok(c) => c,
             Err(_) => {
-                let res = DbResponse::new()
-                    .req_type(RequestType::GetAll)
-                    .error(RequestError::Connection.to_string());
+                let res = DbResponse::new().error(RequestError::Connection);
                 res_tx
                     .send(res)
                     .await
