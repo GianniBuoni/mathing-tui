@@ -79,7 +79,7 @@ impl Tui {
         mut req_rx: UnboundedReceiver<DbRequest>,
         res_tx: Sender<DbResponse>,
     ) {
-        let conn = match DbConn::try_get().await {
+        let conn = match AppConfig::try_get_connection() {
             Ok(c) => c,
             Err(_) => {
                 let res = DbResponse::new()

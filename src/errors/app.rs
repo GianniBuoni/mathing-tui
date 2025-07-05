@@ -4,6 +4,7 @@ use super::*;
 pub enum AppError {
     Mapping(AppArm, AppArm),
     Config(String),
+    ConfigInit,
     StoreTotalMutex,
     StoreTotalKey(i64),
 }
@@ -18,7 +19,10 @@ impl Display for AppError {
                 )
             }
             Self::Config(msg) => {
-                write!(f, "Config error: {msg}")
+                write!(f, "Config error: {msg}.")
+            }
+            Self::ConfigInit => {
+                write!(f, "Config error: has not yet been initialized.")
             }
             Self::StoreTotalMutex => {
                 write!(

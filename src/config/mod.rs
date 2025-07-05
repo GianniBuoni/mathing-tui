@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    env,
     path::PathBuf,
     sync::Mutex,
     time::{SystemTime, UNIX_EPOCH},
@@ -35,6 +36,8 @@ pub struct AppConfig {
 
 impl AppConfig {
     /// Initializes all static variables in the app.
+    /// Does not return the struct; use the specific getter
+    /// for the field instead.
     async fn try_init() -> Result<()> {
         let config = async || {
             let (config_dir, db_dir) = Self::check()?;
@@ -43,12 +46,13 @@ impl AppConfig {
             let store = DbConn::try_init(db_dir).await?;
             let totals = StoreTotal::try_init(&store.0).await?;
 
-            Ok(Self {
+            Aok(Self {
                 keymap,
                 store,
                 totals,
             })
         };
+
         CONFIG.get_or_try_init(config).await?;
         Ok(())
     }

@@ -53,7 +53,7 @@ impl Request for ItemParams {
             "item price",
         ))?;
 
-        let now = DbConn::try_get_time()?;
+        let now = AppConfig::try_get_time()?;
 
         Ok(sqlx::query_as!(
             StoreItem,
@@ -74,7 +74,7 @@ impl Request for ItemParams {
     async fn update(&self, conn: &SqlitePool) -> Result<Self::Output> {
         let mut tx = conn.begin().await?;
         let id = self.check_id(RequestType::Update)?;
-        let now = DbConn::try_get_time()?;
+        let now = AppConfig::try_get_time()?;
 
         if self.item_name.is_none() && self.item_price.is_none() {
             return Err(RequestError::missing_param(

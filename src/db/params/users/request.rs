@@ -33,7 +33,7 @@ impl Request for UserParams {
 
     async fn post(&self, conn: &SqlitePool) -> Result<Self::Output> {
         let mut tx = conn.begin().await?;
-        let now = DbConn::try_get_time()?;
+        let now = AppConfig::try_get_time()?;
 
         let name = self.name.clone().ok_or(RequestError::missing_param(
             RequestType::Post,
@@ -77,7 +77,7 @@ impl Request for UserParams {
         let mut tx = conn.begin().await?;
 
         let id = self.check_id(RequestType::Update)?;
-        let now = DbConn::try_get_time()?;
+        let now = AppConfig::try_get_time()?;
         let name = self.name.clone().ok_or(RequestError::missing_param(
             RequestType::Update,
             "user",

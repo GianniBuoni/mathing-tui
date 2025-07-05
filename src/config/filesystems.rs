@@ -1,8 +1,6 @@
 use std::{
-    env,
     fs::{File, create_dir_all},
     io::Write,
-    path::PathBuf,
 };
 
 use super::*;

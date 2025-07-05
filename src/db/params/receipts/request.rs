@@ -32,7 +32,7 @@ impl Transaction for ReceiptParams {
             "receipt",
             "item qty",
         ))?;
-        let now = DbConn::try_get_time()?;
+        let now = AppConfig::try_get_time()?;
 
         Ok(sqlx::query_as!(
             StoreReceipt,
@@ -95,7 +95,7 @@ impl Transaction for ReceiptParams {
             .execute(&mut *conn)
             .await?;
         }
-        let now = DbConn::try_get_time()?;
+        let now = AppConfig::try_get_time()?;
 
         sqlx::query!("UPDATE receipts SET updated_at=?1 WHERE id=?2", now, id)
             .execute(&mut *conn)

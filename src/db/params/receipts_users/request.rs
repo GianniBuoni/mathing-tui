@@ -39,7 +39,7 @@ impl Transaction for ReceiptsUsersParams {
             "receipts users",
             "user id",
         ))?;
-        let now = DbConn::try_get_time()?;
+        let now = AppConfig::try_get_time()?;
 
         Ok(sqlx::query_as!(
             StoreReceiptsUsers,
