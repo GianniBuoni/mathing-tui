@@ -54,7 +54,8 @@ async fn main() -> Result<()> {
 
     let names = ["Blue", "Noodle"];
 
-    let conn = DbConn::try_get().await?;
+    AppConfig::try_init().await?;
+    let conn = DbConn::try_get()?;
 
     for (name, price) in items.into_iter().zip(prices.into_iter()) {
         let mut params = ItemParams::builder();

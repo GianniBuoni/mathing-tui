@@ -18,7 +18,7 @@ impl AppConfig {
         match (|| {
             env::var("PLATFORM")?; // if not set, default to home dir
             let src_dir = env::var("PWD")?;
-            Aok(PathBuf::from(src_dir))
+            Aok(PathBuf::from_iter([src_dir.as_str(), ".config"]))
         })() {
             Ok(p) => Ok(p.join("mathing")),
             Err(_) => Ok(dirs::config_dir().ok_or(not_found)?.join("mathing")),

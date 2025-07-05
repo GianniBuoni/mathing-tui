@@ -1,7 +1,7 @@
 use super::*;
 
 impl DbConn {
-    pub async fn try_init(db_dir: PathBuf) -> Result<Self> {
+    pub(super) async fn try_init(db_dir: PathBuf) -> Result<Self> {
         let db_str = db_dir.to_str().ok_or(Error::msg(
             "Couldn't parse: \"{db_dir:?}\" as a connection string.",
         ))?;
@@ -48,5 +48,13 @@ CREATE TABLE IF NOT EXISTS receipts_users (
         .await?;
 
         Ok(Self(pool))
+    }
+
+    pub fn try_get() -> Result<&'static SqlitePool> {
+        Ok(&CONFIG
+            .get()
+            .ok_or(AppError::config("Config hasn't been initialized yet"))?
+            .store
+            .0)
     }
 }

@@ -5,8 +5,7 @@ impl Component for Home {
         if let Some(form) = &self.form {
             return form.handle_key_events(key);
         }
-        let keymap = Config::get_config();
-        keymap.get(key)
+        KeyMap::get()?.get_action(key)
     }
 
     fn handle_action(&mut self, action: Option<Action>) {

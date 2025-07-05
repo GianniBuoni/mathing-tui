@@ -7,8 +7,7 @@ mod parsing;
 #[cfg(test)]
 mod tests;
 
-pub const DEFAULT_KEYMAP: &[u8; 455] = b"[keymap]
-\"CTRL-c\" = \"Quit\"
+pub const DEFAULT_KEYMAP: &[u8; 446] = b"\"CTRL-c\" = \"Quit\"
 \"a\" = \"AddToReceipt\"
 \"d\" = \"DeleteSelected\"
 \"e\" = \"EditSelected\"
@@ -31,7 +30,7 @@ pub const DEFAULT_KEYMAP: &[u8; 455] = b"[keymap]
 \"ENTER\" = \"Submit\"";
 
 impl KeyMap {
-    pub fn try_init(config_dir: PathBuf) -> Result<Self> {
+    pub(super) fn try_init(config_dir: PathBuf) -> Result<Self> {
         let config_src = config::Config::builder()
             .add_source(
                 config::File::from(config_dir)
@@ -41,6 +40,9 @@ impl KeyMap {
             .build()?;
 
         Ok(config_src.try_deserialize::<KeyMap>()?)
+    }
+    pub fn get() -> Option<&'static Self> {
+        Some(&CONFIG.get()?.keymap)
     }
     pub fn get_action(&self, key: KeyEvent) -> Option<Action> {
         self.0.get(&key).copied()

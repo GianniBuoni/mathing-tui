@@ -15,7 +15,7 @@ use crate::prelude::*;
 use keymap::DEFAULT_KEYMAP;
 
 pub mod prelude {
-    pub use super::AppConfig;
+    pub use super::{AppConfig, DbConn, KeyMap, StoreTotal};
 }
 
 mod filesystems;
@@ -38,7 +38,7 @@ impl AppConfig {
     /// Initializes all static variables in the app.
     /// Does not return the struct; use the specific getter
     /// for the field instead.
-    async fn try_init() -> Result<()> {
+    pub async fn try_init() -> Result<()> {
         let config = async || {
             let (config_dir, db_dir) = Self::check()?;
 
@@ -56,26 +56,13 @@ impl AppConfig {
         CONFIG.get_or_try_init(config).await?;
         Ok(())
     }
-    pub fn get_keymap(key_event: KeyEvent) -> Option<Action> {
-        CONFIG.get()?.keymap.0.get(&key_event).copied()
-    }
-    pub fn try_get_totals() -> Result<&'static Mutex<StoreTotal>> {
-        Ok(&CONFIG.get().ok_or(AppError::ConfigInit)?.totals)
-    }
-    pub fn try_get_connection() -> Result<&'static SqlitePool> {
-        Ok(&CONFIG
-            .get()
-            .ok_or(AppError::config("Config hasn't been initialized yet"))?
-            .store
-            .0)
-    }
     pub fn try_get_time() -> Result<i64> {
         Ok(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() as i64)
     }
 }
 
 #[derive(Default, Debug)]
-pub struct KeyMap(pub HashMap<KeyEvent, Action>);
+pub struct KeyMap(HashMap<KeyEvent, Action>);
 
 #[derive(Debug)]
 pub struct DbConn(SqlitePool);

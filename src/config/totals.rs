@@ -2,7 +2,7 @@ use super::*;
 
 impl StoreTotal {
     // setters
-    pub async fn try_init(conn: &SqlitePool) -> Result<Mutex<Self>> {
+    pub(super) async fn try_init(conn: &SqlitePool) -> Result<Mutex<Self>> {
         let total = TotalsParams::get_total(conn).await?;
         Ok(Mutex::new(total))
     }
@@ -23,6 +23,12 @@ impl StoreTotal {
             self.0.entry(key).and_modify(|f| *f -= val);
         });
     }
+    // getters
+    /// Returns the StoreTotal Mutex. Errors out if there the OnecCell
+    /// variable hasn't been initialized yet.
+    pub fn try_get() -> Result<&'static Mutex<Self>> {
+        Ok(&CONFIG.get().ok_or(AppError::ConfigInit)?.totals)
+    }
     /// Calculates a new StoreTotal and replaces the current one
     /// with this new total.
     /// This method should only be called after the StoreTotal struct
@@ -31,7 +37,7 @@ impl StoreTotal {
         let new_value = TotalsParams::get_total(conn).await?;
         // using try_get here to avoid potentailly initalizing the value
         // only to replace the value later in the function.
-        let mut current = AppConfig::try_get_totals()?
+        let mut current = Self::try_get()?
             .lock()
             .map_err(|_| AppError::StoreTotalMutex)?;
         *current = new_value;
@@ -40,7 +46,7 @@ impl StoreTotal {
     }
     /// Returns value of specific value for a given key in StoreTotal.
     pub fn try_get_inner(key: i64) -> Result<Decimal> {
-        let totals = AppConfig::try_get_totals()?
+        let totals = Self::try_get()?
             .lock()
             .map_err(|_| AppError::StoreTotalMutex)?;
 
@@ -54,10 +60,10 @@ impl StoreTotal {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    // TODO: make into integration test now that its in new module?
-    //use crate::db::params::tests::init_join_rows;
     use rust_decimal::dec;
+
+    use super::*;
+    use crate::db::params::tests::init_join_rows;
 
     fn intermediate_totals() -> Vec<HashMap<i64, Decimal>> {
         vec![
@@ -70,27 +76,27 @@ mod tests {
         HashMap::from([(3, dec!(18.30)), (2, dec!(17.81))])
     }
 
-    // #[sqlx::test]
-    // async fn test_totals_adding(conn: SqlitePool) -> Result<()> {
-    //     init_join_rows(&conn).await?;
-    //     let want = expected_totals();
-    //     let mut got = StoreTotal::default();
+    #[sqlx::test]
+    async fn test_totals_adding(conn: SqlitePool) -> Result<()> {
+        init_join_rows(&conn).await?;
+        let want = expected_totals();
+        let mut got = StoreTotal::default();
 
-    //     JoinedReceiptParams::default()
-    //         .with_offset(0)
-    //         .get_all(&conn)
-    //         .await?
-    //         .into_iter()
-    //         .zip(intermediate_totals())
-    //         .try_for_each(|(row, want)| {
-    //             anyhow::Ok({
-    //                 assert_eq!(want, row.try_calc()?);
-    //                 got.add(row.try_calc()?);
-    //             })
-    //         })?;
+        JoinedReceiptParams::default()
+            .with_offset(0)
+            .get_all(&conn)
+            .await?
+            .into_iter()
+            .zip(intermediate_totals())
+            .try_for_each(|(row, want)| {
+                anyhow::Ok({
+                    assert_eq!(want, row.try_calc()?);
+                    got.add(row.try_calc()?);
+                })
+            })?;
 
-    //     assert_eq!(want, got.0, "Test if all the math is right ✨");
+        assert_eq!(want, got.0, "Test if all the math is right ✨");
 
-    //     Ok(())
-    // }
+        Ok(())
+    }
 }
