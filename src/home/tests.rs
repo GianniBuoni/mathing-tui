@@ -13,7 +13,6 @@ impl Home {
 
 #[test]
 fn test_key_events() {
-    Config::get_config();
     let home = Home::mock();
 
     let key_events = [

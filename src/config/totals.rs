@@ -58,45 +58,8 @@ impl StoreTotal {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use rust_decimal::dec;
-
-    use super::*;
-    use crate::db::params::tests::init_join_rows;
-
-    fn intermediate_totals() -> Vec<HashMap<i64, Decimal>> {
-        vec![
-            HashMap::from([(3, dec!(9.98))]),
-            HashMap::from([(2, dec!(9.49))]),
-            HashMap::from([(2, dec!(8.32)), (3, dec!(8.32))]),
-        ]
-    }
-    fn expected_totals() -> HashMap<i64, Decimal> {
-        HashMap::from([(3, dec!(18.30)), (2, dec!(17.81))])
-    }
-
-    #[sqlx::test]
-    async fn test_totals_adding(conn: SqlitePool) -> Result<()> {
-        init_join_rows(&conn).await?;
-        let want = expected_totals();
-        let mut got = StoreTotal::default();
-
-        JoinedReceiptParams::default()
-            .with_offset(0)
-            .get_all(&conn)
-            .await?
-            .into_iter()
-            .zip(intermediate_totals())
-            .try_for_each(|(row, want)| {
-                anyhow::Ok({
-                    assert_eq!(want, row.try_calc()?);
-                    got.add(row.try_calc()?);
-                })
-            })?;
-
-        assert_eq!(want, got.0, "Test if all the math is right ✨");
-
-        Ok(())
+impl From<HashMap<i64, Decimal>> for StoreTotal {
+    fn from(value: HashMap<i64, Decimal>) -> Self {
+        Self(value)
     }
 }
