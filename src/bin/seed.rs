@@ -1,3 +1,4 @@
+use dirs::config_dir;
 use mathing_tui::prelude::*;
 
 #[tokio::main]
@@ -54,7 +55,7 @@ async fn main() -> Result<()> {
 
     let names = ["Blue", "Noodle"];
 
-    AppConfig::try_init().await?;
+    AppConfig::try_init(AppConfig::try_get_config_dir()?).await?;
     let conn = DbConn::try_get()?;
 
     for (name, price) in items.into_iter().zip(prices.into_iter()) {
