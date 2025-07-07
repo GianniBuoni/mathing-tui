@@ -13,19 +13,21 @@ use tokio::sync::OnceCell;
 
 use crate::prelude::*;
 use keymap::DEFAULT_KEYMAP;
+use parsing::*;
 
 pub mod prelude {
-    pub use super::{AppConfig, DbConn, KeyMap, StoreTotal};
+    pub use super::{AppConfig, CONFIG, DbConn, KeyMap, StoreTotal};
 }
 
 mod filesystems;
 mod keymap;
+mod parsing;
 mod store;
 #[cfg(test)]
 mod tests;
 mod totals;
 
-static CONFIG: OnceCell<AppConfig> = OnceCell::const_new();
+pub static CONFIG: OnceCell<AppConfig> = OnceCell::const_new();
 
 #[derive(Debug)]
 pub struct AppConfig {
@@ -38,12 +40,12 @@ impl AppConfig {
     /// Initializes all static variables in the app.
     /// Does not return the struct; use the specific getter
     /// for the field instead.
-    pub async fn try_init() -> Result<()> {
+    pub async fn try_init(config_dir: PathBuf) -> Result<()> {
         let config = async || {
-            let (config_dir, db_dir) = Self::check()?;
+            let (keymap_file, db_file) = Self::check(config_dir)?;
 
-            let keymap = KeyMap::try_init(config_dir)?;
-            let store = DbConn::try_init(db_dir).await?;
+            let keymap = KeyMap::try_init(keymap_file)?;
+            let store = DbConn::try_init(db_file).await?;
             let totals = StoreTotal::try_init(&store.0).await?;
 
             Aok(Self {
@@ -52,7 +54,6 @@ impl AppConfig {
                 totals,
             })
         };
-
         CONFIG.get_or_try_init(config).await?;
         Ok(())
     }

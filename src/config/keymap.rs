@@ -1,11 +1,6 @@
 use serde::de::{self, Visitor};
 
 use super::*;
-use parsing::parse_key_event;
-
-mod parsing;
-#[cfg(test)]
-mod tests;
 
 pub const DEFAULT_KEYMAP: &[u8; 446] = b"\"CTRL-c\" = \"Quit\"
 \"a\" = \"AddToReceipt\"

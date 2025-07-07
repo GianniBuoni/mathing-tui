@@ -6,7 +6,9 @@ use std::{
 use super::*;
 
 impl AppConfig {
-    fn config_dir() -> Result<PathBuf> {
+    // Get the currently configured config directory based on the
+    // environmental variables.
+    pub fn try_get_config_dir() -> Result<PathBuf> {
         let not_found = AppError::config(
             "Could not parse config filepath for this environment.",
         );
@@ -25,10 +27,10 @@ impl AppConfig {
         }
     }
 
-    pub(super) fn check() -> Result<(PathBuf, PathBuf)> {
-        let config_dir = Self::config_dir()?;
+    pub(super) fn check(config_dir: PathBuf) -> Result<(PathBuf, PathBuf)> {
         let config_file = config_dir.join("config.toml");
         let db_file = config_dir.join("data.db");
+
         // make config dir if not exists
         if !config_dir.exists() {
             let message = "Couldn't create config dir: \"{config_dir}\".";
