@@ -1,9 +1,7 @@
+use rust_decimal::dec;
 use std::collections::HashMap;
 
-use common::try_init_test_db;
-use mathing_tui::prelude::*;
-use rust_decimal::dec;
-use sqlx::SqlitePool;
+use common::*;
 
 mod common;
 
@@ -26,5 +24,20 @@ async fn test_totals_adding(conn: SqlitePool) -> Result<()> {
         })?;
 
     assert_eq!(want, got, "Test if all the math is right ✨");
+    Ok(())
+}
+
+#[sqlx::test]
+async fn test_get_total(conn: SqlitePool) -> Result<()> {
+    try_init_test_db(&conn).await?;
+
+    let want = expected_totals();
+    let got = TotalsParams::get_total(&conn).await?;
+
+    assert_eq!(
+        want, got,
+        "Test if params methods calculate totals correctly."
+    );
+
     Ok(())
 }
