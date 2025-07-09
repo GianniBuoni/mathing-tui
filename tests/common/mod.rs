@@ -1,8 +1,19 @@
 #![allow(dead_code)]
+#![allow(unused_imports)]
 
-pub use mathing_tui::prelude::*;
-pub use sqlx::{QueryBuilder, Sqlite, SqlitePool};
-pub use std::{env, path::PathBuf};
+use std::{env, path::PathBuf};
+
+use self::prelude::*;
+
+pub mod prelude {
+    pub use super::{
+        MOCK_ITEMS, MOCK_RECEIPTS, MOCK_RU, MOCK_USERS, try_init_test_config,
+        try_init_test_db,
+    };
+    pub use futures::future::try_join_all;
+    pub use mathing_tui::prelude::*;
+    pub use sqlx::{QueryBuilder, Sqlite, SqlitePool};
+}
 
 pub const MOCK_ITEMS: [(i64, &str, f64); 3] = [
     (1, "PB Prezel", 4.99),

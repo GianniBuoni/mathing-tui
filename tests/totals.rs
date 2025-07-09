@@ -1,7 +1,7 @@
 use rust_decimal::dec;
 use std::collections::HashMap;
 
-use common::*;
+use common::prelude::*;
 
 mod common;
 

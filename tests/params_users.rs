@@ -1,6 +1,4 @@
-use futures::future::try_join_all;
-
-use common::*;
+use common::prelude::*;
 
 mod common;
 
