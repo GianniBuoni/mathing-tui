@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub use mathing_tui::prelude::*;
 pub use sqlx::{QueryBuilder, Sqlite, SqlitePool};
 pub use std::{env, path::PathBuf};
