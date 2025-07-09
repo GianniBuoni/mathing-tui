@@ -35,8 +35,8 @@ pub const MOCK_RECEIPTS: [(i64, i64, i64); 3] =
 pub const MOCK_RU: [(i64, i64); 4] = [(1, 3), (2, 2), (3, 2), (3, 3)];
 
 /// Sets up the testing CONFIG static struct.
-/// Assures that the test is not varaible based on
-/// whether or not certain app env variables are set.
+/// Assures that the test does not depend on whether
+/// or not certain app env variables are set.
 /// For keymap testing only; use [`try_init_test_db`]
 /// for database integration tests.
 pub async fn try_init_test_config() -> Result<()> {
@@ -46,7 +46,7 @@ pub async fn try_init_test_config() -> Result<()> {
 
     Ok(())
 }
-
+/// Sets up a testing Db for request and response testing.
 pub async fn try_init_test_db(conn: &SqlitePool) -> Result<()> {
     let now = AppConfig::try_get_time()?;
 

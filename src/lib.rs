@@ -1,5 +1,5 @@
 pub mod prelude {
-    pub(crate) use crate::actions::Action;
+    pub use crate::actions::Action;
     pub use crate::app::prelude::*;
     pub use crate::center_widget::center_widget;
     pub use crate::component::prelude::*;
