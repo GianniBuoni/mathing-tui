@@ -78,25 +78,3 @@ pub trait Request {
         }
     }
 }
-
-pub(super) trait Transaction {
-    type Output;
-
-    fn check_id(&self, req_type: RequestType) -> Result<i64, RequestError>;
-    fn get(
-        &self,
-        conn: &mut SqliteConnection,
-    ) -> impl Future<Output = Result<Self::Output>>;
-    fn post(
-        &self,
-        conn: &mut SqliteConnection,
-    ) -> impl Future<Output = Result<Self::Output>>;
-    fn update(
-        &self,
-        conn: &mut SqliteConnection,
-    ) -> impl Future<Output = Result<Self::Output>>;
-    fn delete(
-        &self,
-        conn: &mut SqliteConnection,
-    ) -> impl Future<Output = Result<u64>>;
-}

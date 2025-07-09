@@ -11,10 +11,7 @@ use rust_decimal::prelude::*;
 use sqlx::{SqliteConnection, SqlitePool};
 
 use crate::prelude::*;
-use requests::Transaction;
-use tables::{
-    StoreCount, StoreJoinPrices, StoreJoinRaw, StoreReceipt, StoreReceiptsUsers,
-};
+use tables::{StoreCount, StoreJoinPrices, StoreJoinRaw, StoreReceipt};
 
 mod params;
 mod payloads;

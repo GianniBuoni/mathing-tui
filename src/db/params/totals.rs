@@ -28,10 +28,8 @@ GROUP BY ru.receipt_id
         Self::get_prices(conn).await?.into_iter().try_fold(
             StoreTotal::default(),
             |mut acc, next| {
-                Aok::<StoreTotal>({
-                    acc.add(next.try_calc()?);
-                    acc
-                })
+                acc.add(next.try_calc()?);
+                Aok(acc)
             },
         )
     }
