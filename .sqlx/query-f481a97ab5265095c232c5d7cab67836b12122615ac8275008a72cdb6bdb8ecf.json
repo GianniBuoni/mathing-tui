@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT * FROM receipts WHERE id=?1",
+  "query": "SELECT * from receipts WHERE id=?",
   "describe": {
     "columns": [
       {
@@ -40,5 +40,5 @@
       false
     ]
   },
-  "hash": "978d88cb61158bc8335db4059399f89b0029ed9c899a2cc1f409b10041e9323c"
+  "hash": "f481a97ab5265095c232c5d7cab67836b12122615ac8275008a72cdb6bdb8ecf"
 }

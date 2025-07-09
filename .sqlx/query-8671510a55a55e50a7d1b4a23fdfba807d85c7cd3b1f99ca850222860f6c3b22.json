@@ -1,38 +1,44 @@
 {
   "db_name": "SQLite",
-  "query": "\n            INSERT INTO receipts_users (\n                receipt_id, user_id, created_at, updated_at\n            )\n            VALUES (?1, ?2, ?3, ?4) RETURNING *\n            ",
+  "query": "SELECT * FROM receipts WHERE id=?",
   "describe": {
     "columns": [
       {
-        "name": "created_at",
+        "name": "id",
         "ordinal": 0,
         "type_info": "Integer"
       },
       {
-        "name": "updated_at",
+        "name": "created_at",
         "ordinal": 1,
         "type_info": "Integer"
       },
       {
-        "name": "receipt_id",
+        "name": "updated_at",
         "ordinal": 2,
         "type_info": "Integer"
       },
       {
-        "name": "user_id",
+        "name": "item_id",
         "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "item_qty",
+        "ordinal": 4,
         "type_info": "Integer"
       }
     ],
     "parameters": {
-      "Right": 4
+      "Right": 1
     },
     "nullable": [
+      false,
       false,
       false,
       false,
       false
     ]
   },
-  "hash": "4d2cbc9164649479cc61968be9ec8a8392a2caa29ca4132864efdaf7a887093f"
+  "hash": "8671510a55a55e50a7d1b4a23fdfba807d85c7cd3b1f99ca850222860f6c3b22"
 }
