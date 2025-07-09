@@ -10,8 +10,12 @@ lint:
   cargo clippy -- -Dwarnings
 
 reset:
-  rm data.db
-  touch data.db
+  rm -r .config
+  just init
+
+init:
+  mkdir -p .config/mathing
+  touch .config/mathing/data.db
   sqlx migrate run
 
 seed:
