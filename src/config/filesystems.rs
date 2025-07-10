@@ -9,20 +9,11 @@ impl AppConfig {
     // Get the currently configured config directory based on the
     // environmental variables.
     pub fn try_get_config_dir() -> Result<PathBuf> {
-        let not_found = AppError::config(
-            "Could not parse config filepath for this environment.",
-        );
+        let not_found = AppError::config("Couldn't parse system config path.");
+
         // configured path
-        if let Ok(configured_path) = env::var("MATHING_CONFIG") {
-            return Ok(PathBuf::from(configured_path));
-        }
-        // unconfigured path
-        match (|| {
-            env::var("PLATFORM")?; // if not set, default to home dir
-            let src_dir = env::var("PWD")?;
-            Aok(PathBuf::from_iter([src_dir.as_str(), ".config"]))
-        })() {
-            Ok(p) => Ok(p.join("mathing")),
+        match env::var("MATHING_CONFIG") {
+            Ok(configured_path) => Ok(PathBuf::from(configured_path)),
             Err(_) => Ok(dirs::config_dir().ok_or(not_found)?.join("mathing")),
         }
     }
