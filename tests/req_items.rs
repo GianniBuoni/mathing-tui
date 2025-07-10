@@ -24,7 +24,7 @@ async fn test_handle_item_requests(conn: SqlitePool) -> Result<()> {
         (
             RequestType::Update,
             ItemParams::builder()
-                .with_item_id(ParamOption::new().map_value(1).to_owned())
+                .with_item_id(ParamOption::new().map_value(2).to_owned())
                 .with_item_name(
                     ParamOption::new().map_value("new name").to_owned(),
                 )

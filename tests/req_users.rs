@@ -22,7 +22,7 @@ async fn test_handle_user_req(conn: SqlitePool) -> Result<()> {
         (
             RequestType::Update,
             UserParams::builder()
-                .with_user_id(ParamOption::new().map_value(1).to_owned())
+                .with_user_id(ParamOption::new().map_value(2).to_owned())
                 .with_user_name(
                     ParamOption::new().map_value("new name").to_owned(),
                 )
