@@ -47,21 +47,18 @@ fn test_row_decrement() {
 
 #[test]
 fn test_up_down_navigation_input() {
-    let key_codes = [
-        (KeyCode::Char('j'), 1, "Test j char input"),
-        (KeyCode::Down, 1, "Test down key input"),
-        (KeyCode::Char('k'), 2, "Test k char input"),
-        (KeyCode::Up, 2, "Test up key input"),
+    let test_cases = [
+        (Action::NavigateUp, 2, "Test up action from index 0."),
+        (Action::NavigateUp, 1, "Test up action from index 2."),
+        (Action::NavigateDown, 2, "Test down action from index 1."),
+        (Action::NavigateDown, 0, "Test down action from index 2."),
     ];
 
-    let home = Home::mock();
+    let mut table = TableData::mock_items();
 
-    key_codes.into_iter().for_each(|(key, want, desc)| {
-        let mut items = TableData::mock_items();
-        let action = home.handle_key_events(KeyEvent::from(key));
-        items.handle_action(action);
-
-        assert_eq!(want, items.table_index.clone(), "{desc}");
+    test_cases.into_iter().for_each(|(action, want, desc)| {
+        table.handle_action(Some(action));
+        assert_eq!(want, table.table_index, "{desc}");
     });
 }
 
