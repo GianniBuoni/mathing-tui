@@ -2,27 +2,27 @@ use serde::de::{self, Visitor};
 
 use super::*;
 
-pub const DEFAULT_KEYMAP: &[u8; 446] = b"\"CTRL-c\" = \"Quit\"
-\"a\" = \"AddToReceipt\"
-\"d\" = \"DeleteSelected\"
-\"e\" = \"EditSelected\"
-\"i\" = \"EnterInsert\"
-\"ESC\" = \"EnterNormal\"
+pub const DEFAULT_KEYMAP: &[u8; 408] = b"CTRL-c = \"Quit\"
+a = \"AddToReceipt\"
+d = \"DeleteSelected\"
+e = \"EditSelected\"
+i = \"EnterInsert\"
+ESC = \"EnterNormal\"
 \" \" = \"MakeSelection\"
-\"LEFT\" = \"NavigateLeft\"
-\"h\" = \"NavigateLeft\"
-\"DOWN\" = \"NavigateDown\"
-\"j\" = \"NavigateDown\"
-\"UP\" = \"NavigateUp\"
-\"k\" = \"NavigateUp\"
-\"RIGHT\" = \"NavigateRight\"
-\"l\" = \"NavigateRight\"
-\"CTRL-r\" = \"Refresh\"
+LEFT = \"NavigateLeft\"
+h = \"NavigateLeft\"
+DOWN = \"NavigateDown\"
+j = \"NavigateDown\"
+UP = \"NavigateUp\"
+k = \"NavigateUp\"
+RIGHT = \"NavigateRight\"
+l = \"NavigateRight\"
+CTRL-r = \"Refresh\"
 \"/\" = \"Search\"
-\"TAB\" = \"SelectForward\"
-\"ALT-TAB\" = \"SelectBackward\"
-\"y\" = \"Submit\"
-\"ENTER\" = \"Submit\"";
+TAB = \"SelectForward\"
+ALT-TAB = \"SelectBackward\"
+y = \"Submit\"
+ENTER = \"Submit\"";
 
 impl KeyMap {
     pub(super) fn try_init(config_dir: PathBuf) -> Result<Self> {
