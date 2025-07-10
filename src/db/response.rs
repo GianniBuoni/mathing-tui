@@ -23,7 +23,7 @@ impl DbResponse {
         self.payload = payload;
         self
     }
-    pub fn error(mut self, e: impl ToString) -> Self {
+    pub fn error(mut self, e: impl Display) -> Self {
         self.error = Some(e.to_string());
         self
     }

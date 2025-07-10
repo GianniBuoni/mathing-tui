@@ -1,57 +1,50 @@
 use std::{
-    env,
     fs::{File, create_dir_all},
-    io::{Error, ErrorKind, Write},
-    path::PathBuf,
+    io::Write,
 };
 
 use super::*;
 
-impl Config {
-    fn config_dir() -> Result<PathBuf> {
-        let notfound_error = Error::new(
-            ErrorKind::NotFound,
-            "Could not parse config filepath for this platform.",
-        );
+impl AppConfig {
+    // Get the currently configured config directory based on the
+    // environmental variables.
+    pub fn try_get_config_dir() -> Result<PathBuf> {
+        let not_found = AppError::config("Couldn't parse system config path.");
 
-        let mut path = match env::var("PLATFORM") {
-            Ok(str) => match str {
-                str if str == "development" => {
-                    PathBuf::from(env::var("PWD")?).join(".config")
-                }
-                _ => dirs::config_dir().ok_or(notfound_error)?,
-            },
-            Err(_) => dirs::config_dir().ok_or(notfound_error)?,
-        };
-
+        // configured path
         match env::var("MATHING_CONFIG") {
-            Ok(dir) => {
-                path = path.join(dir).join("config.toml");
-            }
-            Err(_) => DEFAULT_CONFIG_PATH.iter().for_each(|s| {
-                path = path.join(s);
-            }),
+            Ok(configured_path) => Ok(PathBuf::from(configured_path)),
+            Err(_) => Ok(dirs::config_dir().ok_or(not_found)?.join("mathing")),
         }
-
-        Ok(path)
     }
 
-    pub(super) fn check() -> Result<PathBuf> {
-        let path = Self::config_dir()?;
-        let config_exists = path.exists() && path.is_file();
+    pub(super) fn check(config_dir: PathBuf) -> Result<(PathBuf, PathBuf)> {
+        let config_file = config_dir.join("config.toml");
+        let db_file = config_dir.join("data.db");
 
-        if !config_exists {
-            create_dir_all(path.parent().ok_or_else(|| {
-                anyhow::Error::msg(
-                    "Could not parse parent dir for config file.",
-                )
-            })?)?;
-
-            let mut f = File::create_new(path.clone())?;
-            f.write_all(DEFAULT_CONFIG)?;
-            //TODO: add logging feature to report that file was created.
+        // make config dir if not exists
+        if !config_dir.exists() {
+            let message = "Couldn't create config dir: \"{config_dir}\".";
+            create_dir_all(config_dir)
+                .map_err(|_| AppError::config(message))?;
+        }
+        // make and write config file if not exists
+        if !(config_file.exists() && config_file.is_file()) {
+            let message =
+                "Couldn't create/write config file: \"{config_file}\".";
+            (|| {
+                let mut f = File::create_new(&config_file)?;
+                f.write_all(DEFAULT_KEYMAP)
+            })()
+            .map_err(|_| AppError::config(message))?;
+        }
+        // make data db if not exists
+        if !(db_file.exists() && db_file.is_file()) {
+            let message = "Couldn't create app database: \"{db_file}\".";
+            File::create_new(&db_file)
+                .map_err(|_| AppError::config(message))?;
         }
 
-        Ok(path)
+        Ok((config_file, db_file))
     }
 }

@@ -40,7 +40,7 @@ pub struct StoreJoinRow {
     pub item_name: String,
     pub(super) user_count: i64,
     pub receipt_id: i64,
-    pub(super) item_id: i64,
+    pub item_id: i64,
     pub(super) item_price: f64,
     pub item_qty: i64,
 }
@@ -52,21 +52,13 @@ pub(super) struct StoreCount {
     pub(super) rows: i64,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, FromRow)]
 pub(super) struct StoreReceipt {
     pub(super) id: i64,
     pub(super) created_at: i64,
     pub(super) updated_at: i64,
     pub(super) item_id: i64,
     pub(super) item_qty: i64,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub(super) struct StoreReceiptsUsers {
-    pub(super) created_at: i64,
-    pub(super) updated_at: i64,
-    pub(super) receipt_id: i64,
-    pub(super) user_id: i64,
 }
 
 #[derive(Debug, PartialEq, FromRow)]

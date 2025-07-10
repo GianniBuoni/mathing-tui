@@ -5,10 +5,11 @@
     # sqlx is installed using cargo
   ];
 
+  enterShell = ''export MATHING_CONFIG=$PWD/.config/mathing'';
+
   enterTest = ''
     cargo --version
     just --version
-    sqlx --version
   '';
 
   languages.rust = {

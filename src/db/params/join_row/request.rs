@@ -40,6 +40,7 @@ impl Request for JoinedReceiptParams {
 
     async fn post(&self, conn: &SqlitePool) -> Result<Self::Output> {
         let mut tx = conn.begin().await?;
+        let now = AppConfig::try_get_time()?;
 
         let item_id = self.item_id.ok_or(RequestError::missing_param(
             RequestType::Post,
@@ -52,12 +53,6 @@ impl Request for JoinedReceiptParams {
             "item qty",
         ))?;
 
-        // check if item exists
-        ItemParams::default()
-            .with_item_id(item_id)
-            .get(conn)
-            .await?;
-
         if self.users.is_empty() {
             return Err(RequestError::missing_param(
                 RequestType::Post,
@@ -66,25 +61,54 @@ impl Request for JoinedReceiptParams {
             )
             .into());
         }
-
-        let receipt = ReceiptParams::new()
-            .item_id(item_id)
-            .item_qty(item_qty)
-            .post(&mut tx)
+        // check if item exists
+        ItemParams::default()
+            .with_item_id(item_id)
+            .get(conn)
             .await?;
 
-        for u_id in self.users.clone() {
-            UserParams::new().with_user_id(u_id).get(conn).await?;
-            ReceiptsUsersParams::new()
-                .with_r_id(receipt.id)
-                .with_u_id(u_id)
-                .post(&mut tx)
-                .await?;
-        }
+        let r = sqlx::query_as!(
+            StoreReceipt,
+            "
+        INSERT INTO receipts (
+            created_at, updated_at, item_id, item_qty
+        ) VALUES (
+            ?1, ?2, ?3, ?4
+        ) RETURNING *
+        ",
+            now,
+            now,
+            item_id,
+            item_qty,
+        )
+        .fetch_one(&mut *tx)
+        .await?;
+
+        let ru_params = self
+            .users
+            .iter()
+            .map(|f| (*f, r.id))
+            .collect::<Vec<(i64, i64)>>();
+
+        let mut q = QueryBuilder::new(
+            "INSERT INTO receipts_users (
+                created_at, updated_at, receipt_id, user_id
+            ) ",
+        );
+        q.push_values(ru_params, |mut q, (u_id, r_id)| {
+            q.push_bind(now)
+                .push_bind(now)
+                .push_bind(r_id)
+                .push_bind(u_id);
+        })
+        .build()
+        .execute(&mut *tx)
+        .await?;
+
         tx.commit().await?;
 
         JoinedReceiptParams::default()
-            .with_r_id(receipt.id)
+            .with_r_id(r.id)
             .get(conn)
             .await
     }
@@ -115,9 +139,16 @@ impl Request for JoinedReceiptParams {
         let mut tx = conn.begin().await?;
         let id = self.check_id(RequestType::Delete)?;
 
-        ReceiptParams::new().r_id(id).get(&mut tx).await?;
+        // check if exists
+        sqlx::query!("SELECT * from receipts WHERE id=?", id)
+            .fetch_one(&mut *tx)
+            .await
+            .map_err(|_| RequestError::not_found(id, "receipts"))?;
 
-        let res = ReceiptParams::new().r_id(id).delete(&mut tx).await?;
+        let res = sqlx::query!("DELETE FROM receipts WHERE id=?", id)
+            .execute(&mut *tx)
+            .await?
+            .rows_affected();
         tx.commit().await?;
 
         Ok(res)
@@ -126,6 +157,7 @@ impl Request for JoinedReceiptParams {
     async fn update(&self, conn: &SqlitePool) -> Result<Self::Output> {
         let mut tx = conn.begin().await?;
         let id = self.check_id(RequestType::Update)?;
+        let now = AppConfig::try_get_time()?;
 
         if self.item_id.is_none()
             && self.item_qty.is_none()
@@ -138,40 +170,52 @@ impl Request for JoinedReceiptParams {
             )
             .into());
         }
+        // check if exists
+        sqlx::query!("SELECT * FROM receipts WHERE id=?", id)
+            .fetch_one(conn)
+            .await
+            .map_err(|_| RequestError::not_found(id, "receipts"))?;
 
-        if self.item_id.is_some() || self.item_qty.is_some() {
-            Into::<ReceiptParams>::into(self).update(&mut tx).await?;
+        // update receipt
+        let mut q = QueryBuilder::<Sqlite>::new("UPDATE receipts SET");
+
+        if let Some(item_id) = self.item_id {
+            q.push(" item_id=").push_bind(item_id).push(",");
         }
+        if let Some(item_qty) = self.item_qty {
+            q.push(" item_qty=").push_bind(item_qty).push(",");
+        }
+        q.push(" updated_at=")
+            .push_bind(now)
+            .push(" WHERE id=")
+            .push_bind(id);
+        dbg!(q.sql());
+        q.build().execute(&mut *tx).await?;
 
-        // update users if user params are included
+        // update receipts users
         if !self.users.is_empty() {
+            // check if receits_users exist
             // reset receipt_user rows
-            let current_users = ReceiptsUsersParams::new()
-                .with_r_id(id)
-                .get(&mut tx)
-                .await?
-                .iter()
-                .map(|f| f.user_id)
-                .collect::<Vec<i64>>();
+            sqlx::query!("DELETE from receipts_users WHERE receipt_id=?1", id)
+                .execute(&mut *tx)
+                .await?;
 
-            for user in current_users {
-                ReceiptsUsersParams::new()
-                    .with_r_id(id)
-                    .with_u_id(user)
-                    .delete(&mut tx)
-                    .await?;
-            }
-            // add all users back in
-            for user in &self.users {
-                ReceiptsUsersParams::new()
-                    .with_u_id(*user)
-                    .with_r_id(id)
-                    .post(&mut tx)
-                    .await?;
-            }
+            // re-add to receipts users
+            let mut q = QueryBuilder::<Sqlite>::new(
+                "INSERT into receipts_users (created_at, updated_at, receipt_id, user_id)",
+            );
+            q.push_values(self.users.iter(), |mut q, user| {
+                q.push_bind(now)
+                    .push_bind(now)
+                    .push_bind(id)
+                    .push_bind(user);
+            })
+            .build()
+            .execute(&mut *tx)
+            .await?;
         }
-        tx.commit().await?;
 
+        tx.commit().await?;
         JoinedReceiptParams::default().with_r_id(id).get(conn).await
     }
 

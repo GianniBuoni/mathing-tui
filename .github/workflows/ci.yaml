@@ -12,7 +12,7 @@ jobs:
       run:
         shell: devenv shell bash -- -e {0}
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SQLX_OFFLINE: true
 
     steps:
       - name: Check out code
@@ -29,17 +29,8 @@ jobs:
         shell: bash
         run: nix profile install nixpkgs#devenv
 
-      - name: Add sqlx via cargo
-        run: cargo install sqlx-cli
-
       - name: Build shell and test enviroment
         run: devenv test
-
-      - name: Set up test db
-        run: touch data.db
-
-      - name: Run test migrations
-        run: sqlx migrate run
 
       - name: Run tests
         run: just test

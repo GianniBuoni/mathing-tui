@@ -57,8 +57,7 @@ impl Component for Form {
     }
 
     fn handle_key_events(&self, key: KeyEvent) -> Option<Action> {
-        let keymap = Config::get_config();
-        let default = keymap.get(key);
+        let default = KeyMap::get()?.get_action(key);
 
         if self.fields.is_empty() {
             return default;

@@ -1,20 +1,8 @@
-use std::sync::Mutex;
-
 use super::*;
-
-pub mod prelude {
-    pub use super::StoreTotal;
-}
-
-static TOTALS: OnceCell<Mutex<StoreTotal>> = OnceCell::const_new();
-
-#[derive(Debug, Default, PartialEq)]
-pub struct StoreTotal(HashMap<i64, Decimal>);
 
 impl StoreTotal {
     // setters
-    async fn init() -> Result<Mutex<Self>> {
-        let conn = DbConn::try_get().await?;
+    pub(super) async fn try_init(conn: &SqlitePool) -> Result<Mutex<Self>> {
         let total = TotalsParams::get_total(conn).await?;
         Ok(Mutex::new(total))
     }
@@ -39,14 +27,7 @@ impl StoreTotal {
     /// Returns the StoreTotal Mutex. Errors out if there the OnecCell
     /// variable hasn't been initialized yet.
     pub fn try_get() -> Result<&'static Mutex<Self>> {
-        TOTALS
-            .get()
-            .ok_or(ComponentError::not_found("StoreTotal Mutex").into())
-    }
-    /// Returns the StoreTotal Mutex. Initializes the OnceCell if there is
-    /// no value contained within.
-    pub async fn get_or_try_init() -> Result<&'static Mutex<Self>> {
-        TOTALS.get_or_try_init(Self::init).await
+        Ok(&CONFIG.get().ok_or(AppError::ConfigInit)?.totals)
     }
     /// Calculates a new StoreTotal and replaces the current one
     /// with this new total.
@@ -77,43 +58,8 @@ impl StoreTotal {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::db::params::tests::init_join_rows;
-
-    fn intermediate_totals() -> Vec<HashMap<i64, Decimal>> {
-        vec![
-            HashMap::from([(3, dec!(9.98))]),
-            HashMap::from([(2, dec!(9.49))]),
-            HashMap::from([(2, dec!(8.32)), (3, dec!(8.32))]),
-        ]
-    }
-    fn expected_totals() -> HashMap<i64, Decimal> {
-        HashMap::from([(3, dec!(18.30)), (2, dec!(17.81))])
-    }
-
-    #[sqlx::test]
-    async fn test_totals_adding(conn: SqlitePool) -> Result<()> {
-        init_join_rows(&conn).await?;
-        let want = expected_totals();
-        let mut got = StoreTotal::default();
-
-        JoinedReceiptParams::default()
-            .with_offset(0)
-            .get_all(&conn)
-            .await?
-            .into_iter()
-            .zip(intermediate_totals())
-            .try_for_each(|(row, want)| {
-                anyhow::Ok({
-                    assert_eq!(want, row.try_calc()?);
-                    got.add(row.try_calc()?);
-                })
-            })?;
-
-        assert_eq!(want, got.0, "Test if all the math is right ✨");
-
-        Ok(())
+impl From<HashMap<i64, Decimal>> for StoreTotal {
+    fn from(value: HashMap<i64, Decimal>) -> Self {
+        Self(value)
     }
 }

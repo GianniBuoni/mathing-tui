@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE from receipts_users WHERE receipt_id=?1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "f8e08620e9e5ce07a4e7753501880d3b63104571a6c2f1b3b959cd9125edeb7d"
+}

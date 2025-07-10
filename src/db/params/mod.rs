@@ -9,8 +9,6 @@ pub mod prelude {
 
 pub(super) mod items;
 pub(super) mod join_row;
-pub(super) mod receipts;
-pub(super) mod receipts_users;
 #[cfg(test)]
 pub(super) mod tests;
 pub(super) mod totals;
@@ -72,16 +70,3 @@ pub struct JoinedReceiptParams {
 
 #[derive(Debug, Default, PartialEq, Copy, Clone)]
 pub struct TotalsParams;
-
-#[derive(Debug, Default)]
-pub(super) struct ReceiptsUsersParams {
-    r_id: Option<i64>,
-    u_id: Option<i64>,
-}
-
-#[derive(Debug, Default)]
-pub(super) struct ReceiptParams {
-    r_id: Option<i64>,
-    item_id: Option<i64>,
-    item_qty: Option<i64>,
-}

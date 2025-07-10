@@ -48,9 +48,8 @@ impl JoinParamsBuilder {
         self
     }
     pub fn with_user(&mut self, u_id: i64) -> &mut Self {
-        let users = self.users.clone();
         {
-            let mut users = users.borrow_mut();
+            let mut users = self.users.borrow_mut();
             users.push(u_id);
         }
         self

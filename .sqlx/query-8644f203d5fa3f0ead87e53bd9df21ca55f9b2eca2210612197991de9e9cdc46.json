@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "CREATE TABLE IF NOT EXISTS items (\n  id INTEGER PRIMARY KEY NOT NULL,\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL,\n  name TEXT NOT NULL,\n  price FLOAT NOT NULL\n);\nCREATE TABLE IF NOT EXISTS users (\n  id INTEGER PRIMARY KEY NOT NULL,\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL,\n  name TEXT NOT NULL\n);\nCREATE TABLE IF NOT EXISTS receipts(\n  id INTEGER PRIMARY KEY NOT NULL,\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL,\n  item_id INTEGER NOT NULL,\n  item_qty INTEGER NOT NULL,\n  FOREIGN KEY(item_id) REFERENCES items(id)\n    ON DELETE CASCADE\n);\nCREATE TABLE IF NOT EXISTS receipts_users (\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL,\n  receipt_id INTEGER NOT NULL,\n  user_id INTEGER NOT NULL,\n  FOREIGN KEY(receipt_id) REFERENCES receipts(id)\n    ON DELETE CASCADE,\n  FOREIGN KEY(user_id) REFERENCES users(id)\n    ON DELETE CASCADE,\n  UNIQUE(receipt_id, user_id)\n);\n",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": []
+  },
+  "hash": "8644f203d5fa3f0ead87e53bd9df21ca55f9b2eca2210612197991de9e9cdc46"
+}
