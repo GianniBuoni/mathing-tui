@@ -8,7 +8,6 @@
   enterTest = ''
     cargo --version
     just --version
-    sqlx --version
   '';
 
   languages.rust = {
