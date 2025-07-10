@@ -1,6 +1,7 @@
-// ISSUE: dyn fields require static lifetimes
-// which is causing problems in form plugins
-// consider introducing a 'form lifetime
+// ISSUE: dyn fields require static lifetimes which required form plugins
+// to be 'static as well.
+// Consider introducing a 'form lifetime and find a way to make the form
+// not owned by another struct.
 
 use std::{
     fmt::{Debug, Display},

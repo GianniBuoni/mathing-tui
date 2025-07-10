@@ -8,7 +8,7 @@ use std::{
 
 use futures::future::try_join_all;
 use rust_decimal::prelude::*;
-use sqlx::{SqliteConnection, SqlitePool};
+use sqlx::SqlitePool;
 
 use crate::prelude::*;
 use tables::{StoreCount, StoreJoinPrices, StoreJoinRaw, StoreReceipt};

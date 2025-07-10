@@ -1,38 +1,4 @@
-use core::panic;
-
 use super::*;
-
-#[test]
-fn test_key_events() {
-    Config::get_config();
-    let form = Form::test_valid();
-
-    let test_cases = [
-        (
-            KeyEvent::from(KeyCode::Char('i')),
-            Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('i')))),
-            "Test handle input.",
-        ),
-        (
-            KeyEvent::new(KeyCode::Char('i'), KeyModifiers::SHIFT),
-            Some(Action::HandleInput(KeyEvent::new(
-                KeyCode::Char('i'),
-                KeyModifiers::SHIFT,
-            ))),
-            "Test entering input in insert mode.",
-        ),
-        (
-            KeyEvent::from(KeyCode::Enter),
-            Some(Action::Submit),
-            "Test submitting.",
-        ),
-    ];
-
-    test_cases.into_iter().for_each(|(event, want, desc)| {
-        let got = form.handle_key_events(event);
-        assert_eq!(want, got, "{desc}")
-    });
-}
 
 #[test]
 fn test_form_validation() -> Result<()> {
@@ -75,8 +41,8 @@ fn test_form_submit() -> Result<()> {
 
     // check if from values changed
     let Some(DbPayloadBuilder::ItemParams(params)) = form.payload else {
-        let panic_msg = "Test is not testing the expected kind of form.";
-        panic!("{panic_msg}")
+        let msg = "Test is not testing the expected kind of form.";
+        return Err(Error::msg(msg));
     };
 
     let desc = "Test if submitting with input values produces the correct resulting value.";
@@ -90,7 +56,7 @@ fn test_form_submit() -> Result<()> {
 }
 
 #[test]
-fn test_malformed_form_error() {
+fn test_malformed_form_error() -> Result<()> {
     let mut test_case = Form::builder();
     test_case.with_request_type(RequestType::Get);
 
@@ -104,19 +70,18 @@ fn test_malformed_form_error() {
         (test_case, FormError::malformed("form type")),
         (test_case_1, FormError::malformed("fields")),
     ];
-
-    test_cases.into_iter().for_each(|(form, want)| {
+    test_cases.into_iter().try_for_each(|(form, want)| {
         let res = form.build();
-
-        if let Ok(unexpected) = &res {
-            dbg!(unexpected);
-            panic!("Expected an error");
-        }
 
         if let Err(got) = &res {
             let got = got.to_string();
             let want = want.to_string();
-            assert_eq!(want, got, "Test malformed form");
+            Ok(assert_eq!(want, got, "Test malformed form"))
+        } else {
+            let msg = format!("Form build suceeded but wanted {want}.");
+            return Err(Error::msg(msg));
         }
-    });
+    })?;
+
+    Ok(())
 }

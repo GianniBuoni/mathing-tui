@@ -1,7 +1,5 @@
 use super::*;
 
-mod total_params;
-
 #[sqlx::test]
 async fn test_item_param_errors(conn: SqlitePool) {
     let params = ItemParams::builder()

@@ -1,4 +1,3 @@
-use dirs::config_dir;
 use mathing_tui::prelude::*;
 
 #[tokio::main]

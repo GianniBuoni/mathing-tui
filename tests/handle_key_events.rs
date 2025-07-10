@@ -6,6 +6,7 @@ use mathing_tui::prelude::*;
 mod common;
 
 #[tokio::test]
+/// Test basic key -> action mapping from the keymap
 async fn test_handle_key_events() -> Result<()> {
     try_init_test_config().await?;
 
@@ -33,12 +34,12 @@ async fn test_handle_key_events() -> Result<()> {
         (
             KeyEvent::from(KeyCode::Esc),
             Some(Action::EnterNormal),
-            "Test exiting normal mode.",
+            "Test exiting to normal mode.",
         ),
         (
             KeyEvent::from(KeyCode::Enter),
             Some(Action::Submit),
-            "Test submitting in normal mode. (Should still retun the submit action)",
+            "Test submit.",
         ),
         (
             KeyEvent::from(KeyCode::Char('j')),
@@ -69,5 +70,39 @@ async fn test_handle_key_events() -> Result<()> {
         assert_eq!(want, got, "{desc}");
     });
 
+    Ok(())
+}
+
+// test key events in a form w/ an input
+#[tokio::test]
+async fn test_form_handle_key_events() -> Result<()> {
+    try_init_test_config().await?;
+
+    let test_cases = [
+        (
+            KeyEvent::from(KeyCode::Char('i')),
+            Some(Action::HandleInput(KeyEvent::from(KeyCode::Char('i')))),
+            "Test handle input.",
+        ),
+        (
+            KeyEvent::new(KeyCode::Char('i'), KeyModifiers::SHIFT),
+            Some(Action::HandleInput(KeyEvent::new(
+                KeyCode::Char('i'),
+                KeyModifiers::SHIFT,
+            ))),
+            "Test entering input in insert mode.",
+        ),
+        (
+            KeyEvent::from(KeyCode::Enter),
+            Some(Action::Submit),
+            "Test submitting.",
+        ),
+    ];
+
+    let form = Form::new_item()?;
+    test_cases.into_iter().for_each(|(event, want, desc)| {
+        let got = form.handle_key_events(event);
+        assert_eq!(want, got, "{desc}")
+    });
     Ok(())
 }
