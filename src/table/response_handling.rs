@@ -62,6 +62,16 @@ pub(super) fn match_count(item: (&AppArm, &RequestType, &DbPayload)) -> bool {
         )
     )
 }
+pub(super) fn match_reset(item: (&AppArm, &RequestType, &DbPayload)) -> bool {
+    matches!(
+        item,
+        (
+            AppArm::Receipts,
+            RequestType::Reset,
+            DbPayload::AffectedRows(_)
+        )
+    )
+}
 pub(super) fn try_add_store_total(
     (_, req_type, res_payload): (&AppArm, &RequestType, &DbPayload),
 ) -> Result<()> {

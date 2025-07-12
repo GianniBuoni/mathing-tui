@@ -1,6 +1,7 @@
 use super::{
     response_handling::{
-        match_count, match_post_get, match_update, try_add_store_total,
+        match_count, match_post_get, match_reset, match_update,
+        try_add_store_total,
     },
     *,
 };
@@ -84,6 +85,11 @@ impl Component for TableData {
                 if self.is_active() && !self.items.is_empty() && *i == 1 {
                     self.items.remove(self.table_index);
                 }
+                Ok(())
+            }
+            // Reset Responses
+            item if match_reset(item) => {
+                self.items = vec![];
                 Ok(())
             }
             _ => Ok(()),
