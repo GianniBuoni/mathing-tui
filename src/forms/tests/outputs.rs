@@ -31,7 +31,7 @@ fn test_form_submit() -> Result<()> {
         Action::HandleInput(KeyEvent::from(KeyCode::Char('9'))),
     ];
 
-    let want = ("a", 1.99 as f64);
+    let want = ("a", 1.99);
 
     let mut form = Form::test_valid();
     key_events
@@ -70,18 +70,22 @@ fn test_malformed_form_error() -> Result<()> {
         (test_case, FormError::malformed("form type")),
         (test_case_1, FormError::malformed("fields")),
     ];
-    test_cases.into_iter().try_for_each(|(form, want)| {
-        let res = form.build();
-
-        if let Err(got) = &res {
-            let got = got.to_string();
-            let want = want.to_string();
-            Ok(assert_eq!(want, got, "Test malformed form"))
-        } else {
-            let msg = format!("Form build suceeded but wanted {want}.");
-            return Err(Error::msg(msg));
-        }
-    })?;
+    test_cases
+        .into_iter()
+        .try_for_each(|(form, want)| match form.build() {
+            Ok(_) => {
+                let msg = format!("Form build suceeded but wanted {want}.");
+                Err(Error::msg(msg))
+            }
+            Err(got) => {
+                assert_eq!(
+                    want.to_string(),
+                    got.to_string(),
+                    "Test malformed form"
+                );
+                Ok(())
+            }
+        })?;
 
     Ok(())
 }

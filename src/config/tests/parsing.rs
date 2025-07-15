@@ -26,10 +26,9 @@ fn test_parse_key_event() -> Result<()> {
     ];
 
     test_cases.iter().try_for_each(|(raw, want, desc)| {
-        Aok({
-            let got = parse_key_event(raw)?;
-            assert_eq!(*want, got, "{desc}");
-        })
+        let got = parse_key_event(raw)?;
+        assert_eq!(*want, got, "{desc}");
+        Aok(())
     })?;
 
     Ok(())
@@ -53,11 +52,10 @@ fn test_parse_key_code() -> Result<()> {
     ];
 
     test_cases.iter().try_for_each(|(raw, want)| {
-        Aok({
-            let desc = format!("Testing string \"{}\" with no modifiers", raw);
-            let got = parse_key_code_add_modifier(raw, KeyModifiers::NONE)?;
-            assert_eq!(KeyEvent::from(*want), got, "{desc}");
-        })
+        let desc = format!("Testing string \"{}\" with no modifiers", raw);
+        let got = parse_key_code_add_modifier(raw, KeyModifiers::NONE)?;
+        assert_eq!(KeyEvent::from(*want), got, "{desc}");
+        Aok(())
     })?;
 
     Ok(())

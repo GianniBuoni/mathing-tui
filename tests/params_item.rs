@@ -28,7 +28,7 @@ async fn test_get_items(conn: SqlitePool) -> Result<()> {
     let test_cases = [
         (
             ItemParams::default(),
-            3 as usize,
+            3_usize,
             "Chips and Dip",
             "GetAll w/ no params.",
         ),

@@ -1,5 +1,3 @@
-use core::panic;
-
 use super::*;
 
 #[sqlx::test]
@@ -72,7 +70,7 @@ async fn test_req_errors(conn: SqlitePool) {
         let got = handle_requests(req, &conn).await;
 
         if got.error.is_none() {
-            panic!("Tests expected to return a response with an error.")
+            panic!("{desc}, expected to return a response with an error.")
         }
         assert_eq!(want.to_string(), got.error.unwrap(), "{desc}");
     }
