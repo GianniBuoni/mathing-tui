@@ -2,7 +2,7 @@ use super::*;
 
 impl Home {
     pub(super) fn handle_submit(&mut self) {
-        if let Err(err) = (|| {
+        match (|| {
             let submission_callback = match true {
                 _ if self.form.is_some() => Self::try_form_submit,
                 _ if self.message.is_some() && !self.is_error() => {
@@ -17,10 +17,9 @@ impl Home {
 
             Aok(())
         })() {
-            self.map_err(err);
+            Ok(_) => self.reset_mode(),
+            Err(err) => self.map_err(err),
         }
-        // defer to resetting
-        self.reset_mode()
     }
     pub(super) fn try_send(&self, req: DbRequest) -> Result<()> {
         let tx = self
