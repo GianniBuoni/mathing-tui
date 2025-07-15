@@ -1,5 +1,3 @@
-use core::panic;
-
 use crossterm::event::{EventStream, KeyEventKind};
 use futures::{FutureExt, StreamExt};
 use ratatui::DefaultTerminal;
