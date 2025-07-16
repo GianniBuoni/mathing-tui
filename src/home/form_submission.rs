@@ -58,7 +58,7 @@ impl Home {
                 DbPayload::ItemParams(_) | DbPayload::UserParams(_),
                 RequestType::Update,
             ) => {
-                requests.append(&mut DbRequest::refresh());
+                requests.append(&mut self.try_collect_refresh_reqs()?);
             }
             _ => {}
         }
@@ -85,16 +85,18 @@ impl Home {
 
         match (&payload, req_type) {
             (DbPayload::ReceiptParams(_), RequestType::Delete) => {
-                self.try_subtract_store_total()?
+                self.try_subtract_store_total()?;
+                requests.append(&mut DbRequest::counts())
             }
             (DbPayload::ItemParams(_), RequestType::Delete) => {
-                requests.append(&mut DbRequest::refresh());
+                requests.append(&mut self.try_collect_refresh_reqs()?);
+                requests.append(&mut DbRequest::counts())
             }
             (_, RequestType::Delete) => {
-                requests.append(&mut DbRequest::counts());
+                requests.append(&mut DbRequest::counts())
             }
             (DbPayload::StoreTotal, _ /*Refresh to app init*/) => {
-                requests.append(&mut DbRequest::init());
+                requests.append(&mut DbRequest::init())
             }
             _ => {}
         }
@@ -106,5 +108,18 @@ impl Home {
             .with_payload(payload);
 
         Ok(requests)
+    }
+
+    fn try_collect_refresh_reqs(&self) -> Result<Vec<DbRequest>> {
+        let mut refectch_reqs = Vec::with_capacity(4);
+        refectch_reqs.push(DbRequest::refresh());
+
+        self.components
+            .iter()
+            .try_fold(refectch_reqs, |mut acc, f| {
+                let req = f.try_get_refresh()?;
+                acc.push(req);
+                Aok(acc)
+            })
     }
 }
