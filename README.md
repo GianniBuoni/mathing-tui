@@ -1,5 +1,16 @@
 # MATHING!
 
+<!--toc:start-->
+
+- [💸 Motivation](#💸-motivation)
+- [💾 Install](#💾-install)
+- [👐 Usage](#👐-usage)
+- [🔨 Configuration Files](#🔨-configuration-files)
+- [💻 Keymap Configurations](#💻-keymap-configurations)
+<!--toc:end-->
+
+---
+
 ## 💸 Motivation
 
 ## 💾 Install
