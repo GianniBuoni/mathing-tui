@@ -46,3 +46,19 @@ impl App {
         Ok(())
     }
 }
+
+impl TryFrom<&DbPayload> for AppArm {
+    type Error = Error;
+
+    fn try_from(value: &DbPayload) -> std::result::Result<Self, Self::Error> {
+        match value {
+            DbPayload::ItemParams(_) => Ok(Self::Items),
+            DbPayload::ReceiptParams(_) => Ok(Self::Receipts),
+            DbPayload::UserParams(_) => Ok(Self::Users),
+            DbPayload::StoreTotal => Ok(Self::Totals),
+            _ => Err(Error::msg(
+                "Mapping Error: Only ItemParams and ReceiptParam payloads can be converted to App_Arm.",
+            )),
+        }
+    }
+}
