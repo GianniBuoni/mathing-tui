@@ -14,15 +14,10 @@ impl TableData {
             .get(self.table_index)
             .ok_or(ComponentError::NoData)?)
     }
-    /// Produce a GetAll Request given a table's limit and table_type
-    pub fn get_paging_req(&self) -> Option<DbRequest> {
-        // early return conditions
-        let table_type = self.table_type?;
-        if self.max_pages() == 1 {
-            return None;
-        }
-
-        let payload = match table_type {
+    /// Try to formulate a refresh request based on table's
+    /// current item offset and item limit
+    pub fn get_refresh_reqs(&self) -> Option<DbRequest> {
+        let payload = match self.table_type? {
             AppArm::Items => Some(DbPayload::ItemParams(
                 ItemParams::default()
                     .with_limit(self.limit)
@@ -33,42 +28,23 @@ impl TableData {
                     .with_limit(self.limit)
                     .with_offset(self.get_req_offset()),
             )),
+            AppArm::Users => Some(DbPayload::UserParams(UserParams::default())),
             _ => None,
         };
         payload.map(|f| {
-            let mut req = DbRequest::new();
-            req.with_req_type(RequestType::GetAll).with_payload(f);
-            req
+            DbRequest::new()
+                .with_req_type(RequestType::GetAll)
+                .with_payload(f)
         })
     }
-    // Try to formulate a refresh request based on table's
-    // current item offset and item limit
-    pub fn try_get_refresh(&self) -> Result<DbRequest> {
-        let Some(table_type) = self.table_type else {
-            return Err(ComponentError::not_found("Table type").into());
-        };
-
-        let payload = match table_type {
-            AppArm::Items => DbPayload::ItemParams(
-                ItemParams::default()
-                    .with_limit(self.limit)
-                    .with_offset(self.get_req_offset()),
-            ),
-            AppArm::Receipts => DbPayload::ReceiptParams(
-                JoinedReceiptParams::default()
-                    .with_limit(self.limit)
-                    .with_offset(self.get_req_offset()),
-            ),
-            AppArm::Users => DbPayload::UserParams(UserParams::default()),
-            _ => {
-                return Err(Error::msg(
-                    "Tables only support AppArms: Items, Receipts, and Users",
-                ));
-            }
-        };
-        let mut req = DbRequest::new();
-        req.with_req_type(RequestType::GetAll).with_payload(payload);
-
-        Ok(req)
+    pub fn goto_page(&self) -> Option<DbRequest> {
+        if self.max_pages() == 1 {
+            return None;
+        }
+        self.get_refresh_reqs()
+    }
+    pub fn goto_last_page(&mut self) -> Option<DbRequest> {
+        self.pages = self.max_pages();
+        self.get_refresh_reqs()
     }
 }

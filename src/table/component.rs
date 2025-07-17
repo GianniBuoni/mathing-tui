@@ -83,6 +83,7 @@ impl Component for TableData {
             // Delete responses
             (_, RequestType::Delete, DbPayload::AffectedRows(i)) => {
                 if self.is_active() && !self.items.is_empty() && *i == 1 {
+                    self.table_index = 0;
                     self.items.remove(self.table_index);
                 }
                 Ok(())

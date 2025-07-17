@@ -61,10 +61,9 @@ impl Home {
             let table = self.try_get_mut_current_table()?;
             table.handle_action(action);
 
-            if let Some(req) = table.get_paging_req() {
+            if let Some(req) = table.goto_page() {
                 self.try_send(req)?
             }
-
             Aok(())
         })() {
             self.map_err(err);

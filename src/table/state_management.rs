@@ -41,7 +41,7 @@ impl TableData {
             }
             false => {
                 if self.pages == self.max_pages() {
-                    self.items.push(items.first().unwrap().clone())
+                    self.items.push(items.first().unwrap().to_owned())
                 }
             }
         }
