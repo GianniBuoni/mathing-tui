@@ -18,6 +18,20 @@ impl Home {
             .get_mut(self.component_tracker.inner())
             .ok_or(ComponentError::NoData)
     }
+    /// Get a mutable reference to specific table
+    pub(super) fn get_mut_table_from_type(
+        &mut self,
+        table_type: AppArm,
+    ) -> Option<&mut TableData> {
+        let mut tables = self.components.iter_mut();
+
+        while let Some(table) = tables.next() {
+            if table.table_type == Some(table_type) {
+                return Some(table);
+            }
+        }
+        None
+    }
     /// Resets main component's form and message fields to None and then resets
     /// the component to Normal mode.
     pub(super) fn reset_mode(&mut self) {
