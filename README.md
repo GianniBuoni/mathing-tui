@@ -13,11 +13,29 @@
 
 ## 💸 Motivation
 
+Expense splitting in the terminal! Woohoo!
+
+Often grocery expenses are pretty consistent between me and my roomate. Week to week we usually end up getting the same staple items, and for the most part, quantities are variable. This was a exercise in rolling up a system that took that into account, by storing the various items we get, and perform the calculations for me.
+
+As someone who likes living in the terminal, a TUI was a good vehicle for making something that I could lean a lot from while making, and for making something I would use often. **Key concepts I explored in building this app include**:
+
+- SQLite databases and database testing using the [sqlx crate](https://github.com/launchbadge/sqlx)
+- Keymap configuration
+- Hand rolling an API for sending Requests to the database and for handling the responses
+- Input handling
+- Concurrent programming/learning async Rust.
+
 ## 💾 Install
 
 Currently, `mathing` is only availabe via cloning on github and building from source via `cargo`. There are plans to (at least) package `mathing` for Nix/NixOs.
 
 ## 👐 Usage
+
+Running `mathing` will pull up the main TUI. There are three tables the `Items`, `Receipts`, `Users`. By default, navigating is handled by tabbing through the available tables. Adding/deleting/updating items to/in the tables puts the app into an "insert mode" and allows the user to ues the keyboard to fill out a form related to the action performed.
+
+Form validation errors will prevent the form from submitting and will displays the error. Other errors are displayed in a dialogue box popup.
+
+For a full list of commands, see the [keymap configuration](#-keymap-configurations) section for the full list of available actions.
 
 ## 🔨 Configuration Files
 
