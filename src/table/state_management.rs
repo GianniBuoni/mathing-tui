@@ -36,12 +36,13 @@ impl TableData {
         let items: Vec<DbTable> = payload.into();
         match filter {
             true => {
-                self.table_index = 0;
-                self.items = items
+                self.items = items;
+                self.table_index = 0
             }
             false => {
                 if self.pages == self.max_pages() {
-                    self.items.push(items.first().unwrap().to_owned())
+                    self.items.push(items.first().unwrap().to_owned());
+                    self.table_index = self.items.len() - 1
                 }
             }
         }
