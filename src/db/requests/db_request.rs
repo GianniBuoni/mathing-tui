@@ -17,9 +17,9 @@ impl DbRequest {
         ]
         .into_iter()
         .map(|payload| {
-            let mut req = Self::new();
-            req.with_req_type(RequestType::GetAll).with_payload(payload);
-            req
+            Self::new()
+                .with_req_type(RequestType::GetAll)
+                .with_payload(payload)
         })
         .collect::<Vec<Self>>();
         init.append(&mut Self::counts());
@@ -34,26 +34,24 @@ impl DbRequest {
         ]
         .into_iter()
         .map(|payload| {
-            let mut req = Self::new();
-            req.with_req_type(RequestType::Count).with_payload(payload);
-            req
+            Self::new()
+                .with_req_type(RequestType::Count)
+                .with_payload(payload)
         })
         .collect()
     }
     /// Refreshes StoreTotals; should be accompanied by table refreshes as well.
     pub fn refresh() -> Self {
-        let mut refresh = Self::new();
-        refresh.with_payload(DbPayload::StoreTotal);
-        refresh
+        Self::new().with_payload(DbPayload::StoreTotal)
     }
     pub fn new() -> Self {
         Self::default()
     }
-    pub fn with_req_type(&mut self, req_type: RequestType) -> &mut Self {
+    pub fn with_req_type(mut self, req_type: RequestType) -> Self {
         self.req_type = req_type;
         self
     }
-    pub fn with_payload(&mut self, payload: DbPayload) -> &mut Self {
+    pub fn with_payload(mut self, payload: DbPayload) -> Self {
         self.payload = payload;
         self
     }
