@@ -36,7 +36,7 @@ impl Home {
             Aok::<Option<Form>>({
                 let table = self.try_get_current_table()?;
                 if let Some(AppArm::Receipts) = table.table_type {
-                    let (r, users) = self.edit_r_parms()?;
+                    let (r, users) = self.edit_r_params()?;
                     Form::edit_receipt(r, users).map(Some)?
                 } else {
                     table.edit_form()?
