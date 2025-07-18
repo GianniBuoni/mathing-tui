@@ -3,22 +3,16 @@ use super::*;
 impl Home {
     pub(super) fn handle_submit(&mut self) {
         match (|| {
-            let submission_callback = match true {
-                _ if self.form.is_some() => Self::try_form_submit,
+            let mut reqs = match true {
+                _ if self.form.is_some() => self.try_form_submit()?,
                 _ if self.message.is_some() && !self.is_error() => {
-                    Self::try_dialogue_submit
+                    self.try_dialogue_submit()?
                 }
                 _ => {
                     return Aok(());
                 }
             };
-            let mut reqs = submission_callback(self)?;
-            let first_req = reqs.first().unwrap();
-            let (app_arm, req_type) = (
-                TryInto::<AppArm>::try_into(&first_req.payload)?,
-                first_req.req_type,
-            );
-            self.try_add_conditional_reqs(&mut reqs, app_arm, req_type)?;
+            self.try_add_extra_reqs(&mut reqs)?;
             reqs.into_iter().try_for_each(|f| self.try_send(f))?;
 
             Aok(())
@@ -75,26 +69,49 @@ impl Home {
                 Aok(acc)
             })
     }
-    fn try_add_conditional_reqs(
-        &mut self,
-        reqs: &mut Vec<DbRequest>,
-        app_arm: AppArm,
-        req_type: RequestType,
-    ) -> Result<()> {
+    fn try_add_extra_reqs(&mut self, reqs: &mut Vec<DbRequest>) -> Result<()> {
+        let first_req = reqs.first().unwrap();
+        let (payload, req_type) = (&first_req.payload, first_req.req_type);
+        let app_arm: AppArm = payload.try_into()?;
+
         match (app_arm, req_type) {
+            // Get conditions
+            (AppArm::Items, RequestType::GetAll) => {
+                let DbPayload::ItemParams(payload) = payload else {
+                    return Ok(());
+                };
+                if let Some(search_term) = payload.search_filter.as_ref() {
+                    let table = self
+                        .get_mut_table_from_type(AppArm::Items)
+                        .ok_or(ComponentError::not_found("Item table"))?;
+
+                    table.set_search(search_term.to_owned());
+                    table.reset_pages();
+                    reqs.append(&mut DbRequest::counts(Some(
+                        search_term.to_owned(),
+                    )));
+                }
+            }
             // Post conditions
             (_, RequestType::Post) => {
-                (|| {
+                'paging_check: {
                     let Some(table) = self.get_mut_table_from_type(app_arm)
                     else {
-                        return;
+                        break 'paging_check;
                     };
                     if let Some(req) = table.goto_last_page() {
                         reqs.push(req);
                         reqs.reverse();
                     }
-                })();
-                reqs.append(&mut DbRequest::counts())
+                }
+                let search = self
+                    .get_mut_table_from_type(AppArm::Items)
+                    .ok_or(Error::msg(""))?
+                    .last_search
+                    .as_ref()
+                    .map(|f| f.to_string());
+
+                reqs.append(&mut DbRequest::counts(search))
             }
             // Update conditions
             (AppArm::Receipts, RequestType::Update) => {
@@ -112,9 +129,27 @@ impl Home {
                     AppArm::Receipts => self.try_subtract_store_total()?,
                     _ => {}
                 }
-                reqs.append(&mut DbRequest::counts())
+                let search = self
+                    .get_mut_table_from_type(AppArm::Items)
+                    .ok_or(Error::msg(""))?
+                    .last_search
+                    .as_ref()
+                    .map(|f| f.to_string());
+
+                reqs.append(&mut DbRequest::counts(search))
             }
-            (AppArm::Totals, _) => reqs.append(&mut DbRequest::init()),
+            // Reset conditons
+            (AppArm::Totals, _) => {
+                'search_check: {
+                    let Some(items) =
+                        self.get_mut_table_from_type(AppArm::Items)
+                    else {
+                        break 'search_check;
+                    };
+                    items.last_search = None;
+                }
+                reqs.append(&mut DbRequest::init())
+            }
             _ => return Ok(()),
         }
         Ok(())

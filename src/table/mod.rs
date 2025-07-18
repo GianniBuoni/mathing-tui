@@ -25,6 +25,7 @@ pub struct TableData {
     title: Rc<str>,
     items: Vec<DbTable>,
     headings: Rc<[Rc<str>]>,
+    pub last_search: Option<Rc<str>>,
     table_index: usize,
     app_index: usize,
     tracker: ComponentTracker,

@@ -22,13 +22,16 @@ impl DbRequest {
                 .with_payload(payload)
         })
         .collect::<Vec<Self>>();
-        init.append(&mut Self::counts());
+        init.append(&mut Self::counts(None));
 
         init
     }
-    pub fn counts() -> Vec<Self> {
+    pub fn counts(search: Option<String>) -> Vec<Self> {
+        let mut item_param = ItemParams::default();
+        item_param.search_filter = search;
+
         [
-            DbPayload::ItemParams(ItemParams::default()),
+            DbPayload::ItemParams(item_param),
             DbPayload::UserParams(UserParams::default()),
             DbPayload::ReceiptParams(JoinedReceiptParams::default()),
         ]

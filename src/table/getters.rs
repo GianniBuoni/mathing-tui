@@ -18,11 +18,15 @@ impl TableData {
     /// current item offset and item limit
     pub fn get_refresh_reqs(&self) -> Option<DbRequest> {
         let payload = match self.table_type? {
-            AppArm::Items => Some(DbPayload::ItemParams(
-                ItemParams::default()
+            AppArm::Items => {
+                let mut base_param = ItemParams::default()
                     .with_limit(self.limit)
-                    .with_offset(self.get_req_offset()),
-            )),
+                    .with_offset(self.get_req_offset());
+                if let Some(search_term) = self.last_search.as_ref() {
+                    base_param = base_param.with_search(search_term);
+                }
+                Some(DbPayload::ItemParams(base_param))
+            }
             AppArm::Receipts => Some(DbPayload::ReceiptParams(
                 JoinedReceiptParams::default()
                     .with_limit(self.limit)
@@ -36,6 +40,13 @@ impl TableData {
                 .with_req_type(RequestType::GetAll)
                 .with_payload(f)
         })
+    }
+    // Public setters
+    pub fn set_search(&mut self, search_term: impl Into<Rc<str>>) {
+        self.last_search = Some(search_term.into())
+    }
+    pub fn reset_pages(&mut self) {
+        self.pages = 1;
     }
     pub fn goto_page(&self) -> Option<DbRequest> {
         if self.max_pages() == 1 {
