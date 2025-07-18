@@ -120,12 +120,19 @@ impl Request for ItemParams {
     }
 
     async fn count(&self, conn: &SqlitePool) -> Result<i64> {
-        Ok(
-            sqlx::query_as!(StoreCount, "SELECT COUNT(*) AS rows FROM items")
-                .fetch_one(conn)
-                .await
-                .unwrap_or_default()
-                .rows,
-        )
+        let mut q =
+            QueryBuilder::<Sqlite>::new("SELECT COUNT(*) AS rows FROM items");
+
+        if let Some(search) = self.search_filter.as_ref() {
+            q.push(" WHERE name LIKE concat('%', ")
+                .push_bind(search)
+                .push(", '%')");
+        }
+
+        Ok(q.build_query_as::<StoreCount>()
+            .fetch_one(conn)
+            .await
+            .unwrap_or_default()
+            .rows)
     }
 }

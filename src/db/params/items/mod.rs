@@ -18,6 +18,10 @@ impl ItemParams {
         self.offset = Some(offset);
         self
     }
+    pub fn with_search(mut self, search_term: impl Display) -> Self {
+        self.search_filter = Some(search_term.to_string());
+        self
+    }
 }
 
 #[derive(Debug, Default, Clone, PartialEq)]
