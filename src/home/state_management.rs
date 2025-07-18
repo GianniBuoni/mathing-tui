@@ -1,8 +1,7 @@
 use super::*;
 
 impl Home {
-    /// Check whether the main component has table components associated with
-    /// the main comopnents active index. Errors out if the Vec is empty.
+    /// Get a reference to the current active table
     pub(super) fn try_get_current_table(
         &self,
     ) -> Result<&TableData, ComponentError> {
@@ -10,27 +9,14 @@ impl Home {
             .get(self.component_tracker.inner())
             .ok_or(ComponentError::NoData)
     }
-    /// Get the current table for mutation. Errors out if the Vec is empty.
-    pub(super) fn try_get_mut_current_table(
-        &mut self,
-    ) -> Result<&mut TableData, ComponentError> {
-        self.components
-            .get_mut(self.component_tracker.inner())
-            .ok_or(ComponentError::NoData)
-    }
     /// Get a mutable reference to specific table
     pub(super) fn get_mut_table_from_type(
         &mut self,
         table_type: AppArm,
     ) -> Option<&mut TableData> {
-        let mut tables = self.components.iter_mut();
-
-        while let Some(table) = tables.next() {
-            if table.table_type == Some(table_type) {
-                return Some(table);
-            }
-        }
-        None
+        self.components
+            .iter_mut()
+            .find(|f| f.table_type == Some(table_type))
     }
     /// Resets main component's form and message fields to None and then resets
     /// the component to Normal mode.
@@ -72,7 +58,10 @@ impl Home {
     }
     pub(super) fn handle_paging(&mut self, action: Option<Action>) {
         if let Err(err) = (|| {
-            let table = self.try_get_mut_current_table()?;
+            let table = self
+                .components
+                .get_mut(self.component_tracker.inner())
+                .ok_or(ComponentError::NoData)?;
             table.handle_action(action);
 
             if let Some(req) = table.goto_page() {
