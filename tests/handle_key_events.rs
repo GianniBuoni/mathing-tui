@@ -1,6 +1,6 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
-use common::*;
+use common::prelude::*;
 use mathing_tui::prelude::*;
 
 mod common;
