@@ -12,7 +12,7 @@ pub mod prelude {
     pub(crate) use crate::home::prelude::*;
     pub(crate) use crate::plugin::prelude::*;
     pub(crate) use crate::styles::prelude::*;
-    pub(crate) use crate::table::prelude::*;
+    pub use crate::table::prelude::*;
     pub use crate::tui::prelude::*;
     pub use anyhow::{Error, Ok as Aok, Result};
     pub(crate) use crossterm::event::{
