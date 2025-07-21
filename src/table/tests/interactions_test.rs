@@ -86,6 +86,6 @@ fn test_req_offset() {
         .into_iter()
         .zip(TableData::mock_pages())
         .for_each(|((want, test), table)| {
-            assert_eq!(want, table.get_req_offset(), "{desc} {test}.")
+            assert_eq!(want, table.get_next_offset(), "{desc} {test}.")
         });
 }

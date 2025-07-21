@@ -8,6 +8,7 @@ mod component;
 mod form_building;
 mod getters;
 mod plugin;
+mod table_req;
 
 // private methods
 mod render;
@@ -25,13 +26,14 @@ pub struct TableData {
     title: Rc<str>,
     items: Vec<DbTable>,
     headings: Rc<[Rc<str>]>,
-    pub last_search: Option<Rc<str>>,
+    last_search: Option<Rc<str>>,
     table_index: usize,
     app_index: usize,
     tracker: ComponentTracker,
-    pub pages: i64,
-    pub count: i64,
-    pub limit: i64,
+    count: i64,
+    limit: i64,
+    pub current_page: i64,
+    pub next_page: i64,
     pub table_type: Option<AppArm>,
 }
 

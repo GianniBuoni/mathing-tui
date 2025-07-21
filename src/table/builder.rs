@@ -44,7 +44,7 @@ impl ComponentBuilder for TableBuilder {
             headings: self.headings.into(),
             table_type: Some(table_type),
             limit: self.limit.unwrap_or(20),
-            pages: 1,
+            next_page: 1,
             ..Default::default()
         })
     }

@@ -4,6 +4,15 @@ impl TableData {
     fn max_rows(&self) -> usize {
         self.items.len() - 1
     }
+    /// sets the [`next page`] field
+    pub(super) fn page_increment(&mut self, add_page: i64) {
+        let next_page = self.current_page + add_page;
+        match next_page {
+            int if int > self.max_pages() => self.next_page = 1,
+            int if int < 1 => self.next_page = self.max_pages(),
+            _ => self.next_page = next_page,
+        };
+    }
     pub(super) fn max_pages(&self) -> i64 {
         if self.count % self.limit == 0 {
             1.max(self.count / self.limit)
@@ -11,15 +20,22 @@ impl TableData {
             self.count / self.limit + 1
         }
     }
-    /// Increments the table page forward or backward
-    pub(super) fn page_increment(&mut self, add: i64) {
-        let next_page = self.pages + add;
-        match next_page {
-            int if int > self.max_pages() => self.pages = 1,
-            int if int < 1 => self.pages = self.max_pages(),
-            _ => self.pages = next_page,
+    pub(super) fn page_to_first(&mut self) {
+        if self.max_pages() == 1 {
+            return;
         }
+        self.next_page = 1;
     }
+    pub(super) fn page_to_last(&mut self) {
+        if self.max_pages() == 1 {
+            return;
+        }
+        self.next_page = self.max_pages();
+    }
+    pub(super) fn get_next_offset(&self) -> i64 {
+        0.max(self.next_page - 1) * self.limit
+    }
+    /// Increments the table page forward or backward
     pub(super) fn row_increment(&mut self, add: i64) {
         let next_index = self.table_index as i64 + add;
         match next_index {
@@ -28,6 +44,7 @@ impl TableData {
             _ => self.table_index = next_index as usize,
         }
     }
+    /// Consumes the payload to be added to the table
     pub(super) fn add_items(&mut self, payload: DbPayload) {
         let filter = matches!(
             payload,
@@ -37,19 +54,21 @@ impl TableData {
         match filter {
             true => {
                 self.items = items;
+                self.current_page = self.next_page;
                 self.table_index = 0
             }
             false => {
-                if self.pages == self.max_pages() {
+                self.current_page = self.next_page;
+                if self.current_page == self.max_pages() {
                     self.items.push(items.first().unwrap().to_owned());
-                    self.table_index = self.items.len() - 1
+                    self.table_index = self.max_rows()
                 }
             }
         }
     }
-    pub(super) fn set_count(&mut self, payload: DbPayload) {
+    pub(super) fn set_count(&mut self, payload: &DbPayload) {
         if let DbPayload::Count(_, i) = payload {
-            self.count = i
+            self.count = *i
         }
     }
 }

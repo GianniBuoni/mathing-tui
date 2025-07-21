@@ -84,11 +84,9 @@ pub(super) fn try_add_store_total(
     };
     let store_total = StoreTotal::try_get()?;
 
-    let err =
-        "Mutex Error: main thread could not obtain a lock to the store totals.";
     store_total
         .lock()
-        .map_err(|_| anyhow::Error::msg(err))?
+        .map_err(|_| AppError::StoreTotalMutex)?
         .add(receipt.try_calc()?);
 
     Ok(())
