@@ -52,15 +52,6 @@ const PAGING_PRICES: [f64; 40] = [
     33.99, 34.00, 35.99, 36.50, 37.75, 38.99, 39.00, 40.00,
 ];
 
-const PAGING_USERS: [&str; 2] = ["Blue", "Noodle"];
-
-/// (recipt_id, item_id, item_qty)
-const PAGING_RECEIPT: [(i64, i64, i64); 3] =
-    [(1, 15, 2), (2, 4, 1), (3, 40, 1)];
-
-/// (receipt_id, user_id)
-const PAGING_RU: [(i64, i64); 4] = [(1, 1), (1, 2), (2, 1), (3, 2)];
-
 pub async fn try_init_paging_db(conn: &SqlitePool) -> Result<()> {
     let now = AppConfig::try_get_time()?;
     let items = PAGING_ITEMS
@@ -80,41 +71,8 @@ pub async fn try_init_paging_db(conn: &SqlitePool) -> Result<()> {
     });
     q.build().execute(conn).await?;
 
-    // add users
-    let mut q = QueryBuilder::<Sqlite>::new(
-        "INSERT INTO users (name, created_at, updated_at) ",
-    );
-    q.push_values(PAGING_USERS, |mut q, name| {
-        q.push_bind(name).push_bind(now).push_bind(now);
-    });
-    q.build().execute(conn).await?;
 
-    // add receipts
-    let mut q = QueryBuilder::<Sqlite>::new(
-        "INSERT INTO receipts (id, item_id, item_qty, created_at, updated_at) ",
-    );
-    q.push_values(PAGING_RECEIPT, |mut q, (r_id, item_id, item_qty)| {
-        q.push_bind(r_id)
-            .push_bind(item_id)
-            .push_bind(item_qty)
-            .push_bind(now)
-            .push_bind(now);
-    });
-    q.build().execute(conn).await?;
 
-    // add receipts_users
-    let mut q = QueryBuilder::<Sqlite>::new(
-        "INSERT INTO receipts_users (
-            receipt_id, user_id, created_at, updated_at
-        ) ",
-    );
-    q.push_values(PAGING_RU, |mut q, (r_id, u_id)| {
-        q.push_bind(r_id)
-            .push_bind(u_id)
-            .push_bind(now)
-            .push_bind(now);
-    });
-    q.build().execute(conn).await?;
 
     Ok(())
 }
