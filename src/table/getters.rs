@@ -11,13 +11,8 @@ impl TableData {
             .get(self.table_index)
             .ok_or(ComponentError::NoData)?)
     }
-    /// Try to formulate a refresh request based on table's
-    /// current item offset and item limit
     // Public setters
     pub fn set_search(&mut self, search_term: impl Into<Rc<str>>) {
         self.last_search = Some(search_term.into())
-    }
-    pub fn reset_pages(&mut self) {
-        self.current_page = 1;
     }
 }
