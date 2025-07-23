@@ -7,45 +7,38 @@ pub struct DbRequest {
 }
 
 impl DbRequest {
+    /// Request to refresh store totals
+    pub const STORE_TOTAL: Self = Self {
+        req_type: RequestType::None,
+        payload: DbPayload::StoreTotal,
+    };
     /// Returns an array of DbRequests related to fetching all table data
-    /// with offsets of 0.
+    /// with offsets set to 0. Should only be called during app initialization.
     pub fn init() -> Vec<Self> {
-        let mut init = [
+        let payloads = [
             DbPayload::ItemParams(ItemParams::default()),
             DbPayload::UserParams(UserParams::default()),
             DbPayload::ReceiptParams(JoinedReceiptParams::default()),
-        ]
-        .into_iter()
-        .map(|payload| {
-            Self::new()
-                .with_req_type(RequestType::GetAll)
-                .with_payload(payload)
-        })
-        .collect::<Vec<Self>>();
-        init.append(&mut Self::counts(None));
+        ];
+        let mut init = payloads
+            .iter()
+            .map(|payload| {
+                Self::new()
+                    .with_req_type(RequestType::GetAll)
+                    .with_payload(payload.clone())
+            })
+            .collect::<Vec<Self>>();
+        let mut counts = payloads
+            .into_iter()
+            .map(|payload| {
+                Self::new()
+                    .with_req_type(RequestType::Count)
+                    .with_payload(payload)
+            })
+            .collect::<Vec<Self>>();
+        init.append(&mut counts);
 
         init
-    }
-    pub fn counts(search: Option<String>) -> Vec<Self> {
-        let mut item_param = ItemParams::default();
-        item_param.search_filter = search;
-
-        [
-            DbPayload::ItemParams(item_param),
-            DbPayload::UserParams(UserParams::default()),
-            DbPayload::ReceiptParams(JoinedReceiptParams::default()),
-        ]
-        .into_iter()
-        .map(|payload| {
-            Self::new()
-                .with_req_type(RequestType::Count)
-                .with_payload(payload)
-        })
-        .collect()
-    }
-    /// Refreshes StoreTotals; should be accompanied by table refreshes as well.
-    pub fn refresh() -> Self {
-        Self::new().with_payload(DbPayload::StoreTotal)
     }
     pub fn new() -> Self {
         Self::default()
@@ -57,5 +50,15 @@ impl DbRequest {
     pub fn with_payload(mut self, payload: DbPayload) -> Self {
         self.payload = payload;
         self
+    }
+    /// Takes a request and destructures it into a tuple containing only
+    /// the data the app needs to determine if a request has any
+    /// related requests that should be sent with the initial request.
+    pub fn try_descruct(
+        &self,
+    ) -> Result<(AppArm, RequestType, Option<Rc<str>>)> {
+        let app_arm = TryInto::<AppArm>::try_into(&self.payload)?;
+        let search_term = self.payload.get_search_term();
+        Ok((app_arm, self.req_type, search_term))
     }
 }
