@@ -12,8 +12,9 @@ impl Home {
                     return Aok(());
                 }
             };
-            let reqs = self.try_add_extra_reqs(req)?;
-            reqs.into_iter().try_for_each(|f| self.try_send(f))?;
+            self.try_add_extra_reqs(req)?
+                .into_iter()
+                .try_for_each(|f| self.try_send(f))?;
 
             Aok(())
         })() {
@@ -53,8 +54,7 @@ impl Home {
             .with_payload(dialogue.try_get_payload()?))
     }
     fn try_add_extra_reqs(&mut self, req: DbRequest) -> Result<Vec<DbRequest>> {
-        let mut table_req = TryInto::<TableReq>::try_into(&req)?;
-        table_req.push(req);
+        let mut table_req = TryInto::<TableReq>::try_into(req)?;
 
         self.components
             .iter_mut()

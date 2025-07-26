@@ -112,8 +112,7 @@ pub async fn try_process_req(
     table: &mut TableData,
     req: DbRequest,
 ) -> Result<()> {
-    let mut table_req = TryInto::<TableReq>::try_into(&req)?;
-    table_req.push(req);
+    let mut table_req = TryInto::<TableReq>::try_into(req)?;
     table.collect_reqs(&mut table_req);
 
     for req in table_req.reqs {

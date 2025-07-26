@@ -1,14 +1,18 @@
 use super::*;
 
-impl TryFrom<&DbRequest> for TableReq {
+impl TryFrom<DbRequest> for TableReq {
     type Error = Error;
-    fn try_from(value: &DbRequest) -> std::result::Result<Self, Self::Error> {
-        Ok(Self {
+
+    fn try_from(value: DbRequest) -> std::result::Result<Self, Self::Error> {
+        let reqs = Vec::with_capacity(7);
+        let mut new = Self {
             search_term: value.payload.get_search_term(),
             req_type: value.req_type,
             app_arm: TryInto::<AppArm>::try_into(&value.payload)?,
-            reqs: Vec::with_capacity(7),
-        })
+            reqs,
+        };
+        new.reqs.push(value);
+        Ok(new)
     }
 }
 
