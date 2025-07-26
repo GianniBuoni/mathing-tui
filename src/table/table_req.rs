@@ -22,7 +22,7 @@ impl TableReq {
             self.reqs.push(req);
         };
     }
-    pub(super) fn check_is_post(&mut self) {
+    pub fn check_is_post(&mut self) {
         if self.req_type == RequestType::Post {
             // should swap original req (0) and get_req (1)
             self.reqs.swap(0, 1);
