@@ -112,18 +112,14 @@ pub async fn try_process_req(
     table: &mut TableData,
     req: DbRequest,
 ) -> Result<()> {
-    let req_destructured = req.try_descruct()?;
-    let mut reqs = vec![req];
+    let mut table_req = TryInto::<TableReq>::try_into(&req)?;
+    table_req.push(req);
+    table.collect_reqs(&mut table_req);
 
-    if let Some(mut extra_reqs) = table.collect_reqs(req_destructured) {
-        reqs.append(&mut extra_reqs);
-    };
-
-    for req in reqs {
+    for req in table_req.reqs {
         let res = handle_requests(req, conn).await;
         table.handle_response(Some(&res))?;
     }
-
     Ok(())
 }
 

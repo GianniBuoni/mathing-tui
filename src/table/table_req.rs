@@ -1,110 +1,62 @@
 use super::*;
 
-impl TableData {
-    /// Formulates a GetAll request for the current table
-    pub fn get_req(&self) -> Option<DbRequest> {
-        let payload = match self.table_type? {
-            AppArm::Items => {
-                let mut base_param = ItemParams::default()
-                    .with_limit(self.limit)
-                    .with_offset(self.get_next_offset());
-                if let Some(search_term) = self.last_search.as_ref() {
-                    base_param = base_param.with_search(search_term);
-                }
-                Some(DbPayload::ItemParams(base_param))
-            }
-            AppArm::Receipts => Some(DbPayload::ReceiptParams(
-                JoinedReceiptParams::default()
-                    .with_limit(self.limit)
-                    .with_offset(self.get_next_offset()),
-            )),
-            AppArm::Users => Some(DbPayload::UserParams(UserParams::default())),
-            _ => None,
-        };
-        payload.map(|f| {
-            DbRequest::new()
-                .with_req_type(RequestType::GetAll)
-                .with_payload(f)
+impl TryFrom<&DbRequest> for TableReq {
+    type Error = Error;
+    fn try_from(value: &DbRequest) -> std::result::Result<Self, Self::Error> {
+        Ok(Self {
+            search_term: value.payload.get_search_term(),
+            req_type: value.req_type,
+            app_arm: TryInto::<AppArm>::try_into(&value.payload)?,
+            reqs: Vec::with_capacity(7),
         })
     }
-    /// Formulates a Count request for current table
-    fn count(&self) -> Option<DbRequest> {
-        let payload = match self.table_type? {
-            AppArm::Items => {
-                let mut item_param = ItemParams::default();
-                if let Some(search_term) = self.last_search.as_ref() {
-                    item_param = item_param.with_search(search_term);
-                }
-                Some(DbPayload::ItemParams(item_param))
-            }
-            AppArm::Receipts => {
-                Some(DbPayload::ReceiptParams(JoinedReceiptParams::default()))
-            }
-            AppArm::Users => Some(DbPayload::UserParams(UserParams::default())),
-            _ => None,
-        };
-        payload.map(|f| {
-            DbRequest::new()
-                .with_req_type(RequestType::Count)
-                .with_payload(f)
-        })
-    }
-    /// Handles collecting cascading requests for a table based on
-    /// an initial request from a form or dialogue.
-    /// Any necessary paging, and filter reseting is also handled here
-    pub fn collect_reqs(
-        &mut self,
-        req_seed: (AppArm, RequestType, Option<Rc<str>>),
-    ) -> Option<Vec<DbRequest>> {
-        let (app_arm, req_type, search_term) = req_seed;
+}
 
-        if let Some(search_term) = search_term.as_ref() {
-            self.last_search = Some(search_term.clone());
+impl TableReq {
+    pub fn push(&mut self, req: DbRequest) {
+        self.reqs.push(req);
+    }
+    pub fn check_is_post(&mut self) {
+        if self.req_type == RequestType::Post {
+            // should swap original req (0) and get_req (1)
+            self.reqs.swap(0, 1);
         }
-        let table_type = self.table_type?;
-        // TODO: clean up matches to be a little more readable?
-        match (app_arm, req_type, table_type) {
-            // Get condition(s)
-            (_, RequestType::GetAll, _) => {
-                if search_term.as_ref().is_some() {
-                    self.page_to_first();
-                }
-                Some(vec![self.get_req()?, self.count()?])
-            }
-            // Post condition(s)
-            (_, RequestType::Post, _) => match table_type {
-                table_type if table_type == app_arm => {
-                    self.page_to_last();
-                    Some(vec![self.get_req()?, self.count()?])
-                }
-                _ => None,
-            },
-            // Update condition(s)
-            (AppArm::Receipts, RequestType::Update, _) => None,
+    }
+    pub(super) fn check_count(&mut self, table: &TableData) -> Option<()> {
+        let req = table.count()?;
+        match (self.req_type, self.app_arm) {
             (
-                AppArm::Items | AppArm::Users,
-                RequestType::Update,
-                AppArm::Receipts,
-            ) => Some(vec![self.get_req()?, DbRequest::STORE_TOTAL]),
-            (AppArm::Totals, RequestType::Update, _) => {
-                self.page_to_first();
-                self.last_search = None;
-                Some(vec![self.get_req()?, self.count()?])
+                RequestType::Post | RequestType::Delete | RequestType::GetAll,
+                _,
+            ) => Some(self.push(req)),
+            (RequestType::Update, AppArm::Totals) => Some(self.push(req)),
+            _ => None,
+        }
+    }
+    pub(super) fn check_retotal(&mut self) {
+        if let RequestType::Reset | RequestType::Delete | RequestType::Update =
+            self.req_type
+        {
+            self.push(DbRequest::STORE_TOTAL);
+        }
+    }
+    pub(super) fn check_refetch(&mut self, table: &TableData) -> Option<()> {
+        let req = table.get_req()?;
+        let table_type = table.table_type?;
+
+        match (self.req_type, self.app_arm, table_type) {
+            // paginig or posting
+            (RequestType::GetAll | RequestType::Post, _, _) => {
+                Some(self.push(req))
             }
-            // Delete condition(s)
-            (AppArm::Receipts, RequestType::Delete, _) => None,
+            // updating related tables
             (
+                RequestType::Update | RequestType::Delete,
                 AppArm::Items | AppArm::Users,
-                RequestType::Delete,
                 AppArm::Receipts,
-            ) => Some(vec![
-                self.get_req()?,
-                self.count()?,
-                DbRequest::STORE_TOTAL,
-            ]),
-            (_, RequestType::Delete, _) => Some(vec![self.count()?]),
-            // Reset condition(s)
-            (_, RequestType::Reset, _) => Some(vec![DbRequest::STORE_TOTAL]),
+            ) => Some(self.push(req)),
+            // refresh
+            (RequestType::Update, AppArm::Totals, _) => Some(self.push(req)),
             _ => None,
         }
     }

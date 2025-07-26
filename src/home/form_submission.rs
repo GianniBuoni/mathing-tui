@@ -53,31 +53,20 @@ impl Home {
             .with_payload(dialogue.try_get_payload()?))
     }
     fn try_add_extra_reqs(&mut self, req: DbRequest) -> Result<Vec<DbRequest>> {
-        let (app_arm, req_type, search_term) = req.try_descruct()?;
+        let mut table_req = TryInto::<TableReq>::try_into(&req)?;
+        table_req.push(req);
 
-        let mut reqs = Vec::with_capacity(7);
-        reqs.push(req);
+        self.components
+            .iter_mut()
+            .for_each(|f| f.collect_reqs(&mut table_req));
+        table_req.check_is_post();
 
-        self.components.iter_mut().for_each(|f| {
-            if let Some(mut extra_reqs) =
-                f.collect_reqs((app_arm, req_type, search_term.clone()))
-            {
-                reqs.append(&mut extra_reqs);
-            }
-        });
-        if req_type == RequestType::Post {
-            // TODO: write a test for this?
-            // should swap original req (0) and cascading get_req
-            // from collect req (1)
-            reqs.swap(0, 1);
-        }
         if matches!(
-            (app_arm, req_type),
+            (table_req.app_arm, table_req.req_type),
             (AppArm::Receipts, RequestType::Update | RequestType::Delete)
         ) {
             self.try_subtract_store_total()?;
         }
-
-        Ok(reqs)
+        Ok(table_req.reqs)
     }
 }

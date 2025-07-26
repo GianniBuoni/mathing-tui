@@ -18,7 +18,7 @@ mod state_management;
 mod tests;
 
 pub mod prelude {
-    pub use super::TableData;
+    pub use super::{TableData, TableReq};
 }
 
 #[derive(Debug, Default)]
@@ -43,4 +43,14 @@ pub struct TableBuilder {
     headings: Vec<Rc<str>>,
     limit: Option<i64>,
     table_type: Option<AppArm>,
+}
+/// Takes a request and restructures it into the data the app needs
+/// to determine if a request has any related requests that should
+/// be sent along with the initial request.
+#[derive(Debug, PartialEq)]
+pub struct TableReq {
+    search_term: Option<Rc<str>>,
+    pub req_type: RequestType,
+    pub app_arm: AppArm,
+    pub reqs: Vec<DbRequest>,
 }

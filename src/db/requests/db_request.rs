@@ -51,14 +51,4 @@ impl DbRequest {
         self.payload = payload;
         self
     }
-    /// Takes a request and destructures it into a tuple containing only
-    /// the data the app needs to determine if a request has any
-    /// related requests that should be sent with the initial request.
-    pub fn try_descruct(
-        &self,
-    ) -> Result<(AppArm, RequestType, Option<Rc<str>>)> {
-        let app_arm = TryInto::<AppArm>::try_into(&self.payload)?;
-        let search_term = self.payload.get_search_term();
-        Ok((app_arm, self.req_type, search_term))
-    }
 }
