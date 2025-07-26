@@ -17,51 +17,51 @@ impl TryFrom<DbRequest> for TableReq {
 }
 
 impl TableReq {
-    pub fn push(&mut self, req: DbRequest) {
-        self.reqs.push(req);
+    pub fn push(&mut self, req: Option<DbRequest>) {
+        if let Some(req) = req {
+            self.reqs.push(req);
+        };
     }
-    pub fn check_is_post(&mut self) {
+    pub(super) fn check_is_post(&mut self) {
         if self.req_type == RequestType::Post {
             // should swap original req (0) and get_req (1)
             self.reqs.swap(0, 1);
         }
     }
-    pub(super) fn check_count(&mut self, table: &TableData) -> Option<()> {
-        let req = table.count()?;
+    pub(super) fn check_count(&mut self, table: &TableData) {
         match (self.req_type, self.app_arm) {
             (
                 RequestType::Post | RequestType::Delete | RequestType::GetAll,
                 _,
-            ) => Some(self.push(req)),
-            (RequestType::Update, AppArm::Totals) => Some(self.push(req)),
-            _ => None,
+            ) => self.push(table.count()),
+            (RequestType::Update, AppArm::Totals) => self.push(table.count()),
+            _ => {}
         }
     }
     pub(super) fn check_retotal(&mut self) {
         if let RequestType::Reset | RequestType::Delete | RequestType::Update =
             self.req_type
         {
-            self.push(DbRequest::STORE_TOTAL);
+            self.push(Some(DbRequest::STORE_TOTAL));
         }
     }
-    pub(super) fn check_refetch(&mut self, table: &TableData) -> Option<()> {
-        let req = table.get_req()?;
-        let table_type = table.table_type?;
-
+    pub(super) fn check_refetch(&mut self, table: &TableData) {
+        let req = table.get_req();
+        let Some(table_type) = table.table_type else {
+            return;
+        };
         match (self.req_type, self.app_arm, table_type) {
             // paginig or posting
-            (RequestType::GetAll | RequestType::Post, _, _) => {
-                Some(self.push(req))
-            }
+            (RequestType::GetAll | RequestType::Post, _, _) => self.push(req),
             // updating related tables
             (
                 RequestType::Update | RequestType::Delete,
                 AppArm::Items | AppArm::Users,
                 AppArm::Receipts,
-            ) => Some(self.push(req)),
+            ) => self.push(req),
             // refresh
-            (RequestType::Update, AppArm::Totals, _) => Some(self.push(req)),
-            _ => None,
+            (RequestType::Update, AppArm::Totals, _) => self.push(req),
+            _ => {}
         }
     }
 }
