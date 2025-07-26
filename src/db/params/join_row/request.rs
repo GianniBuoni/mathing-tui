@@ -188,9 +188,10 @@ impl Request for JoinedReceiptParams {
         q.push(" updated_at=")
             .push_bind(now)
             .push(" WHERE id=")
-            .push_bind(id);
-        dbg!(q.sql());
-        q.build().execute(&mut *tx).await?;
+            .push_bind(id)
+            .build()
+            .execute(&mut *tx)
+            .await?;
 
         // update receipts users
         if !self.users.is_empty() {

@@ -28,7 +28,7 @@ async fn test_get_items(conn: SqlitePool) -> Result<()> {
     let test_cases = [
         (
             ItemParams::default(),
-            3 as usize,
+            3_usize,
             "Chips and Dip",
             "GetAll w/ no params.",
         ),
@@ -160,11 +160,20 @@ async fn test_update_item(conn: SqlitePool) -> Result<()> {
 }
 
 #[sqlx::test]
-async fn test_item_count(conn: SqlitePool) -> Result<()> {
+async fn test_item_counts(conn: SqlitePool) -> Result<()> {
     try_init_test_db(&conn).await?;
 
-    let got = ItemParams::default().count(&conn).await?;
-    assert_eq!(3, got, "Test if item count matches expected.");
+    let test_cases = [
+        (ItemParams::default(), 3),
+        (ItemParams::default().with_search("z"), 1),
+    ];
+
+    try_join_all(test_cases.into_iter().map(async |(f, want)| {
+        let got = f.count(&conn).await?;
+        assert_eq!(want, got, "Test if item count matches expected.");
+        Aok(())
+    }))
+    .await?;
 
     Ok(())
 }

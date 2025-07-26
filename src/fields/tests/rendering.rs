@@ -66,7 +66,7 @@ fn test_choices() {
     let test_cases = [
         (
             Line::from("  ◉︎ Jon").dark_gray().bold(),
-            1 as usize,
+            1_usize,
             true,
             "Test inactive selected choice",
         ),

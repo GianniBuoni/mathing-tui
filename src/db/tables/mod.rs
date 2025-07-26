@@ -47,7 +47,7 @@ pub struct StoreJoinRow {
 
 // "private" structs. These should onlys be used within
 // the db module.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, FromRow)]
 pub(super) struct StoreCount {
     pub(super) rows: i64,
 }

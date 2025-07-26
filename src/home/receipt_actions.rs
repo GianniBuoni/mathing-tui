@@ -18,7 +18,7 @@ impl Home {
             Err(err) => self.map_err(err),
         }
     }
-    pub(super) fn edit_r_parms(
+    pub(super) fn edit_r_params(
         &self,
     ) -> Result<(&StoreJoinRow, Rc<[StoreUser]>)> {
         let (r, users) = self.build_r_form_params()?;

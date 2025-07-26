@@ -83,4 +83,16 @@ impl Dialogue {
 
         dialogue.build()
     }
+
+    pub fn reset() -> Result<Self> {
+        let message = "Confirm receipt reset?";
+        let mut dialogue = Self::builder();
+
+        dialogue
+            .with_message(message)
+            .with_req_type(RequestType::Reset)
+            .with_from_type(AppArm::Receipts);
+
+        dialogue.build()
+    }
 }

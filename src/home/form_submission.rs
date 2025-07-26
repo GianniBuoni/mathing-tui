@@ -2,25 +2,25 @@ use super::*;
 
 impl Home {
     pub(super) fn handle_submit(&mut self) {
-        if let Err(err) = (|| {
-            let submission_callback = match true {
-                _ if self.form.is_some() => Self::try_form_submit,
+        match (|| {
+            let req = match true {
+                _ if self.form.is_some() => self.try_form_submit()?,
                 _ if self.message.is_some() && !self.is_error() => {
-                    Self::try_dialogue_submit
+                    self.try_dialogue_submit()?
                 }
                 _ => {
                     return Aok(());
                 }
             };
-            let requests = submission_callback(self)?;
-            requests.into_iter().try_for_each(|f| self.try_send(f))?;
+            self.try_add_extra_reqs(req)?
+                .into_iter()
+                .try_for_each(|f| self.try_send(f))?;
 
             Aok(())
         })() {
-            self.map_err(err);
+            Ok(_) => self.reset_mode(),
+            Err(err) => self.map_err(err),
         }
-        // defer to resetting
-        self.reset_mode()
     }
     pub(super) fn try_send(&self, req: DbRequest) -> Result<()> {
         let tx = self
@@ -32,80 +32,41 @@ impl Home {
         Ok(())
     }
     // helper methods
-    fn try_form_submit(&mut self) -> Result<Vec<DbRequest>> {
-        // unwrap the form. Should only be called if there is a form
-        // to opperate on.
+    fn try_form_submit(&mut self) -> Result<DbRequest> {
         let form = &mut self
             .form
             .as_mut()
             .ok_or(ComponentError::not_found("form"))?;
         form.submit()?;
 
-        // initialize all the return data
-        let mut requests = vec![DbRequest::new()];
-        let req_type = form.get_req_type();
-        let payload = form.try_get_payload()?;
-
-        // if there is un update, check if we need to do
-        // some calculations or push a refresh request.
-        match (&payload, req_type) {
-            (_, RequestType::Post) => {
-                requests.append(&mut DbRequest::counts());
-            }
-            (DbPayload::ReceiptParams(_), RequestType::Update) => {
-                self.try_subtract_store_total()?
-            }
-            (
-                DbPayload::ItemParams(_) | DbPayload::UserParams(_),
-                RequestType::Update,
-            ) => {
-                requests.append(&mut DbRequest::refresh());
-            }
-            _ => {}
-        }
-        // update original request to consume the payload and
-        // request type
-        requests
-            .first_mut()
-            .unwrap()
-            .with_req_type(req_type)
-            .with_payload(payload);
-
-        Ok(requests)
+        Ok(DbRequest::new()
+            .with_req_type(form.get_req_type())
+            .with_payload(form.try_get_payload()?))
     }
-
-    fn try_dialogue_submit(&mut self) -> Result<Vec<DbRequest>> {
+    fn try_dialogue_submit(&mut self) -> Result<DbRequest> {
         let dialogue = self
             .message
             .as_mut()
-            .ok_or(ComponentError::not_found("message"))?;
+            .ok_or(ComponentError::not_found("Message"))?;
 
-        let mut requests = vec![DbRequest::new()];
-        let req_type = dialogue.get_req_type();
-        let payload = dialogue.try_get_payload()?;
+        Ok(DbRequest::new()
+            .with_req_type(dialogue.get_req_type())
+            .with_payload(dialogue.try_get_payload()?))
+    }
+    fn try_add_extra_reqs(&mut self, req: DbRequest) -> Result<Vec<DbRequest>> {
+        let mut table_req = TryInto::<TableReq>::try_into(req)?;
 
-        match (&payload, req_type) {
-            (DbPayload::ReceiptParams(_), RequestType::Delete) => {
-                self.try_subtract_store_total()?
-            }
-            (DbPayload::ItemParams(_), RequestType::Delete) => {
-                requests.append(&mut DbRequest::refresh());
-            }
-            (_, RequestType::Delete) => {
-                requests.append(&mut DbRequest::counts());
-            }
-            (DbPayload::StoreTotal, _ /*Refresh to app init*/) => {
-                requests.append(&mut DbRequest::init());
-            }
-            _ => {}
+        self.components
+            .iter_mut()
+            .for_each(|f| f.collect_reqs(&mut table_req));
+        table_req.check_is_post();
+
+        if matches!(
+            (table_req.app_arm, table_req.req_type),
+            (AppArm::Receipts, RequestType::Update | RequestType::Delete)
+        ) {
+            self.try_subtract_store_total()?;
         }
-
-        requests
-            .first_mut()
-            .unwrap()
-            .with_req_type(req_type)
-            .with_payload(payload);
-
-        Ok(requests)
+        Ok(table_req.reqs)
     }
 }

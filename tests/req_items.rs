@@ -35,8 +35,8 @@ async fn test_handle_item_requests(conn: SqlitePool) -> Result<()> {
     let want = [("Salmon", 9.49), ("PB Prezel", 4.99), ("new name", 0.)];
 
     try_join_all(payloads.into_iter().map(async |(req_type, payload)| {
-        let mut req = DbRequest::new();
-        req.with_req_type(req_type)
+        let req = DbRequest::new()
+            .with_req_type(req_type)
             .with_payload(DbPayload::ItemParams(payload));
         let DbPayload::Item(res) = handle_requests(req, &conn).await.payload
         else {
@@ -59,9 +59,8 @@ async fn test_handle_item_requests(conn: SqlitePool) -> Result<()> {
 #[sqlx::test]
 async fn test_handle_delete_item_req(conn: SqlitePool) -> Result<()> {
     try_init_test_db(&conn).await?;
-    let mut req = DbRequest::new();
-
-    req.with_req_type(RequestType::Delete)
+    let req = DbRequest::new()
+        .with_req_type(RequestType::Delete)
         .with_payload(DbPayload::ItemParams(
             ItemParams::builder()
                 .with_item_id(ParamOption::new().map_value(1).to_owned())

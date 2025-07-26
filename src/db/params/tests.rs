@@ -142,7 +142,7 @@ async fn test_joined_errors(conn: SqlitePool) -> Result<()> {
             RequestType::Post => param.post(&conn).await.err(),
             RequestType::Delete => param.delete(&conn).await.err(),
             RequestType::Update => param.update(&conn).await.err(),
-            _ => panic!("unhandled error, check test's req type"),
+            _ => panic!("Unhandled req type: {req_type}"),
         };
 
         let message = format!("Test: {req_type} suceeded unexpectedly.");

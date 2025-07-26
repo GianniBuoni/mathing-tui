@@ -7,7 +7,7 @@ test:
 
 lint:
   test -z $(cargo fmt)
-  cargo clippy -- -Dwarnings
+  cargo clippy --all-targets -- -Dwarnings
 
 reset:
   rm -r .config

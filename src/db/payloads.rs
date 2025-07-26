@@ -35,6 +35,15 @@ pub enum DbPayloadBuilder {
     StoreTotal,
 }
 
+impl DbPayload {
+    pub fn get_search_term(&self) -> Option<Rc<str>> {
+        let Self::ItemParams(params) = self else {
+            return None;
+        };
+        params.search_filter.as_ref().map(|f| f.as_str().into())
+    }
+}
+
 impl Display for DbPayload {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

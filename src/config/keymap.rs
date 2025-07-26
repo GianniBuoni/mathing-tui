@@ -2,7 +2,7 @@ use serde::de::{self, Visitor};
 
 use super::*;
 
-pub const DEFAULT_KEYMAP: &[u8; 408] = b"CTRL-c = \"Quit\"
+pub const DEFAULT_KEYMAP: &[u8; 420] = b"CTRL-c = \"Quit\"
 a = \"AddToReceipt\"
 d = \"DeleteSelected\"
 e = \"EditSelected\"
@@ -17,7 +17,8 @@ UP = \"NavigateUp\"
 k = \"NavigateUp\"
 RIGHT = \"NavigateRight\"
 l = \"NavigateRight\"
-CTRL-r = \"Refresh\"
+r = \"Refresh\"
+CTRL-r = \"Reset\"
 \"/\" = \"Search\"
 TAB = \"SelectForward\"
 ALT-TAB = \"SelectBackward\"

@@ -35,6 +35,7 @@ impl Component for Home {
                     self.handle_paging(action)
                 }
                 Action::Refresh => self.handle_refresh(),
+                Action::Reset => self.handle_reset(),
                 _ => {
                     self.components.iter_mut().for_each(|c| {
                         c.handle_action(action);

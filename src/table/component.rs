@@ -1,6 +1,7 @@
 use super::{
     response_handling::{
-        match_count, match_post_get, match_update, try_add_store_total,
+        match_count, match_post_get, match_reset, match_update,
+        try_add_store_total,
     },
     *,
 };
@@ -61,7 +62,7 @@ impl Component for TableData {
         match (table_type, &res.req_type, &res.payload) {
             // Count Responses
             item if match_count(item) => {
-                self.set_count(res.payload.to_owned());
+                self.set_count(&res.payload);
                 Ok(())
             }
             // Get and Post Responses
@@ -71,7 +72,7 @@ impl Component for TableData {
             }
             // Update Responses
             item if match_update(item) => {
-                let new_element: Vec<DbTable> = res.payload.clone().into();
+                let new_element: Vec<DbTable> = res.payload.to_owned().into();
                 // Update Response payloads should not be empty
                 let new_element =
                     new_element.first().ok_or(ComponentError::NoData)?;
@@ -84,6 +85,11 @@ impl Component for TableData {
                 if self.is_active() && !self.items.is_empty() && *i == 1 {
                     self.items.remove(self.table_index);
                 }
+                Ok(())
+            }
+            // Reset Responses
+            item if match_reset(item) => {
+                self.items = vec![];
                 Ok(())
             }
             _ => Ok(()),

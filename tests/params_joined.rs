@@ -33,7 +33,7 @@ async fn test_join_post(conn: SqlitePool) -> Result<()> {
 async fn test_join_get(conn: SqlitePool) -> Result<()> {
     try_init_test_db(&conn).await?;
     let (r_id, item_id, item_qty) = MOCK_RECEIPTS
-        .get(0)
+        .first()
         .ok_or(Error::msg("Could not unwrap \"want\" variable."))?;
 
     let got = JoinedReceiptParams::builder()
