@@ -93,6 +93,16 @@ async fn test_form_handle_key_events() -> Result<()> {
             "Test entering input in insert mode.",
         ),
         (
+            KeyEvent::from(KeyCode::Left),
+            Some(Action::HandleInput(KeyEvent::from(KeyCode::Left))),
+            "Test entering arrow input left.",
+        ),
+        (
+            KeyEvent::from(KeyCode::Right),
+            Some(Action::HandleInput(KeyEvent::from(KeyCode::Right))),
+            "Test entering arrow input right.",
+        ),
+        (
             KeyEvent::from(KeyCode::Enter),
             Some(Action::Submit),
             "Test submitting.",

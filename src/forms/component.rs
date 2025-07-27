@@ -70,7 +70,10 @@ impl Component for Form {
         }
         match (key.code, key.modifiers) {
             (
-                KeyCode::Char(_) | KeyCode::Backspace,
+                KeyCode::Char(_)
+                | KeyCode::Backspace
+                | KeyCode::Left
+                | KeyCode::Right,
                 KeyModifiers::NONE | KeyModifiers::SHIFT,
             ) => Some(Action::HandleInput(key)),
             _ => default,
