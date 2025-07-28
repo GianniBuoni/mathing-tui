@@ -8,6 +8,7 @@ pub enum Action {
     EditSelected,
     EnterInsert,
     EnterNormal,
+    Help,
     MakeSelection,
     NavigateLeft,
     NavigateDown,

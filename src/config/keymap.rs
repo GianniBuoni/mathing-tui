@@ -2,13 +2,14 @@ use serde::de::{self, Visitor};
 
 use super::*;
 
-pub const DEFAULT_KEYMAP: &[u8; 420] = b"CTRL-c = \"Quit\"
+pub const DEFAULT_KEYMAP: &[u8; 435] = b"CTRL-c = \"Quit\"
 a = \"AddToReceipt\"
 d = \"DeleteSelected\"
 e = \"EditSelected\"
 i = \"EnterInsert\"
 ESC = \"EnterNormal\"
-\" \" = \"MakeSelection\"
+\"?\" = \"Help\"
+SPACE = \"MakeSelection\"
 LEFT = \"NavigateLeft\"
 h = \"NavigateLeft\"
 DOWN = \"NavigateDown\"

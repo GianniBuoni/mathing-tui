@@ -26,11 +26,13 @@ pub(super) fn parse_key_code_add_modifier(
     let err = AppError::config(message);
 
     let code = match raw {
-        "esc" => KeyCode::Esc,
-        "delete" => KeyCode::Delete,
-        "enter" => KeyCode::Enter,
-        "tab" => KeyCode::Tab,
         "backspace" => KeyCode::Backspace,
+        "esc" => KeyCode::Esc,
+        "enter" => KeyCode::Enter,
+        "delete" => KeyCode::Delete,
+        "space" => KeyCode::Char(' '),
+        "tab" => KeyCode::Tab,
+        // directionals
         "left" => KeyCode::Left,
         "down" => KeyCode::Down,
         "up" => KeyCode::Up,

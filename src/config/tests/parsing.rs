@@ -46,6 +46,7 @@ fn test_parse_key_code() -> Result<()> {
         ("down", KeyCode::Down),
         ("up", KeyCode::Up),
         ("right", KeyCode::Right),
+        ("space", KeyCode::Char(' ')),
         ("a", KeyCode::Char('a')),
         ("b", KeyCode::Char('b')),
         ("c", KeyCode::Char('c')),
