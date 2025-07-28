@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use serde::de::{self, Visitor};
 
 use super::*;
@@ -42,7 +44,10 @@ impl KeyMap {
         Some(&CONFIG.get()?.keymap)
     }
     pub fn get_action(&self, key: KeyEvent) -> Option<Action> {
-        self.0.get(&key).copied()
+        self.0.get(&key).map(|f| f.action)
+    }
+    pub fn get_key_str(&self, key: KeyEvent) -> Option<&str> {
+        self.0.get(&key).map(|f| f.raw_keycode.deref())
     }
 }
 
@@ -51,37 +56,49 @@ impl<'de> Deserialize<'de> for KeyMap {
     where
         D: serde::Deserializer<'de>,
     {
-        struct KeyMapVisitor;
-
-        impl<'de> Visitor<'de> for KeyMapVisitor {
-            type Value = KeyMap;
-
-            fn expecting(
-                &self,
-                formatter: &mut std::fmt::Formatter,
-            ) -> std::fmt::Result {
-                write!(formatter, "A hashmap of String -> Action pairs")
-            }
-
-            fn visit_map<A>(
-                self,
-                mut map: A,
-            ) -> std::result::Result<Self::Value, A::Error>
-            where
-                A: serde::de::MapAccess<'de>,
-            {
-                let mut keymap = HashMap::new();
-
-                while let Some((key_str, action)) =
-                    map.next_entry::<String, Action>()?
-                {
-                    let key_event =
-                        parse_key_event(&key_str).map_err(de::Error::custom)?;
-                    keymap.insert(key_event, action);
-                }
-                Ok(KeyMap(keymap))
-            }
-        }
         deserializer.deserialize_map(KeyMapVisitor)
+    }
+}
+
+impl ActionDictionary {
+    fn new(raw_keycode: &str, action: Action) -> Self {
+        Self {
+            raw_keycode: raw_keycode.into(),
+            action,
+        }
+    }
+}
+
+struct KeyMapVisitor;
+
+impl<'de> Visitor<'de> for KeyMapVisitor {
+    type Value = KeyMap;
+
+    fn expecting(
+        &self,
+        formatter: &mut std::fmt::Formatter,
+    ) -> std::fmt::Result {
+        write!(formatter, "A hashmap of String -> Action pairs")
+    }
+
+    fn visit_map<A>(
+        self,
+        mut map: A,
+    ) -> std::result::Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut keymap = HashMap::new();
+
+        while let Some((key_str, action)) =
+            map.next_entry::<String, Action>()?
+        {
+            let key_event =
+                parse_key_event(&key_str).map_err(de::Error::custom)?;
+            let action = ActionDictionary::new(&key_str, action);
+            keymap.insert(key_event, action);
+        }
+
+        Ok(KeyMap(keymap))
     }
 }

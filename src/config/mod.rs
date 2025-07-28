@@ -2,7 +2,7 @@ use std::{
     collections::HashMap,
     env,
     path::PathBuf,
-    sync::Mutex,
+    sync::{Arc, Mutex},
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -63,7 +63,13 @@ impl AppConfig {
 }
 
 #[derive(Default, Debug)]
-pub struct KeyMap(HashMap<KeyEvent, Action>);
+pub struct KeyMap(HashMap<KeyEvent, ActionDictionary>);
+
+#[derive(Debug)]
+pub struct ActionDictionary {
+    raw_keycode: Arc<str>,
+    action: Action,
+}
 
 #[derive(Debug)]
 pub struct DbConn(SqlitePool);
