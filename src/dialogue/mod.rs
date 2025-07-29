@@ -30,7 +30,7 @@ impl Dialogue {
     }
     pub fn error(message: impl Display) -> Self {
         Self {
-            message: message.to_string().into(),
+            message: Rc::new([message.to_string().into()]),
             rect: Rect::new(0, 0, Dialogue::WIDTH, Dialogue::HEIGHT),
             error: true,
             ..Default::default()
@@ -44,7 +44,7 @@ impl Dialogue {
 #[derive(Debug, Default)]
 pub struct Dialogue {
     payload: Option<DbPayloadBuilder>,
-    message: Rc<str>,
+    message: Rc<[Rc<str>]>,
     rect: Rect,
     request_type: RequestType,
     error: bool,
@@ -53,7 +53,7 @@ pub struct Dialogue {
 #[derive(Debug, Default)]
 pub struct DialogueBuilder {
     pub payload: Option<DbPayloadBuilder>,
-    message: Rc<str>,
+    message: Rc<[Rc<str>]>,
     request_type: RequestType,
     pub form_type: Option<AppArm>,
 }

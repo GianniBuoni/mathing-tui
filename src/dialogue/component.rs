@@ -16,8 +16,13 @@ impl Component for Dialogue {
             .border_type(BorderType::Rounded)
             .padding(Padding::proportional(1));
         let inner_block = block.inner(centered_rect);
-        let mut message = Line::from(self.message.as_ref());
 
+        let mut message = Text::from(
+            self.message
+                .iter()
+                .map(|f| Line::from(f.as_ref()))
+                .collect::<Vec<Line>>(),
+        );
         if self.error {
             let styles: AppStyles = AppColors::ACTIVE.into();
             message = message.style(styles.error_style);

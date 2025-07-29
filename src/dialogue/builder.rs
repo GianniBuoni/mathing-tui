@@ -4,7 +4,7 @@ use super::*;
 
 impl DialogueBuilder {
     pub fn with_message(&mut self, message: impl Display) -> &mut Self {
-        self.message = message.to_string().into();
+        self.message = Rc::new([message.to_string().into()]);
         self
     }
     pub fn with_req_type(&mut self, req_type: RequestType) -> &mut Self {
