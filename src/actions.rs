@@ -27,12 +27,10 @@ pub enum Action {
 
 impl Ord for Action {
     fn cmp(&self, other: &Self) -> Ordering {
-        if self > other {
-            Ordering::Greater
-        } else if self < other {
-            Ordering::Less
-        } else {
-            Ordering::Equal
+        match (self, other) {
+            _ if self > other => Ordering::Greater,
+            _ if self < other => Ordering::Less,
+            _ => Ordering::Equal,
         }
     }
 }
