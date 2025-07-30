@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap,
+    collections::{BTreeMap, HashMap},
     env,
     path::PathBuf,
     sync::{Arc, Mutex},
@@ -16,10 +16,11 @@ use keymap::DEFAULT_KEYMAP;
 use parsing::*;
 
 pub mod prelude {
-    pub use super::{AppConfig, CONFIG, DbConn, KeyMap, StoreTotal};
+    pub use super::{AppConfig, CONFIG, DbConn, HelpMap, KeyMap, StoreTotal};
 }
 
 mod filesystems;
+mod helpmap;
 mod keymap;
 mod parsing;
 mod store;
@@ -32,6 +33,7 @@ pub static CONFIG: OnceCell<AppConfig> = OnceCell::const_new();
 #[derive(Debug)]
 pub struct AppConfig {
     keymap: KeyMap,
+    helpmap: HelpMap,
     store: DbConn,
     totals: Mutex<StoreTotal>,
 }
@@ -44,12 +46,14 @@ impl AppConfig {
         let config = async || {
             let (keymap_file, db_file) = Self::check(config_dir)?;
 
-            let keymap = KeyMap::try_init(keymap_file)?;
+            let keymap = KeyMap::try_init(keymap_file.clone())?;
+            let helpmap = HelpMap::try_init(keymap_file)?;
             let store = DbConn::try_init(db_file).await?;
             let totals = StoreTotal::try_init(&store.0).await?;
 
             Aok(Self {
                 keymap,
+                helpmap,
                 store,
                 totals,
             })
@@ -63,12 +67,20 @@ impl AppConfig {
 }
 
 #[derive(Default, Debug)]
-pub struct KeyMap(HashMap<KeyEvent, ActionDictionary>);
+/// A hashmap of KeyEvent -> Action pairs meant for parsing
+/// I/O events during the app's runtime.
+pub struct KeyMap(HashMap<KeyEvent, Action>);
 
 #[derive(Debug)]
-pub struct ActionDictionary {
-    raw_keycode: Arc<str>,
-    action: Action,
+/// A Btree map of Action -> ActionDictionary pairs
+/// and act as a human readable record of which actions
+/// are mapped to which keycodes.
+pub struct HelpMap(BTreeMap<Action, ActionDictionary>);
+
+#[derive(Debug, Default)]
+pub(super) struct ActionDictionary {
+    pub(super) raw_keycode: Arc<str>,
+    pub(super) descrpition: Arc<str>,
 }
 
 #[derive(Debug)]
