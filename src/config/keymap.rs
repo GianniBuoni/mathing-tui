@@ -1,32 +1,9 @@
-use std::ops::Deref;
-
 use serde::de::{self, Visitor};
 
 use super::*;
 
-pub const DEFAULT_KEYMAP: &[u8; 435] = b"CTRL-c = \"Quit\"
-a = \"AddToReceipt\"
-d = \"DeleteSelected\"
-e = \"EditSelected\"
-i = \"EnterInsert\"
-ESC = \"EnterNormal\"
-\"?\" = \"Help\"
-SPACE = \"MakeSelection\"
-LEFT = \"NavigateLeft\"
-h = \"NavigateLeft\"
-DOWN = \"NavigateDown\"
-j = \"NavigateDown\"
-UP = \"NavigateUp\"
-k = \"NavigateUp\"
-RIGHT = \"NavigateRight\"
-l = \"NavigateRight\"
-r = \"Refresh\"
-CTRL-r = \"Reset\"
-\"/\" = \"Search\"
-TAB = \"SelectForward\"
-ALT-TAB = \"SelectBackward\"
-y = \"Submit\"
-ENTER = \"Submit\"";
+pub const DEFAULT_KEYMAP: &[u8] =
+    include_bytes!("../../data/keymap_default.toml");
 
 impl KeyMap {
     pub(super) fn try_init(config_dir: PathBuf) -> Result<Self> {
@@ -44,10 +21,7 @@ impl KeyMap {
         Some(&CONFIG.get()?.keymap)
     }
     pub fn get_action(&self, key: KeyEvent) -> Option<Action> {
-        self.0.get(&key).map(|f| f.action)
-    }
-    pub fn get_key_str(&self, key: KeyEvent) -> Option<&str> {
-        self.0.get(&key).map(|f| f.raw_keycode.deref())
+        self.0.get(&key).copied()
     }
 }
 
@@ -60,15 +34,6 @@ impl<'de> Deserialize<'de> for KeyMap {
     }
 }
 
-impl ActionDictionary {
-    fn new(raw_keycode: &str, action: Action) -> Self {
-        Self {
-            raw_keycode: raw_keycode.into(),
-            action,
-        }
-    }
-}
-
 struct KeyMapVisitor;
 
 impl<'de> Visitor<'de> for KeyMapVisitor {
@@ -78,7 +43,7 @@ impl<'de> Visitor<'de> for KeyMapVisitor {
         &self,
         formatter: &mut std::fmt::Formatter,
     ) -> std::fmt::Result {
-        write!(formatter, "A hashmap of String -> Action pairs")
+        write!(formatter, "A hashmap of KeyCode -> Action pairs")
     }
 
     fn visit_map<A>(
@@ -90,15 +55,15 @@ impl<'de> Visitor<'de> for KeyMapVisitor {
     {
         let mut keymap = HashMap::new();
 
-        while let Some((key_str, action)) =
-            map.next_entry::<String, Action>()?
+        while let Some((action, strs)) =
+            map.next_entry::<Action, Vec<String>>()?
         {
-            let key_event =
-                parse_key_event(&key_str).map_err(de::Error::custom)?;
-            let action = ActionDictionary::new(&key_str, action);
-            keymap.insert(key_event, action);
+            for str in strs {
+                let key_event =
+                    parse_key_event(&str).map_err(de::Error::custom)?;
+                keymap.insert(key_event, action);
+            }
         }
-
         Ok(KeyMap(keymap))
     }
 }
