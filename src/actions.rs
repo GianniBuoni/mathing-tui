@@ -1,6 +1,8 @@
+use std::cmp::Ordering;
+
 use serde::Deserialize;
 
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Deserialize)]
 pub enum Action {
     Quit,
     AddToReceipt,
@@ -23,38 +25,40 @@ pub enum Action {
     HandleInput(crossterm::event::KeyEvent),
 }
 
+impl Ord for Action {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if self > other {
+            Ordering::Greater
+        } else if self < other {
+            Ordering::Less
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
 impl std::fmt::Display for Action {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let desc = match self {
-            Self::Quit => "Quit the app.",
-            Self::AddToReceipt => {
-                "Add the current Store Item to the current Receipt table."
-            }
-            Self::DeleteSelected => {
-                "Delete active table's currently selected item."
-            }
-            Self::EditSelected => {
-                "Edit active table's currently selected item."
-            }
-            Self::EnterInsert => "Add new item to the active table.",
-            Self::EnterNormal => "Cancel current form/action.",
-            Self::Help => {
-                "Show current key mappings and config directory location."
-            }
-            Self::MakeSelection => {
-                "For muti-select forms: add active choice to selection."
-            }
-            Self::NavigateLeft => "Go to active table's next page.",
-            Self::NavigateDown => "Select active table's next item.",
-            Self::NavigateUp => "Select active table's previous item.",
-            Self::NavigateRight => "Go to active table's previous page.",
-            Self::Refresh => "Refetch all data from the database.",
-            Self::Reset => "Reset receipt table; deletes all items from it.",
-            Self::Search => "Search for a Store Item.",
-            Self::SelectForward => "Select/activate the next table.",
-            Self::SelectBackward => "Select/activate the previous table.",
-            Self::Submit => "For forms: submit current form.",
-            Self::HandleInput(_) => "Sends key event to a text input.",
+            Self::Quit => "Quit",
+            Self::AddToReceipt => "Add to receipt",
+            Self::DeleteSelected => "Delete selected",
+            Self::EditSelected => "Edit selected",
+            Self::EnterInsert => "Add new item or user",
+            Self::EnterNormal => "Cancel",
+            Self::Help => "Help",
+            Self::MakeSelection => "Make selection",
+            Self::NavigateLeft => "Next page",
+            Self::NavigateDown => "Next row",
+            Self::NavigateUp => "Prev row",
+            Self::NavigateRight => "Prev page.",
+            Self::Refresh => "Reset tables",
+            Self::Reset => "Clear/new receipt",
+            Self::Search => "Search items",
+            Self::SelectForward => "Select next table",
+            Self::SelectBackward => "Select previous table",
+            Self::Submit => "Submit form",
+            Self::HandleInput(_) => "Sends key event to a text input",
         };
         write!(f, "{desc}")
     }
