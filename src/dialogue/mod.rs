@@ -40,10 +40,7 @@ impl Dialogue {
         }
     }
     pub fn has_payload(&self) -> bool {
-        match self.message {
-            Message::Confirmation(_) => true,
-            _ => false,
-        }
+        matches!(self.message, Message::Confirmation(_))
     }
 }
 

@@ -1,3 +1,4 @@
+#![allow(clippy::derive_ord_xor_partial_ord)]
 use std::cmp::Ordering;
 
 use serde::Deserialize;

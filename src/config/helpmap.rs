@@ -51,8 +51,8 @@ impl HelpMap {
         };
         helpmap
             .0
-            .iter()
-            .map(|(_, dict)| {
+            .values()
+            .map(|dict| {
                 let line =
                     format!("{}: {}", dict.raw_keycode, dict.descrpition);
                 line.into()
