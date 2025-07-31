@@ -63,4 +63,31 @@ impl Home {
             self.map_err(err);
         }
     }
+    pub(super) fn context_menu<'a>() -> Line<'a> {
+        let Some(helpmap) = HelpMap::get() else {
+            return Line::default();
+        };
+
+        let mut actions = vec![
+            Action::Quit,
+            Action::SelectForward,
+            Action::EnterInsert,
+            Action::EditSelected,
+            Action::DeleteSelected,
+            Action::Help,
+        ]
+        .iter()
+        .fold(Vec::new(), |mut acc, f| {
+            acc.push(format!("{f} ").gray());
+            let keycode =
+                format!("<{}>", helpmap.get_key_str(*f).unwrap_or_default())
+                    .dark_gray();
+            acc.push(keycode);
+            acc.push(" | ".gray());
+            acc
+        });
+        actions.remove(actions.len() - 1);
+
+        Line::from(actions).centered()
+    }
 }

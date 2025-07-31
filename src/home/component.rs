@@ -64,15 +64,7 @@ impl Component for Home {
         Ok(())
     }
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
-        let context_menu = Line::from(vec![
-            " Quit ".gray(),
-            "<CTRL-c>".dark_gray(),
-            " | ".gray(),
-            "Switch pane ".gray(),
-            "<Tab> ".dark_gray(),
-        ])
-        .centered();
-
+        let context_menu = Self::context_menu();
         let main_block = Block::default().title_bottom(context_menu);
 
         // first split of the ui
@@ -100,7 +92,6 @@ impl Component for Home {
                 component.draw(frame, chunk);
             },
         );
-
         if let Some(form) = &mut self.form {
             form.draw(frame, rect);
         }
