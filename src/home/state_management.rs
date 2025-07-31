@@ -7,7 +7,7 @@ impl Home {
     ) -> Result<&TableData, ComponentError> {
         self.components
             .get(self.component_tracker.inner())
-            .ok_or(ComponentError::NoData)
+            .ok_or(ComponentError::not_found("Active Table"))
     }
     /// Resets main component's form and message fields to None and then resets
     /// the component to Normal mode.

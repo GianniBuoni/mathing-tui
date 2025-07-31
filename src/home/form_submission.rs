@@ -59,12 +59,7 @@ impl Home {
             .for_each(|f| f.collect_reqs(&mut table_req));
         table_req.check_is_post();
 
-        if matches!(
-            (table_req.app_arm, table_req.req_type),
-            (AppArm::Receipts, RequestType::Update | RequestType::Delete)
-        ) {
-            self.try_subtract_store_total()?;
-        }
+        self.try_get_current_table()?.try_subtract_store_total()?;
         Ok(table_req.reqs)
     }
 }
