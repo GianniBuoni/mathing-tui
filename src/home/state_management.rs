@@ -30,12 +30,12 @@ impl Home {
         }
     }
     /// Report back to main component if the current dialogue box (if there
-    /// is one) is an error message.
-    pub(super) fn is_error(&self) -> bool {
+    /// is one) can submit a payload.
+    pub(super) fn msg_has_payload(&self) -> bool {
         let Some(message) = self.message.as_ref() else {
             return false;
         };
-        message.is_error()
+        message.has_payload()
     }
     /// Map any error into a dialogue popup.
     pub(super) fn map_err(&mut self, err: impl Display) {

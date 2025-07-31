@@ -73,4 +73,13 @@ impl Home {
             Err(err) => self.map_err(err),
         }
     }
+    pub(super) fn handle_help(&mut self) {
+        match Dialogue::help() {
+            Ok(dialogue) => {
+                self.message = Some(dialogue);
+                self.mode = Mode::Insert;
+            }
+            Err(err) => self.map_err(err),
+        }
+    }
 }

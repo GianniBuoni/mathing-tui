@@ -5,9 +5,7 @@ impl Home {
         match (|| {
             let req = match true {
                 _ if self.form.is_some() => self.try_form_submit()?,
-                _ if self.message.is_some() && !self.is_error() => {
-                    self.try_dialogue_submit()?
-                }
+                _ if self.msg_has_payload() => self.try_dialogue_submit()?,
                 _ => {
                     return Aok(());
                 }

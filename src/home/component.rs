@@ -25,9 +25,10 @@ impl Component for Home {
             },
             Mode::Normal => match act {
                 Action::AddToReceipt => self.new_receipt(),
-                Action::EnterInsert => self.enter_insert(),
                 Action::DeleteSelected => self.delete_selected(),
+                Action::EnterInsert => self.enter_insert(),
                 Action::EditSelected => self.edit_selected(),
+                Action::Help => self.handle_help(),
                 Action::Search => self.handle_search(),
                 Action::SelectForward => self.cycle_active(1),
                 Action::SelectBackward => self.cycle_active(-1),

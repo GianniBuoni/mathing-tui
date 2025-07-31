@@ -17,19 +17,8 @@ impl Component for Dialogue {
             .padding(Padding::proportional(1));
         let inner_block = block.inner(centered_rect);
 
-        let mut message = Text::from(
-            self.message
-                .iter()
-                .map(|f| Line::from(f.as_ref()))
-                .collect::<Vec<Line>>(),
-        );
-        if self.error {
-            let styles: AppStyles = AppColors::ACTIVE.into();
-            message = message.style(styles.error_style);
-        }
-
         block.render(centered_rect, frame.buffer_mut());
-        message.render(inner_block, frame.buffer_mut());
+        self.message.render(inner_block, frame.buffer_mut());
     }
     fn handle_action(&mut self, action: Option<Action>) {
         let _ = action;

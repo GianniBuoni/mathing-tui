@@ -1,3 +1,5 @@
+use crate::config::HelpMap;
+
 use super::*;
 
 impl Dialogue {
@@ -6,7 +8,7 @@ impl Dialogue {
         let mut dialogue = Self::builder();
 
         dialogue
-            .with_message(message)
+            .with_message(message, Color::Reset)
             .with_req_type(RequestType::Delete)
             .with_from_type(AppArm::Items);
         let mut dialogue = dialogue.build()?;
@@ -29,7 +31,7 @@ impl Dialogue {
         let mut dialogue = Self::builder();
 
         dialogue
-            .with_message(message)
+            .with_message(message, Color::Reset)
             .with_req_type(RequestType::Delete)
             .with_from_type(AppArm::Users);
         let mut dialogue = dialogue.build()?;
@@ -52,7 +54,7 @@ impl Dialogue {
         let mut dialogue = Self::builder();
 
         dialogue
-            .with_message(message)
+            .with_message(message, Color::Reset)
             .with_req_type(RequestType::Delete)
             .with_from_type(AppArm::Receipts);
         let mut dialogue = dialogue.build()?;
@@ -77,7 +79,7 @@ impl Dialogue {
         let mut dialogue = Self::builder();
 
         dialogue
-            .with_message(message)
+            .with_message(message, Color::Reset)
             .with_req_type(RequestType::Update)
             .with_from_type(AppArm::Totals);
 
@@ -89,10 +91,37 @@ impl Dialogue {
         let mut dialogue = Self::builder();
 
         dialogue
-            .with_message(message)
+            .with_message(message, Color::Reset)
             .with_req_type(RequestType::Reset)
             .with_from_type(AppArm::Receipts);
 
         dialogue.build()
+    }
+
+    pub fn help() -> Result<Self> {
+        let colors = AppColors::ACTIVE;
+        let lines = HelpMap::get_lines();
+        let mut dialogue = Self::builder();
+        // get config file and db file locatons
+
+        dialogue
+            .with_message("[Keymap (key code: description)]", colors.ground)
+            .with_message("\n", Color::Reset);
+
+        lines.iter().enumerate().for_each(|(index, line)| {
+            let color = match index % 2 {
+                0 => colors.base,
+                _ => colors.secondary,
+            };
+            dialogue.with_message(line, color);
+        });
+
+        dialogue
+            .with_message("\n", Color::Reset)
+            .with_message("[Config files]", colors.ground)
+            .with_message("\n", Color::Reset);
+
+        let dialogue = dialogue.build()?;
+        Ok(dialogue)
     }
 }

@@ -12,7 +12,7 @@ impl Dialogue {
     }
     fn mock() -> Self {
         let mut log = Self::builder();
-        log.with_message("This is a message");
+        log.with_message("This is a message", Color::Reset);
         log.build().unwrap()
     }
     fn test_rect() -> Rect {

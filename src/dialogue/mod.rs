@@ -1,4 +1,7 @@
-use std::{fmt::Display, rc::Rc};
+use std::{
+    fmt::{Debug, Display},
+    rc::Rc,
+};
 
 use crate::prelude::*;
 
@@ -8,12 +11,13 @@ pub mod prelude {
 
 mod builder;
 mod component;
+mod message;
 mod plugin;
 #[cfg(test)]
 mod tests;
 
 impl Dialogue {
-    const HEIGHT: u16 = 5;
+    const HEIGHT: u16 = 4;
     const WIDTH: u16 = 100;
 
     pub fn builder() -> DialogueBuilder {
@@ -30,30 +34,38 @@ impl Dialogue {
     }
     pub fn error(message: impl Display) -> Self {
         Self {
-            message: Rc::new([message.to_string().into()]),
-            rect: Rect::new(0, 0, Dialogue::WIDTH, Dialogue::HEIGHT),
-            error: true,
+            message: Message::new_error(message),
+            rect: Rect::new(0, 0, Dialogue::WIDTH, Dialogue::HEIGHT + 1),
             ..Default::default()
         }
     }
-    pub fn is_error(&self) -> bool {
-        self.error
+    pub fn has_payload(&self) -> bool {
+        match self.message {
+            Message::Confirmation(_) => true,
+            _ => false,
+        }
     }
+}
+
+#[derive(Debug)]
+enum Message {
+    Confirmation(Rc<str>),
+    Error(Rc<str>),
+    Paragraph(Rc<[(Rc<str>, Color)]>),
 }
 
 #[derive(Debug, Default)]
 pub struct Dialogue {
     payload: Option<DbPayloadBuilder>,
-    message: Rc<[Rc<str>]>,
+    message: Message,
     rect: Rect,
     request_type: RequestType,
-    error: bool,
 }
 
 #[derive(Debug, Default)]
 pub struct DialogueBuilder {
     pub payload: Option<DbPayloadBuilder>,
-    message: Rc<[Rc<str>]>,
+    message: Vec<(Rc<str>, Color)>,
     request_type: RequestType,
     pub form_type: Option<AppArm>,
 }
