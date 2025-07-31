@@ -85,4 +85,17 @@ impl TableData {
                 .with_payload(f)
         })
     }
+    /// Return a paging request for current tables
+    pub fn handle_paging(
+        &mut self,
+        action: Option<Action>,
+    ) -> Option<DbRequest> {
+        match self.is_active() {
+            true => {
+                self.handle_action(action);
+                self.get_req()
+            }
+            false => None,
+        }
+    }
 }

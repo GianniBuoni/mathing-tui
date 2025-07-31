@@ -48,18 +48,15 @@ impl Home {
         self.mode = Mode::Insert;
     }
     pub(super) fn handle_paging(&mut self, action: Option<Action>) {
-        if let Err(err) = (|| {
-            let table = self
-                .components
-                .get_mut(self.component_tracker.inner())
-                .ok_or(ComponentError::NoData)?;
-            table.handle_action(action);
-
-            if let Some(req) = table.get_req() {
-                self.try_send(req)?
-            }
-            Aok(())
-        })() {
+        let Some(Some(req)) = self
+            .components
+            .iter_mut()
+            .map(|f| f.handle_paging(action))
+            .find(|f| f.is_some())
+        else {
+            return;
+        };
+        if let Err(err) = self.try_send(req) {
             self.map_err(err);
         }
     }
@@ -68,7 +65,7 @@ impl Home {
             return Line::default();
         };
 
-        let mut actions = vec![
+        let mut actions = [
             Action::Quit,
             Action::SelectForward,
             Action::EnterInsert,
