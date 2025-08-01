@@ -1,9 +1,12 @@
-#![allow(clippy::derive_ord_xor_partial_ord)]
 use std::cmp::Ordering;
 
 use serde::Deserialize;
+use strum::EnumDiscriminants;
 
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, Hash, PartialEq, Eq, Deserialize, EnumDiscriminants,
+)]
+#[strum_discriminants(derive(PartialOrd, Ord))]
 pub enum Action {
     Quit,
     AddToReceipt,
@@ -28,11 +31,19 @@ pub enum Action {
 
 impl Ord for Action {
     fn cmp(&self, other: &Self) -> Ordering {
-        match (self, other) {
-            _ if self > other => Ordering::Greater,
-            _ if self < other => Ordering::Less,
+        let self_discriminant: ActionDiscriminants = self.into();
+        let other_discriminant: ActionDiscriminants = other.into();
+        match (self_discriminant, other_discriminant) {
+            _ if self_discriminant < other_discriminant => Ordering::Less,
+            _ if self_discriminant > other_discriminant => Ordering::Greater,
             _ => Ordering::Equal,
         }
+    }
+}
+
+impl PartialOrd for Action {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
