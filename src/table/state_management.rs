@@ -71,4 +71,15 @@ impl TableData {
             self.count = *i
         }
     }
+    pub fn try_subtract_store_total(&self) -> Result<()> {
+        if let Some(AppArm::Receipts) = self.table_type {
+            let current_r = self.try_get_active_item()?.try_get_receipt()?;
+
+            StoreTotal::try_get()?
+                .lock()
+                .map_err(|_| AppError::StoreTotalMutex)?
+                .subtract(current_r.try_calc()?);
+        }
+        Ok(())
+    }
 }

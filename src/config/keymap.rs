@@ -2,31 +2,11 @@ use serde::de::{self, Visitor};
 
 use super::*;
 
-pub const DEFAULT_KEYMAP: &[u8; 420] = b"CTRL-c = \"Quit\"
-a = \"AddToReceipt\"
-d = \"DeleteSelected\"
-e = \"EditSelected\"
-i = \"EnterInsert\"
-ESC = \"EnterNormal\"
-\" \" = \"MakeSelection\"
-LEFT = \"NavigateLeft\"
-h = \"NavigateLeft\"
-DOWN = \"NavigateDown\"
-j = \"NavigateDown\"
-UP = \"NavigateUp\"
-k = \"NavigateUp\"
-RIGHT = \"NavigateRight\"
-l = \"NavigateRight\"
-r = \"Refresh\"
-CTRL-r = \"Reset\"
-\"/\" = \"Search\"
-TAB = \"SelectForward\"
-ALT-TAB = \"SelectBackward\"
-y = \"Submit\"
-ENTER = \"Submit\"";
+pub const DEFAULT_KEYMAP: &[u8] =
+    include_bytes!("../../data/keymap_default.toml");
 
 impl KeyMap {
-    pub(super) fn try_init(config_dir: PathBuf) -> Result<Self> {
+    pub(super) fn try_init(config_dir: &Path) -> Result<Self> {
         let config_src = config::Config::builder()
             .add_source(
                 config::File::from(config_dir)
@@ -50,37 +30,40 @@ impl<'de> Deserialize<'de> for KeyMap {
     where
         D: serde::Deserializer<'de>,
     {
-        struct KeyMapVisitor;
+        deserializer.deserialize_map(KeyMapVisitor)
+    }
+}
 
-        impl<'de> Visitor<'de> for KeyMapVisitor {
-            type Value = KeyMap;
+struct KeyMapVisitor;
 
-            fn expecting(
-                &self,
-                formatter: &mut std::fmt::Formatter,
-            ) -> std::fmt::Result {
-                write!(formatter, "A hashmap of String -> Action pairs")
-            }
+impl<'de> Visitor<'de> for KeyMapVisitor {
+    type Value = KeyMap;
 
-            fn visit_map<A>(
-                self,
-                mut map: A,
-            ) -> std::result::Result<Self::Value, A::Error>
-            where
-                A: serde::de::MapAccess<'de>,
-            {
-                let mut keymap = HashMap::new();
+    fn expecting(
+        &self,
+        formatter: &mut std::fmt::Formatter,
+    ) -> std::fmt::Result {
+        write!(formatter, "A hashmap of KeyCode -> Action pairs")
+    }
 
-                while let Some((key_str, action)) =
-                    map.next_entry::<String, Action>()?
-                {
-                    let key_event =
-                        parse_key_event(&key_str).map_err(de::Error::custom)?;
-                    keymap.insert(key_event, action);
-                }
-                Ok(KeyMap(keymap))
+    fn visit_map<A>(
+        self,
+        mut map: A,
+    ) -> std::result::Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut keymap = HashMap::new();
+
+        while let Some((action, strs)) =
+            map.next_entry::<Action, Vec<String>>()?
+        {
+            for str in strs {
+                let key_event =
+                    parse_key_event(&str).map_err(de::Error::custom)?;
+                keymap.insert(key_event, action);
             }
         }
-        deserializer.deserialize_map(KeyMapVisitor)
+        Ok(KeyMap(keymap))
     }
 }

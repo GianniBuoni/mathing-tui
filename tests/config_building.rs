@@ -51,9 +51,61 @@ async fn test_keymap_builder() -> Result<()> {
         .try_for_each(|(event, want, string)| {
             let message = format!("Couldn't find {event:?} in keymap.");
             let got = keymap.get_action(event).ok_or(Error::msg(message))?;
-            assert_eq!(want, got, "Testing default config for {string}");
+            assert_eq!(
+                want, got,
+                "Test if default config has action for {string}"
+            );
             Aok(())
         })?;
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_getting_raw_key_strings() -> Result<()> {
+    try_init_test_config().await?;
+
+    let test_cases = [
+        (Action::MakeSelection, "SPACE"),
+        (Action::EnterNormal, "ESC"),
+        (Action::Help, "?"),
+        (Action::SelectBackward, "ALT-TAB"),
+        (Action::Reset, "CTRL-r"),
+        (Action::NavigateLeft, "h, LEFT"),
+        (Action::NavigateDown, "j, DOWN"),
+        (Action::NavigateUp, "k, UP"),
+        (Action::NavigateRight, "l, RIGHT"),
+    ];
+
+    let helpmap = HelpMap::get()
+        .ok_or(Error::msg("Couldn't get keymap form the config."))?;
+
+    test_cases.into_iter().try_for_each(|(event, want)| {
+        let message = format!("Couldn't find {event:?} in helpmap.");
+        let got = helpmap.get_key_str(event).ok_or(Error::msg(message))?;
+        assert_eq!(
+            want, got,
+            "Test if default conifg has correct key string for {event:?}."
+        );
+        Aok(())
+    })?;
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_config_dirs() -> Result<()> {
+    try_init_test_config().await?;
+    let got = ConfigDirs::get()?;
+
+    assert!(
+        got.keymap.contains(".config/mathing/keymap.toml"),
+        "Test getting string representation of keymap file."
+    );
+    assert!(
+        got.db.contains(".config/mathing/data.db"),
+        "Test getting string representation of database file."
+    );
 
     Ok(())
 }

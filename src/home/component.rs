@@ -25,17 +25,18 @@ impl Component for Home {
             },
             Mode::Normal => match act {
                 Action::AddToReceipt => self.new_receipt(),
-                Action::EnterInsert => self.enter_insert(),
                 Action::DeleteSelected => self.delete_selected(),
+                Action::EnterInsert => self.enter_insert(),
                 Action::EditSelected => self.edit_selected(),
-                Action::Search => self.handle_search(),
+                Action::Help => self.set_msg(Dialogue::help().map(Some)),
+                Action::Search => self.set_form(Form::search_item().map(Some)),
                 Action::SelectForward => self.cycle_active(1),
                 Action::SelectBackward => self.cycle_active(-1),
                 Action::NavigateLeft | Action::NavigateRight => {
                     self.handle_paging(action)
                 }
-                Action::Refresh => self.handle_refresh(),
-                Action::Reset => self.handle_reset(),
+                Action::Refresh => self.set_msg(Dialogue::refresh().map(Some)),
+                Action::Reset => self.set_msg(Dialogue::reset().map(Some)),
                 _ => {
                     self.components.iter_mut().for_each(|c| {
                         c.handle_action(action);
@@ -64,15 +65,7 @@ impl Component for Home {
         Ok(())
     }
     fn draw(&mut self, frame: &mut Frame, rect: Rect) {
-        let context_menu = Line::from(vec![
-            " Quit ".gray(),
-            "<CTRL-c>".dark_gray(),
-            " | ".gray(),
-            "Switch pane ".gray(),
-            "<Tab> ".dark_gray(),
-        ])
-        .centered();
-
+        let context_menu = Self::context_menu();
         let main_block = Block::default().title_bottom(context_menu);
 
         // first split of the ui
@@ -100,7 +93,6 @@ impl Component for Home {
                 component.draw(frame, chunk);
             },
         );
-
         if let Some(form) = &mut self.form {
             form.draw(frame, rect);
         }

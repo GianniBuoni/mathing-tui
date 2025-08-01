@@ -10,8 +10,7 @@ impl TableData {
         match table_type {
             AppArm::Items => Form::new_item().map(Some),
             AppArm::Users => Form::new_user().map(Some),
-            AppArm::Receipts => Ok(None),
-            AppArm::Totals => Ok(None),
+            _ => Ok(None),
         }
     }
     pub fn try_delete_form(&self) -> Result<Option<Dialogue>> {
@@ -57,8 +56,7 @@ impl TableData {
                 let user = item.try_get_user()?;
                 Form::edit_user(user).map(Some)
             }
-            AppArm::Receipts => Ok(None),
-            AppArm::Totals => Ok(None),
+            _ => Ok(None),
         }
     }
 }

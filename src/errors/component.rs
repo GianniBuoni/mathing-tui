@@ -12,10 +12,7 @@ impl Display for ComponentError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::NoData => {
-                write!(
-                    f,
-                    "No Data: Home or tables have no items/components. Check your builders."
-                )
+                write!(f, "No Data: current table is empty.")
             }
             Self::NotFound(want) => {
                 write!(f, "Not found: {want} was not found.")

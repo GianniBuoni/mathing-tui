@@ -5,9 +5,7 @@ impl Home {
         match (|| {
             let req = match true {
                 _ if self.form.is_some() => self.try_form_submit()?,
-                _ if self.message.is_some() && !self.is_error() => {
-                    self.try_dialogue_submit()?
-                }
+                _ if self.msg_has_payload() => self.try_dialogue_submit()?,
                 _ => {
                     return Aok(());
                 }
@@ -61,12 +59,7 @@ impl Home {
             .for_each(|f| f.collect_reqs(&mut table_req));
         table_req.check_is_post();
 
-        if matches!(
-            (table_req.app_arm, table_req.req_type),
-            (AppArm::Receipts, RequestType::Update | RequestType::Delete)
-        ) {
-            self.try_subtract_store_total()?;
-        }
+        self.try_get_current_table()?.try_subtract_store_total()?;
         Ok(table_req.reqs)
     }
 }

@@ -4,6 +4,7 @@ use super::*;
 pub enum AppError {
     Mapping(AppArm, AppArm),
     Config(String),
+    /// Error expecting AppConfig to be initialized, but it hasn't
     ConfigInit,
     StoreTotalMutex,
     StoreTotalKey(i64),

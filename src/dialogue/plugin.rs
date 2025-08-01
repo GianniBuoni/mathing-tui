@@ -1,3 +1,5 @@
+use crate::config::HelpMap;
+
 use super::*;
 
 impl Dialogue {
@@ -6,7 +8,7 @@ impl Dialogue {
         let mut dialogue = Self::builder();
 
         dialogue
-            .with_message(message)
+            .with_message(message, Color::Reset)
             .with_req_type(RequestType::Delete)
             .with_from_type(AppArm::Items);
         let mut dialogue = dialogue.build()?;
@@ -29,7 +31,7 @@ impl Dialogue {
         let mut dialogue = Self::builder();
 
         dialogue
-            .with_message(message)
+            .with_message(message, Color::Reset)
             .with_req_type(RequestType::Delete)
             .with_from_type(AppArm::Users);
         let mut dialogue = dialogue.build()?;
@@ -52,7 +54,7 @@ impl Dialogue {
         let mut dialogue = Self::builder();
 
         dialogue
-            .with_message(message)
+            .with_message(message, Color::Reset)
             .with_req_type(RequestType::Delete)
             .with_from_type(AppArm::Receipts);
         let mut dialogue = dialogue.build()?;
@@ -77,7 +79,7 @@ impl Dialogue {
         let mut dialogue = Self::builder();
 
         dialogue
-            .with_message(message)
+            .with_message(message, Color::Reset)
             .with_req_type(RequestType::Update)
             .with_from_type(AppArm::Totals);
 
@@ -89,10 +91,41 @@ impl Dialogue {
         let mut dialogue = Self::builder();
 
         dialogue
-            .with_message(message)
+            .with_message(message, Color::Reset)
             .with_req_type(RequestType::Reset)
             .with_from_type(AppArm::Receipts);
 
         dialogue.build()
+    }
+
+    pub fn help() -> Result<Self> {
+        let heading = AppColors::ACTIVE.ground;
+        let lines = HelpMap::get_lines();
+        let dirs = ConfigDirs::get()?;
+
+        let mut dialogue = Self::builder();
+        dialogue
+            .with_message("[Keymap (key code: description)]", heading)
+            .with_message("\n", Color::Reset);
+
+        lines.iter().enumerate().for_each(|(index, line)| {
+            let color = match index % 2 {
+                0 => Color::Reset,
+                _ => Color::DarkGray,
+            };
+            dialogue.with_message(line, color);
+        });
+
+        let keymap_dir = format!("Keymap: {}", dirs.keymap);
+        let db_dir = format!("Database: {}", dirs.db);
+        dialogue
+            .with_message("\n", Color::Reset)
+            .with_message("[Config files]", heading)
+            .with_message("\n", Color::Reset)
+            .with_message(keymap_dir, Color::Reset)
+            .with_message(db_dir, Color::Reset);
+
+        let dialogue = dialogue.build()?;
+        Ok(dialogue)
     }
 }

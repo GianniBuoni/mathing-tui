@@ -7,7 +7,7 @@ impl Home {
     ) -> Result<&TableData, ComponentError> {
         self.components
             .get(self.component_tracker.inner())
-            .ok_or(ComponentError::NoData)
+            .ok_or(ComponentError::not_found("Active Table"))
     }
     /// Resets main component's form and message fields to None and then resets
     /// the component to Normal mode.
@@ -30,12 +30,12 @@ impl Home {
         }
     }
     /// Report back to main component if the current dialogue box (if there
-    /// is one) is an error message.
-    pub(super) fn is_error(&self) -> bool {
+    /// is one) can submit a payload.
+    pub(super) fn msg_has_payload(&self) -> bool {
         let Some(message) = self.message.as_ref() else {
             return false;
         };
-        message.is_error()
+        message.has_payload()
     }
     /// Map any error into a dialogue popup.
     pub(super) fn map_err(&mut self, err: impl Display) {
@@ -48,19 +48,45 @@ impl Home {
         self.mode = Mode::Insert;
     }
     pub(super) fn handle_paging(&mut self, action: Option<Action>) {
-        if let Err(err) = (|| {
-            let table = self
-                .components
-                .get_mut(self.component_tracker.inner())
-                .ok_or(ComponentError::NoData)?;
-            table.handle_action(action);
-
-            if let Some(req) = table.get_req() {
-                self.try_send(req)?
-            }
-            Aok(())
-        })() {
+        let Some(Some(req)) = self
+            .components
+            .iter_mut()
+            .map(|f| f.handle_paging(action))
+            .find(|f| f.is_some())
+        else {
+            return;
+        };
+        if let Err(err) = self.try_send(req) {
             self.map_err(err);
         }
+    }
+    pub(super) fn context_menu<'a>() -> Line<'a> {
+        let highlight = AppColors::ACTIVE.ground;
+        let base = AppColors::ACTIVE.base;
+
+        let Some(helpmap) = HelpMap::get() else {
+            return Line::default();
+        };
+        let mut actions = [
+            Action::Quit,
+            Action::SelectForward,
+            Action::EnterInsert,
+            Action::EditSelected,
+            Action::DeleteSelected,
+            Action::Help,
+        ]
+        .iter()
+        .fold(Vec::new(), |mut acc, f| {
+            acc.push(format!("{f} ").fg(base));
+            let keycode =
+                format!("<{}>", helpmap.get_key_str(*f).unwrap_or_default())
+                    .fg(highlight);
+            acc.push(keycode);
+            acc.push(" | ".fg(base));
+            acc
+        });
+        actions.remove(actions.len() - 1);
+
+        Line::from(actions).centered()
     }
 }

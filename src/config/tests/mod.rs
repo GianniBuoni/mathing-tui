@@ -2,27 +2,6 @@ use super::*;
 
 mod parsing;
 
-impl AppConfig {
-    fn mock_root() -> Result<PathBuf> {
-        Ok(PathBuf::from_iter([
-            env::var("PWD")?.as_str(),
-            ".config",
-            "mathing",
-        ]))
-    }
-    pub fn mock_keymap_file() -> Result<PathBuf> {
-        Ok(Self::mock_root()?.join("config.toml"))
-    }
-}
-
-#[test]
-fn test_keymap_init() -> Result<()> {
-    let keymap = KeyMap::try_init(AppConfig::mock_keymap_file()?);
-    assert!(keymap.is_ok(), "Test keymap initialization.");
-
-    Ok(())
-}
-
 #[test]
 fn test_get_config_dir() -> Result<()> {
     let configured = PathBuf::from(env::var("PWD")?).join("mathing");

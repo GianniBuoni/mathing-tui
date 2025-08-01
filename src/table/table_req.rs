@@ -52,7 +52,11 @@ impl TableReq {
         };
         match (self.req_type, self.app_arm, table_type) {
             // paginig or posting
-            (RequestType::GetAll | RequestType::Post, _, _) => self.push(req),
+            (RequestType::GetAll | RequestType::Post, _, _) => {
+                if self.app_arm == table_type {
+                    self.push(req)
+                }
+            }
             // updating related tables
             (
                 RequestType::Update | RequestType::Delete,
