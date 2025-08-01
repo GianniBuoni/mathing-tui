@@ -1,7 +1,7 @@
 use std::{
     collections::{BTreeMap, HashMap},
     env,
-    path::PathBuf,
+    path::{Path, PathBuf},
     sync::{Arc, Mutex},
     time::{SystemTime, UNIX_EPOCH},
 };
@@ -46,9 +46,9 @@ impl AppConfig {
         let config = async || {
             let (keymap_file, db_file) = Self::check(config_dir)?;
 
-            let keymap = KeyMap::try_init(keymap_file.clone())?;
-            let helpmap = HelpMap::try_init(keymap_file)?;
-            let store = DbConn::try_init(db_file).await?;
+            let keymap = KeyMap::try_init(keymap_file.as_path())?;
+            let helpmap = HelpMap::try_init(keymap_file.as_path())?;
+            let store = DbConn::try_init(db_file.as_path()).await?;
             let totals = StoreTotal::try_init(&store.0).await?;
 
             Aok(Self {

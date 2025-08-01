@@ -6,7 +6,7 @@ pub const DEFAULT_KEYMAP: &[u8] =
     include_bytes!("../../data/keymap_default.toml");
 
 impl KeyMap {
-    pub(super) fn try_init(config_dir: PathBuf) -> Result<Self> {
+    pub(super) fn try_init(config_dir: &Path) -> Result<Self> {
         let config_src = config::Config::builder()
             .add_source(
                 config::File::from(config_dir)

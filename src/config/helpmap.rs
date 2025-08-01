@@ -8,7 +8,7 @@ use super::*;
 const DEFAULT_DESC: &str = include_str!("../../data/action_desc.toml");
 
 impl HelpMap {
-    pub fn try_init(config_dir: PathBuf) -> Result<Self> {
+    pub fn try_init(config_dir: &Path) -> Result<Self> {
         // deserialize the config files (Action -> RawStrings)
         let action_keycodes = Config::builder()
             .add_source(File::from(config_dir).format(FileFormat::Toml))
