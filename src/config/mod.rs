@@ -36,6 +36,7 @@ pub struct AppConfig {
     helpmap: HelpMap,
     store: DbConn,
     totals: Mutex<StoreTotal>,
+    dirs: ConfigDirs,
 }
 
 impl AppConfig {
@@ -50,12 +51,16 @@ impl AppConfig {
             let helpmap = HelpMap::try_init(keymap_file.as_path())?;
             let store = DbConn::try_init(db_file.as_path()).await?;
             let totals = StoreTotal::try_init(&store.0).await?;
+            let dirs = ConfigDirs::default()
+                .with_keymap(keymap_file.as_path())?
+                .with_db(db_file.as_path())?;
 
             Aok(Self {
                 keymap,
                 helpmap,
                 store,
                 totals,
+                dirs,
             })
         };
         CONFIG.get_or_try_init(config).await?;
@@ -81,6 +86,12 @@ pub struct HelpMap(BTreeMap<Action, ActionDictionary>);
 pub(super) struct ActionDictionary {
     pub(super) raw_keycode: Arc<str>,
     pub(super) descrpition: Arc<str>,
+}
+
+#[derive(Debug, Default)]
+pub struct ConfigDirs {
+    pub keymap: Arc<str>,
+    pub db: Arc<str>,
 }
 
 #[derive(Debug)]
