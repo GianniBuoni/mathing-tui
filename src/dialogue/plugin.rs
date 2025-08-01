@@ -99,26 +99,26 @@ impl Dialogue {
     }
 
     pub fn help() -> Result<Self> {
-        let colors = AppColors::ACTIVE;
+        let heading = AppColors::ACTIVE.ground;
         let lines = HelpMap::get_lines();
         let mut dialogue = Self::builder();
         // get config file and db file locatons
 
         dialogue
-            .with_message("[Keymap (key code: description)]", colors.ground)
+            .with_message("[Keymap (key code: description)]", heading)
             .with_message("\n", Color::Reset);
 
         lines.iter().enumerate().for_each(|(index, line)| {
             let color = match index % 2 {
-                0 => colors.base,
-                _ => colors.secondary,
+                0 => Color::Reset,
+                _ => Color::DarkGray,
             };
             dialogue.with_message(line, color);
         });
 
         dialogue
             .with_message("\n", Color::Reset)
-            .with_message("[Config files]", colors.ground)
+            .with_message("[Config files]", heading)
             .with_message("\n", Color::Reset);
 
         let dialogue = dialogue.build()?;

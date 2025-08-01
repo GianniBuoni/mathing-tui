@@ -61,10 +61,12 @@ impl Home {
         }
     }
     pub(super) fn context_menu<'a>() -> Line<'a> {
+        let highlight = AppColors::ACTIVE.ground;
+        let base = AppColors::ACTIVE.base;
+
         let Some(helpmap) = HelpMap::get() else {
             return Line::default();
         };
-
         let mut actions = [
             Action::Quit,
             Action::SelectForward,
@@ -75,12 +77,12 @@ impl Home {
         ]
         .iter()
         .fold(Vec::new(), |mut acc, f| {
-            acc.push(format!("{f} ").gray());
+            acc.push(format!("{f} ").fg(base));
             let keycode =
                 format!("<{}>", helpmap.get_key_str(*f).unwrap_or_default())
-                    .dark_gray();
+                    .fg(highlight);
             acc.push(keycode);
-            acc.push(" | ".gray());
+            acc.push(" | ".fg(base));
             acc
         });
         actions.remove(actions.len() - 1);
