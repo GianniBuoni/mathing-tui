@@ -19,7 +19,7 @@ impl AppConfig {
     }
 
     pub(super) fn check(config_dir: PathBuf) -> Result<(PathBuf, PathBuf)> {
-        let config_file = config_dir.join("config.toml");
+        let config_file = config_dir.join("keymap.toml");
         let db_file = config_dir.join("data.db");
 
         // make config dir if not exists
@@ -69,5 +69,8 @@ impl ConfigDirs {
     pub(super) fn with_db(mut self, db_file: &Path) -> Result<Self> {
         self.db = Self::parse_path(db_file)?;
         Ok(self)
+    }
+    pub fn get() -> Result<Self> {
+        Ok(CONFIG.get().ok_or(AppError::ConfigInit)?.dirs.clone())
     }
 }

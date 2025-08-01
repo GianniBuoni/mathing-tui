@@ -101,9 +101,9 @@ impl Dialogue {
     pub fn help() -> Result<Self> {
         let heading = AppColors::ACTIVE.ground;
         let lines = HelpMap::get_lines();
-        let mut dialogue = Self::builder();
-        // get config file and db file locatons
+        let dirs = ConfigDirs::get()?;
 
+        let mut dialogue = Self::builder();
         dialogue
             .with_message("[Keymap (key code: description)]", heading)
             .with_message("\n", Color::Reset);
@@ -116,10 +116,14 @@ impl Dialogue {
             dialogue.with_message(line, color);
         });
 
+        let keymap_dir = format!("Keymap: {}", dirs.keymap);
+        let db_dir = format!("Database: {}", dirs.db);
         dialogue
             .with_message("\n", Color::Reset)
             .with_message("[Config files]", heading)
-            .with_message("\n", Color::Reset);
+            .with_message("\n", Color::Reset)
+            .with_message(keymap_dir, Color::Reset)
+            .with_message(db_dir, Color::Reset);
 
         let dialogue = dialogue.build()?;
         Ok(dialogue)

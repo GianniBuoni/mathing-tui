@@ -16,7 +16,9 @@ use keymap::DEFAULT_KEYMAP;
 use parsing::*;
 
 pub mod prelude {
-    pub use super::{AppConfig, CONFIG, DbConn, HelpMap, KeyMap, StoreTotal};
+    pub use super::{
+        AppConfig, CONFIG, ConfigDirs, DbConn, HelpMap, KeyMap, StoreTotal,
+    };
 }
 
 mod filesystems;
@@ -88,7 +90,9 @@ pub(super) struct ActionDictionary {
     pub(super) descrpition: Arc<str>,
 }
 
-#[derive(Debug, Default)]
+/// Stores a string representation of the configured keymap file
+/// and the db file locations.
+#[derive(Debug, Default, Clone)]
 pub struct ConfigDirs {
     pub keymap: Arc<str>,
     pub db: Arc<str>,
