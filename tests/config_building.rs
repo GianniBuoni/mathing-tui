@@ -92,3 +92,20 @@ async fn test_getting_raw_key_strings() -> Result<()> {
 
     Ok(())
 }
+
+#[tokio::test]
+async fn test_config_dirs() -> Result<()> {
+    try_init_test_config().await?;
+    let got = ConfigDirs::get()?;
+
+    assert!(
+        got.keymap.contains(".config/mathing/keymap.toml"),
+        "Test getting string representation of keymap file."
+    );
+    assert!(
+        got.db.contains(".config/mathing/data.db"),
+        "Test getting string representation of database file."
+    );
+
+    Ok(())
+}
