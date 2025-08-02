@@ -31,16 +31,15 @@ Currently, `mathing` is only availabe via cloning on github and building from so
 
 ## 👐 Usage
 
-Running `mathing` will pull up the main TUI. There are three tables the `Items`, `Receipts`, `Users`. By default, navigating is handled by tabbing through the available tables. Adding/deleting/updating items to/in the tables puts the app into an "insert mode" and allows the user to ues the keyboard to fill out a form related to the action performed.
+Running `mathing` will pull up the main TUI. There are three tables the `Items`, `Receipts`, `Users`. Navigation and CRUD operations related to these tables are all handled via the keyboard. Commonly used key inputs and their corresponding actions are displayed at the bottom in a context menu.
 
-Form validation errors will prevent the form from submitting and will displays the error. Other errors are displayed in a dialogue box popup.
+New forms and confimation dialogue boxes pop up to help submit requests to the db. Form validation errors will prevent the form from submitting and will display the error at the bottom of the form. Other errors are displayed in a new dialogue box popup.
 
 For a full list of commands, see the [keymap configuration](#-keymap-configurations) section for the full list of available actions.
 
 ## 🔨 Configuration Files
 
-The configuration directory stores all the data needed for `mathing` to run.  
-This includes:
+The configuration directory stores all the data persistant data needed for `mathing` to run. This includes:
 
 - `keymap.toml` : configuration file to map keystrokes to app actions.
 - `data.db`: sqlite database.
@@ -52,16 +51,28 @@ By default, configuration files live in the `.config/mathing` directory on Mac a
 
 ## 💻 Keymap Configurations
 
-`keymap.toml` is a file of _key event_ -> _command string_ pairs. By default, if `mathing` is run without a keymap file configured/present, the default keymap will be wirtten in the config directory.
+By default, if `mathing` is run without a keymap file configured/present, the default keymap.toml will be wirtten in the default system config directory.
+`keymap.toml` is a file of _command string_ -> [_key string array_] pairs. Key strings are stored as arrays to allow the user to configure the same command to multiple key events.
 
-Keys events consist of a key and a single otional modifer.  
+For example:
+
+```toml
+NavigateLeft = ["h", "LEFT"]
+NavigateDown = ["j", "DOWN"]
+NavigateUp = ["k", "UP"]
+NavigateRight = ["l", "RIGHT"]
+Refresh = ["r"]
+```
+
+Mathing only supports keys events consisting of a key code and a single optional modifer.
+
 Supported modifiers are:
 
 - SHIFT
 - CRTL
 - ALT
 
-`mathing` uses `crossterm` as its key event backent. You can read more about the key events at the [crossterm github page.](https://github.com/crossterm-rs/crossterm).
+`mathing` uses `crossterm` as its key event backend. You can read more about the key events at the [crossterm github page.](https://github.com/crossterm-rs/crossterm).
 
 The following commands can be configured:
 
@@ -78,6 +89,7 @@ The following commands can be configured:
 | NavigateUp     | Select active table's previous item.                     |
 | NavigateRight  | Go to active table's previous page.                      |
 | Refresh        | Refetch all data from the database.                      |
+| Reset          | Start a new receipt and clear out the receipt table.     |
 | Search         | Search for a Store Item.                                 |
 | SelectForward  | Select/activate the next table.                          |
 | SelectBackward | Select/activate the previous table.                      |
