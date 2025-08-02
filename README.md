@@ -27,7 +27,7 @@ As someone who likes living in the terminal, a TUI was a good vehicle for making
 
 ## 💾 Install
 
-Currently, `mathing` is only availabe via cloning on github and building from source via `cargo`. There are plans to (at least) package `mathing` for Nix/NixOs.
+Currently, `mathing` is only availabe via cloning this repo and building from source via `cargo`. There are plans to (at least) package `mathing` for Nix/NixOs in the future.
 
 ## 👐 Usage
 
@@ -83,6 +83,7 @@ The following commands can be configured:
 | EditSelected   | Edit active table's currently selected item.             |
 | EnterInsert    | Add new item to the active table.                        |
 | EnterNormal    | Cancel current form/action.                              |
+| Help           | Show current key mappings and config directory location. |
 | MakeSelection  | For muti-select forms: add active choice to selection.   |
 | NavigateLeft   | Go to active table's next page.                          |
 | NavigateDown   | Select active table's next item.                         |
@@ -94,4 +95,3 @@ The following commands can be configured:
 | SelectForward  | Select/activate the next table.                          |
 | SelectBackward | Select/activate the previous table.                      |
 | Submit         | For forms: submit current form.                          |
-| Help           | Show current key mappings and config directory location. |
