@@ -47,7 +47,7 @@ The configuration directory stores all the data persistant data needed for `math
 By default, configuration files live in the `.config/mathing` directory on Mac and Linux.
 
 - Configuration file location can be changed by setting the `MATHING_CONFIG` varaible.
-- Run `mathing --help` to check where your config files are currently set to.
+- Run `mathing --version` to check where your config files are currently set to.
 
 ## 💻 Keymap Configurations
 
