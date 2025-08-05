@@ -16,10 +16,24 @@ impl TableData {
     }
 
     pub(super) fn render_rows(&self, style: Style) -> Vec<Row> {
-        self.items
+        let mut rows = self
+            .items
             .iter()
             .map(|data| data.into_row().style(style))
-            .collect()
+            .collect::<Vec<Row>>();
+
+        if let Some(AppArm::Users) = self.table_type {
+            (|| {
+                let t = StoreTotal::try_get()?
+                    .lock()
+                    .map_err(|_| AppError::StoreTotalMutex)?;
+                t.sum_total(&mut rows);
+                Aok(())
+            })()
+            // TODO: handle the error properly
+            .unwrap_or_default()
+        }
+        rows
     }
 
     pub(super) fn render_heading(&self, styles: &AppStyles) -> Row {
