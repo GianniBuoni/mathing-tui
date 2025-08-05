@@ -15,9 +15,9 @@
 
 Expense splitting in the terminal! Woohoo!
 
-Often grocery expenses are pretty consistent between me and my roomate. Week to week we usually end up getting the same staple items, and for the most part, quantities are variable. This was a exercise in rolling up a system that took that into account, by storing the various items we get, and perform the calculations for me.
+Often grocery expenses are pretty consistent between me and my roommate. Week to week we usually end up getting the same staple items, and for the most part, quantities are variable. This was an exercise in creating an API and database that took that into account via storing the various items we get using the terminal to perform the calculations for me.
 
-As someone who likes living in the terminal, a TUI was a good vehicle for making something that I could lean a lot from while making, and for making something I would use often. **Key concepts I explored in building this app include**:
+As someone who likes living in the terminal, a TUI was a good vehicle for making something that I could learn a lot from while building, and for making something I would use often. **Key concepts I explored in building this app include**:
 
 - SQLite databases and database testing using the [sqlx crate](https://github.com/launchbadge/sqlx)
 - Keymap configuration
