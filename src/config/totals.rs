@@ -56,6 +56,18 @@ impl StoreTotal {
             .copied()
             .ok_or(AppError::StoreTotalKey(key).into())
     }
+    /// Sum up values in the StoreTotal hashmap
+    pub fn sum_total(&self, rows: &mut Vec<Row>) {
+        let res = self
+            .0
+            .values()
+            .fold(Decimal::default(), |acc, values| acc + *values);
+        let row = Row::new([
+            Cell::from(" TOTAL").bold(),
+            Cell::from(format!(" {:.2}", res)),
+        ]);
+        rows.push(row);
+    }
 }
 
 impl From<HashMap<i64, Decimal>> for StoreTotal {
