@@ -5,7 +5,11 @@ impl Component for Home {
         if let Some(form) = &self.form {
             return form.handle_key_events(key);
         }
-        KeyMap::get()?.get_action(key)
+        let action = KeyMap::get()?.get_action(key);
+        match action {
+            Some(_) => action,
+            None => Some(Action::HandleInput(key)),
+        }
     }
 
     fn handle_action(&mut self, action: Option<Action>) {
@@ -37,6 +41,7 @@ impl Component for Home {
                 }
                 Action::Refresh => self.set_msg(Dialogue::refresh().map(Some)),
                 Action::Reset => self.set_msg(Dialogue::reset().map(Some)),
+                Action::HandleInput(key_event) => self.goto_table(key_event),
                 _ => {
                     self.components.iter_mut().for_each(|c| {
                         c.handle_action(action);
