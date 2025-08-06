@@ -73,7 +73,38 @@ async fn test_handle_key_events() -> Result<()> {
     Ok(())
 }
 
-// test key events in a form w/ an input
+/// test handling key events from a Home w/o any forms
+#[tokio::test]
+async fn test_home_handle_key_events() -> Result<()> {
+    try_init_test_config().await?;
+    let test_home = Home::default();
+
+    let test_cases = [
+        (
+            (KeyEvent::from(KeyCode::Char('i'))),
+            Action::EnterInsert,
+            "Test char in keymap.",
+        ),
+        (
+            KeyEvent::from(KeyCode::Char('1')),
+            Action::HandleInput(KeyEvent::from(KeyCode::Char('1'))),
+            "Test char not in keymap.",
+        ),
+        (
+            KeyEvent::from(KeyCode::Char('3')),
+            Action::HandleInput(KeyEvent::from(KeyCode::Char('3'))),
+            "Test char not in keymap.",
+        ),
+    ];
+
+    test_cases.into_iter().for_each(|(event, want, desc)| {
+        assert_eq!(Some(want), test_home.handle_key_events(event), "{desc}")
+    });
+
+    Ok(())
+}
+
+/// test key events in a form w/ an input
 #[tokio::test]
 async fn test_form_handle_key_events() -> Result<()> {
     try_init_test_config().await?;
