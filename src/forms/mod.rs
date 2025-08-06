@@ -1,7 +1,8 @@
 // ISSUE: dyn fields require static lifetimes which required form plugins
-// to be 'static as well.
-// Consider introducing a 'form lifetime and find a way to make the form
-// not owned by another struct.
+// to be 'static as well. The root of this issue stems from Home struct
+// owning the Form struct.
+// 1. Is there a way we can make the form exist independant of Home?
+// 2. Consider introducing a 'form lifetime.
 
 use std::{
     fmt::{Debug, Display},
