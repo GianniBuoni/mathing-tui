@@ -73,37 +73,93 @@ async fn try_init_paging_db(conn: &SqlitePool) -> Result<()> {
     });
     q.build().execute(conn).await?;
 
+    // add users
+    let mut q = QueryBuilder::<Sqlite>::new(
+        "INSERT INTO users (name, created_at, updated_at) ",
+    );
+    q.push_values(PAGING_USERS, |mut q, name| {
+        q.push_bind(name).push_bind(now).push_bind(now);
+    });
+    q.build().execute(conn).await?;
+
+    // add receipts
+    let mut q = QueryBuilder::<Sqlite>::new(
+        "INSERT INTO receipts (item_id, item_qty, created_at, updated_at) ",
+    );
+    q.push_values(PAGING_RECEIPTS, |mut q, (item_id, item_qty)| {
+        q.push_bind(item_id)
+            .push_bind(item_qty)
+            .push_bind(now)
+            .push_bind(now);
+    });
+    q.build().execute(conn).await?;
+
+    // add ru
+    let mut q = QueryBuilder::<Sqlite>::new(
+        "INSERT into receipts_users (receipt_id, user_id, created_at, updated_at) ",
+    );
+    q.push_values(PAGING_RU, |mut q, (r_id, u_id)| {
+        q.push_bind(r_id)
+            .push_bind(u_id)
+            .push_bind(now)
+            .push_bind(now);
+    });
+    q.build().execute(conn).await?;
+
     Ok(())
 }
 
-pub async fn try_init_paging_test(conn: &SqlitePool) -> Result<TableData> {
+pub async fn try_init_paging_test(conn: &SqlitePool) -> Result<Vec<TableData>> {
     try_init_paging_db(conn).await?;
-    let mut table = TableData::builder();
-    table
-        .with_title("Paging Items")
-        .with_heading("Item Name")
-        .with_heading("Item Price")
-        .with_table_type(AppArm::Items);
-    let mut table = table.build()?;
 
-    let counts = ItemParams::default().count(conn).await?;
-    let res = ItemParams::default().get_all(conn).await?;
+    let mut item_table = TableData::builder();
+    item_table.with_table_type(AppArm::Items).with_item_limit(4);
+    let mut item_table = item_table.build()?;
 
-    vec![
+    let mut receipt_table = TableData::builder();
+    receipt_table
+        .with_table_type(AppArm::Receipts)
+        .with_item_limit(4);
+    let mut receipt_table = receipt_table.build()?;
+
+    // initialize both tables
+    let item_counts = ItemParams::default().count(conn).await?;
+    let item_res = ItemParams::default().get_all(conn).await?;
+
+    [
         DbResponse::new()
             .req_type(RequestType::Count)
-            .payload(DbPayload::Count(AppArm::Items, counts)),
+            .payload(DbPayload::Count(AppArm::Items, item_counts)),
         DbResponse::new()
             .req_type(RequestType::GetAll)
-            .payload(DbPayload::Items(res)),
+            .payload(DbPayload::Items(item_res)),
     ]
     .iter()
-    .try_for_each(|f| table.handle_response(Some(f)))?;
+    .try_for_each(|f| item_table.handle_response(Some(f)))?;
 
-    assert_eq!(1, table.current_page, "Table current page init");
-    assert_eq!(40, table.count, "Table count init");
+    let receipt_counts = JoinedReceiptParams::default().count(conn).await?;
+    let receipt_res = JoinedReceiptParams::default().get_all(conn).await?;
 
-    Ok(table)
+    [
+        DbResponse::new()
+            .req_type(RequestType::Count)
+            .payload(DbPayload::Count(AppArm::Receipts, receipt_counts)),
+        DbResponse::new()
+            .req_type(RequestType::GetAll)
+            .payload(DbPayload::Receipts(receipt_res)),
+    ]
+    .iter()
+    .try_for_each(|f| receipt_table.handle_response(Some(f)))?;
+
+    assert_eq!(1, item_table.current_page, "Item table current page init");
+    assert_eq!(20, item_table.count, "Item table count init");
+    assert_eq!(
+        1, receipt_table.current_page,
+        "Receipt table current page init"
+    );
+    assert_eq!(8, receipt_table.count, "Receipt table count init");
+
+    Ok(vec![item_table, receipt_table])
 }
 
 /// Takes the DbRequest, collects the cascading requests,
@@ -111,16 +167,24 @@ pub async fn try_init_paging_test(conn: &SqlitePool) -> Result<TableData> {
 /// the responses back to the table.
 pub async fn try_process_req(
     conn: &SqlitePool,
-    table: &mut TableData,
+    tables: &mut Vec<TableData>,
     req: DbRequest,
 ) -> Result<()> {
     let mut table_req = TryInto::<TableReq>::try_into(req)?;
-    table.collect_reqs(&mut table_req);
+    tables.first_mut().unwrap().collect_reqs(&mut table_req);
 
-    for req in table_req.reqs {
-        let res = handle_requests(req, conn).await;
-        table.handle_response(Some(&res))?;
-    }
+    let results = futures::future::join_all(
+        table_req
+            .reqs
+            .into_iter()
+            .map(async |req| handle_requests(req, conn).await),
+    )
+    .await;
+
+    tables.iter_mut().try_for_each(|f| {
+        results.iter().try_for_each(|g| f.handle_response(Some(g)))
+    })?;
+
     Ok(())
 }
 
@@ -166,4 +230,17 @@ pub fn test_req(req_type: RequestType) -> DbRequest {
     DbRequest::new()
         .with_req_type(req_type)
         .with_payload(payload)
+}
+
+/// generates a get req from the table; the passed in action is handled
+/// defore any requests are made.
+pub fn basic_get_req(
+    tables: &mut Vec<TableData>,
+    action: Option<Action>,
+) -> Result<DbRequest> {
+    let items = tables.first_mut().unwrap();
+    items.handle_action(action);
+
+    let message = "Couldn't get a set of paging requests.";
+    items.get_req().ok_or_else(|| Error::msg(message))
 }

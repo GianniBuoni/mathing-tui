@@ -11,7 +11,7 @@ pub mod prelude {
         MOCK_ITEMS, MOCK_RECEIPTS, MOCK_RU, MOCK_USERS, try_init_test_db,
     };
     pub use super::init_test_paging_db::{
-        test_req, try_init_paging_test, try_process_req,
+        basic_get_req, test_req, try_init_paging_test, try_process_req,
     };
     pub use futures::future::try_join_all;
     pub use mathing_tui::prelude::*;

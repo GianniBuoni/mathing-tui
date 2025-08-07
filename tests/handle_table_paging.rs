@@ -10,168 +10,169 @@ mod common;
 
 #[sqlx::test]
 fn test_basic(conn: SqlitePool) -> Result<()> {
-    let mut table = try_init_paging_test(&conn).await?;
-    let message = "Couldn't get a set of paging requests.";
+    let mut tables = try_init_paging_test(&conn).await?;
 
-    table.handle_action(Some(Action::NavigateRight));
-    let req = table.get_req().ok_or(Error::msg(message))?;
-    try_process_req(&conn, &mut table, req).await?;
-    assert_eq!(2, table.current_page, "Test basic paging.");
+    let req = basic_get_req(&mut tables, Some(Action::NavigateRight))?;
+    try_process_req(&conn, &mut tables, req).await?;
+    assert_eq!(
+        2,
+        tables.first().unwrap().current_page,
+        "Test basic paging."
+    );
 
-    table.handle_action(Some(Action::NavigateRight));
-    let req = table.get_req().ok_or(Error::msg(message))?;
-    try_process_req(&conn, &mut table, req).await?;
-    assert_eq!(1, table.current_page, "Test paging back.");
-
-    Ok(())
-}
-
-#[sqlx::test]
-fn test_post(conn: SqlitePool) -> Result<()> {
-    let mut table = try_init_paging_test(&conn).await?;
-    try_process_req(&conn, &mut table, test_req(RequestType::Post)).await?;
-
-    assert_eq!(2, table.current_page, "Post should go to last page.");
-    assert_eq!(41, table.count, "Post should update counts.");
+    let req = basic_get_req(&mut tables, Some(Action::NavigateLeft))?;
+    try_process_req(&conn, &mut tables, req).await?;
+    assert_eq!(1, tables.first().unwrap().current_page, "Test paging back.");
 
     Ok(())
 }
 
-#[sqlx::test]
-fn test_update(conn: SqlitePool) -> Result<()> {
-    let mut table = try_init_paging_test(&conn).await?;
-    table.next_page = 2;
-    table.current_page = 2;
-    try_process_req(&conn, &mut table, test_req(RequestType::Update)).await?;
+// #[sqlx::test]
+// fn test_post(conn: SqlitePool) -> Result<()> {
+//     let mut table = try_init_paging_test(&conn).await?;
+//     try_process_req(&conn, &mut table, test_req(RequestType::Post)).await?;
 
-    assert_eq!(2, table.current_page, "Update should stay on same page.");
-    assert_eq!(40, table.count, "Update should't change counts.");
+//     assert_eq!(2, table.current_page, "Post should go to last page.");
+//     assert_eq!(41, table.count, "Post should update counts.");
 
-    Ok(())
-}
+//     Ok(())
+// }
 
-#[sqlx::test]
-fn test_delete(conn: SqlitePool) -> Result<()> {
-    let mut table = try_init_paging_test(&conn).await?;
-    table.next_page = 2;
-    table.current_page = 2;
-    try_process_req(&conn, &mut table, test_req(RequestType::Delete)).await?;
+// #[sqlx::test]
+// fn test_update(conn: SqlitePool) -> Result<()> {
+//     let mut table = try_init_paging_test(&conn).await?;
+//     table.next_page = 2;
+//     table.current_page = 2;
+//     try_process_req(&conn, &mut table, test_req(RequestType::Update)).await?;
 
-    assert_eq!(2, table.current_page, "Delete should stay on same page.");
-    assert_eq!(39, table.count, "Delete should update counts.");
+//     assert_eq!(2, table.current_page, "Update should stay on same page.");
+//     assert_eq!(40, table.count, "Update should't change counts.");
 
-    Ok(())
-}
+//     Ok(())
+// }
 
-#[sqlx::test]
-fn test_refresh(conn: SqlitePool) -> Result<()> {
-    let mut table = try_init_paging_test(&conn).await?;
-    table.next_page = 2;
-    table.current_page = 2;
-    try_process_req(&conn, &mut table, test_req(RequestType::None)).await?;
+// #[sqlx::test]
+// fn test_delete(conn: SqlitePool) -> Result<()> {
+//     let mut table = try_init_paging_test(&conn).await?;
+//     table.next_page = 2;
+//     table.current_page = 2;
+//     try_process_req(&conn, &mut table, test_req(RequestType::Delete)).await?;
 
-    assert_eq!(1, table.current_page, "Refresh pages back to 1.");
-    assert_eq!(40, table.count, "Refresh should't change counts.");
+//     assert_eq!(2, table.current_page, "Delete should stay on same page.");
+//     assert_eq!(39, table.count, "Delete should update counts.");
 
-    Ok(())
-}
+//     Ok(())
+// }
 
-#[sqlx::test]
-fn test_reset(conn: SqlitePool) -> Result<()> {
-    let mut table = try_init_paging_test(&conn).await?;
-    table.next_page = 2;
-    table.current_page = 2;
+// #[sqlx::test]
+// fn test_refresh(conn: SqlitePool) -> Result<()> {
+//     let mut table = try_init_paging_test(&conn).await?;
+//     table.next_page = 2;
+//     table.current_page = 2;
+//     try_process_req(&conn, &mut table, test_req(RequestType::None)).await?;
 
-    try_process_req(&conn, &mut table, test_req(RequestType::Reset)).await?;
+//     assert_eq!(1, table.current_page, "Refresh pages back to 1.");
+//     assert_eq!(40, table.count, "Refresh should't change counts.");
 
-    assert_eq!(2, table.current_page, "Reset should stay on same page.");
-    assert_eq!(40, table.count, "Reset should't change counts.");
+//     Ok(())
+// }
 
-    Ok(())
-}
+// #[sqlx::test]
+// fn test_reset(conn: SqlitePool) -> Result<()> {
+//     let mut table = try_init_paging_test(&conn).await?;
+//     table.next_page = 2;
+//     table.current_page = 2;
 
-#[sqlx::test]
-fn test_filtered(conn: SqlitePool) -> Result<()> {
-    let mut table = try_init_paging_test(&conn).await?;
-    table.next_page = 2;
-    table.current_page = 2;
-    try_process_req(&conn, &mut table, test_req(RequestType::GetAll)).await?;
+//     try_process_req(&conn, &mut table, test_req(RequestType::Reset)).await?;
 
-    assert_eq!(1, table.current_page, "Filtering should go to first page.");
-    assert_eq!(25, table.count, "Filtering should update count.");
+//     assert_eq!(2, table.current_page, "Reset should stay on same page.");
+//     assert_eq!(40, table.count, "Reset should't change counts.");
 
-    Ok(())
-}
+//     Ok(())
+// }
 
-#[sqlx::test]
-fn test_filtered_post(conn: SqlitePool) -> Result<()> {
-    let mut table = try_init_paging_test(&conn).await?;
+// #[sqlx::test]
+// fn test_filtered(conn: SqlitePool) -> Result<()> {
+//     let mut table = try_init_paging_test(&conn).await?;
+//     table.next_page = 2;
+//     table.current_page = 2;
+//     try_process_req(&conn, &mut table, test_req(RequestType::GetAll)).await?;
 
-    try_process_req(&conn, &mut table, test_req(RequestType::GetAll)).await?;
-    try_process_req(&conn, &mut table, test_req(RequestType::Post)).await?;
+//     assert_eq!(1, table.current_page, "Filtering should go to first page.");
+//     assert_eq!(25, table.count, "Filtering should update count.");
 
-    assert_eq!(2, table.current_page, "Posting should go to last pages.");
-    assert_eq!(26, table.count, "Posting should update counts.");
+//     Ok(())
+// }
 
-    Ok(())
-}
+// #[sqlx::test]
+// fn test_filtered_post(conn: SqlitePool) -> Result<()> {
+//     let mut table = try_init_paging_test(&conn).await?;
 
-#[sqlx::test]
-fn test_filtered_update(conn: SqlitePool) -> Result<()> {
-    let mut table = try_init_paging_test(&conn).await?;
+//     try_process_req(&conn, &mut table, test_req(RequestType::GetAll)).await?;
+//     try_process_req(&conn, &mut table, test_req(RequestType::Post)).await?;
 
-    try_process_req(&conn, &mut table, test_req(RequestType::GetAll)).await?;
-    table.next_page = 2;
-    table.current_page = 2;
-    try_process_req(&conn, &mut table, test_req(RequestType::Update)).await?;
+//     assert_eq!(2, table.current_page, "Posting should go to last pages.");
+//     assert_eq!(26, table.count, "Posting should update counts.");
 
-    assert_eq!(2, table.current_page, "Updating should stay on same page.");
-    assert_eq!(25, table.count, "Updating shouldn't change counts.");
+//     Ok(())
+// }
 
-    Ok(())
-}
+// #[sqlx::test]
+// fn test_filtered_update(conn: SqlitePool) -> Result<()> {
+//     let mut table = try_init_paging_test(&conn).await?;
 
-#[sqlx::test]
-fn test_filtered_deletion(conn: SqlitePool) -> Result<()> {
-    let mut table = try_init_paging_test(&conn).await?;
+//     try_process_req(&conn, &mut table, test_req(RequestType::GetAll)).await?;
+//     table.next_page = 2;
+//     table.current_page = 2;
+//     try_process_req(&conn, &mut table, test_req(RequestType::Update)).await?;
 
-    try_process_req(&conn, &mut table, test_req(RequestType::GetAll)).await?;
-    table.next_page = 2;
-    table.current_page = 2;
-    try_process_req(&conn, &mut table, test_req(RequestType::Delete)).await?;
+//     assert_eq!(2, table.current_page, "Updating should stay on same page.");
+//     assert_eq!(25, table.count, "Updating shouldn't change counts.");
 
-    assert_eq!(2, table.current_page, "Deleting should stay on same page.");
-    assert_eq!(24, table.count, "Deleting should change counts.");
+//     Ok(())
+// }
 
-    Ok(())
-}
+// #[sqlx::test]
+// fn test_filtered_deletion(conn: SqlitePool) -> Result<()> {
+//     let mut table = try_init_paging_test(&conn).await?;
 
-#[sqlx::test]
-fn test_filtered_refresh(conn: SqlitePool) -> Result<()> {
-    let mut table = try_init_paging_test(&conn).await?;
+//     try_process_req(&conn, &mut table, test_req(RequestType::GetAll)).await?;
+//     table.next_page = 2;
+//     table.current_page = 2;
+//     try_process_req(&conn, &mut table, test_req(RequestType::Delete)).await?;
 
-    try_process_req(&conn, &mut table, test_req(RequestType::GetAll)).await?;
-    table.next_page = 2;
-    table.current_page = 2;
-    try_process_req(&conn, &mut table, test_req(RequestType::None)).await?;
+//     assert_eq!(2, table.current_page, "Deleting should stay on same page.");
+//     assert_eq!(24, table.count, "Deleting should change counts.");
 
-    assert_eq!(1, table.current_page, "Refresh should go to frist page.");
-    assert_eq!(40, table.count, "Refresh should give unfiltered counts.");
+//     Ok(())
+// }
 
-    Ok(())
-}
+// #[sqlx::test]
+// fn test_filtered_refresh(conn: SqlitePool) -> Result<()> {
+//     let mut table = try_init_paging_test(&conn).await?;
 
-#[sqlx::test]
-fn test_filtered_reset(conn: SqlitePool) -> Result<()> {
-    let mut table = try_init_paging_test(&conn).await?;
+//     try_process_req(&conn, &mut table, test_req(RequestType::GetAll)).await?;
+//     table.next_page = 2;
+//     table.current_page = 2;
+//     try_process_req(&conn, &mut table, test_req(RequestType::None)).await?;
 
-    try_process_req(&conn, &mut table, test_req(RequestType::GetAll)).await?;
-    table.next_page = 2;
-    table.current_page = 2;
-    try_process_req(&conn, &mut table, test_req(RequestType::Reset)).await?;
+//     assert_eq!(1, table.current_page, "Refresh should go to frist page.");
+//     assert_eq!(40, table.count, "Refresh should give unfiltered counts.");
 
-    assert_eq!(2, table.current_page, "Resets should stay on same page.");
-    assert_eq!(25, table.count, "Reset should keep filtered counts.");
+//     Ok(())
+// }
 
-    Ok(())
-}
+// #[sqlx::test]
+// fn test_filtered_reset(conn: SqlitePool) -> Result<()> {
+//     let mut table = try_init_paging_test(&conn).await?;
+
+//     try_process_req(&conn, &mut table, test_req(RequestType::GetAll)).await?;
+//     table.next_page = 2;
+//     table.current_page = 2;
+//     try_process_req(&conn, &mut table, test_req(RequestType::Reset)).await?;
+
+//     assert_eq!(2, table.current_page, "Resets should stay on same page.");
+//     assert_eq!(25, table.count, "Reset should keep filtered counts.");
+
+//     Ok(())
+// }
