@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use super::*;
 
-const PAGING_ITEMS: [&str; 40] = [
+const PAGING_ITEMS: [&str; 20] = [
     "Apple",
     "Banana",
     "Cherry",
@@ -23,33 +23,35 @@ const PAGING_ITEMS: [&str; 40] = [
     "Pomegranate",
     "Raspberry",
     "Strawberry",
-    "Tangerine",
-    "Watermelon",
-    "Apricot",
-    "Blueberry",
-    "Cantaloupe",
-    "Guava",
-    "Lychee",
-    "Dragonfruit",
-    "Coconut",
-    "Persimmon",
-    "Passionfruit",
-    "Cranberry",
-    "Jackfruit",
-    "Starfruit",
-    "Soursop",
-    "Mulberry",
-    "Açaí",
-    "Chayote",
-    "Clementine",
-    "Gooseberry",
 ];
 
-const PAGING_PRICES: [f64; 40] = [
+const PAGING_PRICES: [f64; 20] = [
     1.99, 2.49, 3.00, 4.75, 5.99, 6.49, 7.25, 8.99, 9.99, 10.50, 11.75, 12.00,
-    13.99, 14.25, 15.50, 16.00, 17.95, 18.25, 19.99, 20.00, 21.50, 22.99,
-    23.75, 24.99, 25.50, 26.00, 27.99, 28.25, 29.99, 30.00, 31.50, 32.75,
-    33.99, 34.00, 35.99, 36.50, 37.75, 38.99, 39.00, 40.00,
+    13.99, 14.25, 15.50, 16.00, 17.95, 18.25, 19.99, 20.00,
+];
+
+const PAGING_RECEIPTS: [(i64, i64); 8] = [
+    (1, 2),
+    (2, 3),
+    (3, 4),
+    (4, 5),
+    (5, 6),
+    (6, 7),
+    (7, 8),
+    (8, 9),
+];
+
+const PAGING_USERS: [&str; 2] = ["Noodle", "Blue"];
+
+const PAGING_RU: [(i64, i64); 8] = [
+    (1, 1),
+    (2, 2),
+    (3, 1),
+    (4, 2),
+    (5, 1),
+    (6, 2),
+    (7, 1),
+    (8, 2),
 ];
 
 async fn try_init_paging_db(conn: &SqlitePool) -> Result<()> {
