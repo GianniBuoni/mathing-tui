@@ -173,18 +173,12 @@ pub async fn try_process_req(
     let mut table_req = TryInto::<TableReq>::try_into(req)?;
     tables.first_mut().unwrap().collect_reqs(&mut table_req);
 
-    let results = futures::future::join_all(
-        table_req
-            .reqs
-            .into_iter()
-            .map(async |req| handle_requests(req, conn).await),
-    )
-    .await;
-
-    tables.iter_mut().try_for_each(|f| {
-        results.iter().try_for_each(|g| f.handle_response(Some(g)))
-    })?;
-
+    for req in table_req.reqs {
+        let res = handle_requests(req, conn).await;
+        tables
+            .iter_mut()
+            .try_for_each(|f| f.handle_response(Some(&res)))?;
+    }
     Ok(())
 }
 
