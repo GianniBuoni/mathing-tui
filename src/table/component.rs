@@ -90,6 +90,9 @@ impl Component for TableData {
             // Reset Responses
             item if match_reset(item) => {
                 self.items = vec![];
+                self.count = 0;
+                self.current_page = 1;
+                self.next_page = 1;
                 Ok(())
             }
             _ => Ok(()),
