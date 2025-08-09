@@ -29,7 +29,7 @@ impl TableData {
     pub(super) fn page_to_last(&mut self) {
         // determines if the a new page needs to be added
         // based on item count
-        let next_page = match self.items.len() as i64 {
+        let next_page = match self.count {
             0 => {
                 return;
             }
