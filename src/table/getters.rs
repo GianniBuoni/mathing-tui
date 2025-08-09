@@ -1,7 +1,6 @@
 use super::*;
 
 impl TableData {
-    /// Calculates the offset for a GetAll request
     pub fn get_items(&self) -> Rc<[DbTable]> {
         self.items.clone().into()
     }
@@ -64,7 +63,7 @@ impl TableData {
         })
     }
     /// Return a Count request for current table
-    pub(super) fn count(&self) -> Option<DbRequest> {
+    pub fn count(&self) -> Option<DbRequest> {
         let payload = match self.table_type? {
             AppArm::Items => {
                 let mut item_param = ItemParams::default();
