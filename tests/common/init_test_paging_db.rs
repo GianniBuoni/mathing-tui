@@ -114,52 +114,34 @@ pub async fn try_init_paging_test(conn: &SqlitePool) -> Result<Vec<TableData>> {
 
     let mut item_table = TableData::builder();
     item_table.with_table_type(AppArm::Items).with_item_limit(4);
-    let mut item_table = item_table.build()?;
+    let item_table = item_table.build()?;
 
     let mut receipt_table = TableData::builder();
     receipt_table
         .with_table_type(AppArm::Receipts)
         .with_item_limit(4);
-    let mut receipt_table = receipt_table.build()?;
+    let receipt_table = receipt_table.build()?;
 
-    // initialize both tables
-    let item_counts = ItemParams::default().count(conn).await?;
-    let item_res = ItemParams::default().get_all(conn).await?;
+    let mut tables = vec![item_table, receipt_table];
+    for table in tables.iter_mut() {
+        let get = handle_requests(table.get_req().unwrap(), conn).await;
+        let count = handle_requests(table.count().unwrap(), conn).await;
+        table.handle_response(Some(&get))?;
+        table.handle_response(Some(&count))?;
+    }
 
-    [
-        DbResponse::new()
-            .req_type(RequestType::Count)
-            .payload(DbPayload::Count(AppArm::Items, item_counts)),
-        DbResponse::new()
-            .req_type(RequestType::GetAll)
-            .payload(DbPayload::Items(item_res)),
-    ]
-    .iter()
-    .try_for_each(|f| item_table.handle_response(Some(f)))?;
+    {
+        let i = tables.first().unwrap();
+        let r = tables.get(1).unwrap();
+        assert_eq!(1, i.current_page, "Item table current page init");
+        assert_eq!(20, i.count, "Item table count init");
+        assert_eq!(4, i.get_items().len(), "Item table length init.");
+        assert_eq!(1, r.current_page, "Receipt table current page init");
+        assert_eq!(8, r.count, "Receipt table count init");
+        assert_eq!(4, r.get_items().len(), "Receipt table length init");
+    }
 
-    let receipt_counts = JoinedReceiptParams::default().count(conn).await?;
-    let receipt_res = JoinedReceiptParams::default().get_all(conn).await?;
-
-    [
-        DbResponse::new()
-            .req_type(RequestType::Count)
-            .payload(DbPayload::Count(AppArm::Receipts, receipt_counts)),
-        DbResponse::new()
-            .req_type(RequestType::GetAll)
-            .payload(DbPayload::Receipts(receipt_res)),
-    ]
-    .iter()
-    .try_for_each(|f| receipt_table.handle_response(Some(f)))?;
-
-    assert_eq!(1, item_table.current_page, "Item table current page init");
-    assert_eq!(20, item_table.count, "Item table count init");
-    assert_eq!(
-        1, receipt_table.current_page,
-        "Receipt table current page init"
-    );
-    assert_eq!(8, receipt_table.count, "Receipt table count init");
-
-    Ok(vec![item_table, receipt_table])
+    Ok(tables)
 }
 
 /// Takes the DbRequest, collects the cascading requests,
@@ -171,9 +153,12 @@ pub async fn try_process_req(
     req: DbRequest,
 ) -> Result<()> {
     let mut table_req = TryInto::<TableReq>::try_into(req)?;
-    tables.first_mut().unwrap().collect_reqs(&mut table_req);
+    tables
+        .iter_mut()
+        .for_each(|f| f.collect_reqs(&mut table_req));
 
     for req in table_req.reqs {
+        dbg!(&req);
         let res = handle_requests(req, conn).await;
         tables
             .iter_mut()
@@ -185,7 +170,7 @@ pub async fn try_process_req(
 /// Returns a request for the test's corresponding DB operation.
 /// By default returns a `Refresh` request to refetch all table items
 /// removing any filters and going back to the first page.
-pub fn test_req(req_type: RequestType) -> DbRequest {
+pub fn test_item_req(req_type: RequestType) -> DbRequest {
     let payload = match req_type {
         RequestType::Post => DbPayload::ItemParams(
             ItemParams::builder()
@@ -197,7 +182,7 @@ pub fn test_req(req_type: RequestType) -> DbRequest {
         ),
         RequestType::Update => DbPayload::ItemParams(
             ItemParams::builder()
-                .with_item_id(ParamOption::new().map_value(21).to_owned())
+                .with_item_id(ParamOption::new().map_value(3).to_owned())
                 .with_item_name(
                     ParamOption::new().map_value("Updated Item").to_owned(),
                 )
@@ -205,12 +190,9 @@ pub fn test_req(req_type: RequestType) -> DbRequest {
         ),
         RequestType::Delete => DbPayload::ItemParams(
             ItemParams::builder()
-                .with_item_id(ParamOption::new().map_value(40).to_owned())
+                .with_item_id(ParamOption::new().map_value(5).to_owned())
                 .build(),
         ),
-        RequestType::Reset => {
-            DbPayload::ReceiptParams(JoinedReceiptParams::default())
-        }
         RequestType::GetAll => {
             DbPayload::ItemParams(ItemParams::default().with_search("e"))
         }
@@ -226,15 +208,91 @@ pub fn test_req(req_type: RequestType) -> DbRequest {
         .with_payload(payload)
 }
 
-/// generates a get req from the table; the passed in action is handled
-/// defore any requests are made.
-pub fn basic_get_req(
-    tables: &mut Vec<TableData>,
-    action: Option<Action>,
-) -> Result<DbRequest> {
-    let items = tables.first_mut().unwrap();
-    items.handle_action(action);
+pub fn test_r_req(req_type: RequestType) -> DbRequest {
+    let payload = match req_type {
+        RequestType::Post => DbPayload::ReceiptParams(
+            JoinedReceiptParams::builder()
+                .with_item_id(ParamOption::new().map_value(1).to_owned())
+                .with_item_qty(ParamOption::new().map_value(1).to_owned())
+                .with_user(1)
+                .build(),
+        ),
+        RequestType::Update => DbPayload::ReceiptParams(
+            JoinedReceiptParams::builder()
+                .with_r_id(ParamOption::new().map_value(5).to_owned())
+                .with_item_qty(ParamOption::new().map_value(1).to_owned())
+                .build(),
+        ),
+        RequestType::Delete => DbPayload::ReceiptParams(
+            JoinedReceiptParams::builder()
+                .with_r_id(ParamOption::new().map_value(5).to_owned())
+                .build(),
+        ),
+        RequestType::Reset => {
+            DbPayload::ReceiptParams(JoinedReceiptParams::default())
+        }
+        _ => {
+            return DbRequest::new()
+                .with_req_type(RequestType::Update)
+                .with_payload(DbPayload::StoreTotal);
+        }
+    };
 
-    let message = "Couldn't get a set of paging requests.";
-    items.get_req().ok_or_else(|| Error::msg(message))
+    DbRequest::new()
+        .with_req_type(req_type)
+        .with_payload(payload)
+}
+/// arbitrarily sets the Items test table to page page passed in.
+pub async fn page_items_to(
+    tables: &mut Vec<TableData>,
+    conn: &SqlitePool,
+    page: i64,
+) -> Result<()> {
+    let i = tables.first_mut().unwrap();
+    i.next_page = page;
+
+    let i = handle_requests(i.get_req().unwrap(), conn).await;
+    tables
+        .iter_mut()
+        .try_for_each(|f| f.handle_response(Some(&i)))?;
+
+    Ok(())
+}
+/// arbitrarily sets the test table to page page passed in.
+/// used for tests that need to check if a req/res will
+/// cause table to go back to the first page.
+pub async fn page_to(
+    tables: &mut Vec<TableData>,
+    conn: &SqlitePool,
+    page: i64,
+) -> Result<()> {
+    tables.iter_mut().for_each(|f| {
+        f.next_page = page;
+    });
+
+    let (i, r) = destruct_tables(&tables)?;
+    let i = handle_requests(i.get_req().unwrap(), conn).await;
+    let r = handle_requests(r.get_req().unwrap(), conn).await;
+
+    tables.iter_mut().try_for_each(|f| {
+        f.handle_response(Some(&i))?;
+        f.handle_response(Some(&r))
+    })?;
+
+    Ok(())
+}
+
+pub fn destruct_tables(
+    tables: &Vec<TableData>,
+) -> Result<(&TableData, &TableData)> {
+    if tables.len() != 2 {
+        let message =
+            format!("Test is not testing 2 tables; got {}", tables.len());
+        return Err(Error::msg(message));
+    }
+
+    let items = tables.first().unwrap();
+    let receipt = tables.get(1).unwrap();
+
+    Ok((items, receipt))
 }
