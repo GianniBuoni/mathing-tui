@@ -109,7 +109,7 @@ async fn try_init_paging_db(conn: &SqlitePool) -> Result<()> {
     Ok(())
 }
 
-pub async fn try_init_paging_test(conn: &SqlitePool) -> Result<Vec<TableData>> {
+pub async fn try_init_paging_test(conn: &SqlitePool) -> Result<[TableData; 2]> {
     try_init_paging_db(conn).await?;
 
     let mut item_table = TableData::builder();
@@ -122,7 +122,7 @@ pub async fn try_init_paging_test(conn: &SqlitePool) -> Result<Vec<TableData>> {
         .with_item_limit(4);
     let receipt_table = receipt_table.build()?;
 
-    let mut tables = vec![item_table, receipt_table];
+    let mut tables = [item_table, receipt_table];
     for table in tables.iter_mut() {
         let get = handle_requests(table.get_req().unwrap(), conn).await;
         let count = handle_requests(table.count().unwrap(), conn).await;
@@ -131,8 +131,7 @@ pub async fn try_init_paging_test(conn: &SqlitePool) -> Result<Vec<TableData>> {
     }
 
     {
-        let i = tables.first().unwrap();
-        let r = tables.get(1).unwrap();
+        let [i, r] = &tables;
         assert_eq!(1, i.current_page, "Item table current page init");
         assert_eq!(20, i.count, "Item table count init");
         assert_eq!(4, i.get_items().len(), "Item table length init.");
@@ -149,7 +148,7 @@ pub async fn try_init_paging_test(conn: &SqlitePool) -> Result<Vec<TableData>> {
 /// the responses back to the table.
 pub async fn try_process_req(
     conn: &SqlitePool,
-    tables: &mut Vec<TableData>,
+    tables: &mut [TableData; 2],
     req: DbRequest,
 ) -> Result<()> {
     let mut table_req = TryInto::<TableReq>::try_into(req)?;
@@ -244,7 +243,7 @@ pub fn test_r_req(req_type: RequestType) -> DbRequest {
 }
 /// arbitrarily sets the Items test table to page page passed in.
 pub async fn page_items_to(
-    tables: &mut Vec<TableData>,
+    tables: &mut [TableData; 2],
     conn: &SqlitePool,
     page: i64,
 ) -> Result<()> {
@@ -262,7 +261,7 @@ pub async fn page_items_to(
 /// used for tests that need to check if a req/res will
 /// cause table to go back to the first page.
 pub async fn page_to(
-    tables: &mut Vec<TableData>,
+    tables: &mut [TableData; 2],
     conn: &SqlitePool,
     page: i64,
 ) -> Result<()> {
@@ -270,7 +269,7 @@ pub async fn page_to(
         f.next_page = page;
     });
 
-    let (i, r) = destruct_tables(&tables)?;
+    let [i, r] = &tables;
     let i = handle_requests(i.get_req().unwrap(), conn).await;
     let r = handle_requests(r.get_req().unwrap(), conn).await;
 
@@ -280,19 +279,4 @@ pub async fn page_to(
     })?;
 
     Ok(())
-}
-
-pub fn destruct_tables(
-    tables: &Vec<TableData>,
-) -> Result<(&TableData, &TableData)> {
-    if tables.len() != 2 {
-        let message =
-            format!("Test is not testing 2 tables; got {}", tables.len());
-        return Err(Error::msg(message));
-    }
-
-    let items = tables.first().unwrap();
-    let receipt = tables.get(1).unwrap();
-
-    Ok((items, receipt))
 }

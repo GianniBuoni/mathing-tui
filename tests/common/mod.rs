@@ -11,7 +11,7 @@ pub mod prelude {
         MOCK_ITEMS, MOCK_RECEIPTS, MOCK_RU, MOCK_USERS, try_init_test_db,
     };
     pub use super::init_test_paging_db::{
-        destruct_tables, page_items_to, page_to, test_item_req, test_r_req,
+        page_items_to, page_to, test_item_req, test_r_req,
         try_init_paging_test, try_process_req,
     };
     pub use futures::future::try_join_all;
