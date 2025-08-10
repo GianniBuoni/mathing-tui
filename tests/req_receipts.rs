@@ -75,7 +75,7 @@ async fn test_delete_receipt_req(conn: SqlitePool) -> Result<()> {
                 .build(),
         ));
 
-    let DbPayload::AffectedRows(res) =
+    let DbPayload::AffectedRows(_, res) =
         handle_requests(req, &conn).await.payload
     else {
         let msg = "Delete request should output AffectedRow payload.";

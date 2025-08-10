@@ -13,7 +13,7 @@ use super::params::{
 pub enum DbPayload {
     #[default]
     None,
-    AffectedRows(u64),
+    AffectedRows(AppArm, u64),
     Count(AppArm, i64),
     ItemParams(ItemParams),
     Item(StoreItem),
@@ -48,7 +48,7 @@ impl Display for DbPayload {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::None => write!(f, "None"),
-            Self::AffectedRows(_) => write!(f, "AffectedRows"),
+            Self::AffectedRows(_, _) => write!(f, "AffectedRows"),
             Self::Count(_, _) => write!(f, "Count"),
             Self::ItemParams(_) => write!(f, "ItemParams"),
             Self::Item(_) => write!(f, "Item"),
@@ -76,11 +76,6 @@ impl DbPayloadBuilder {
 }
 
 // From implementations
-impl From<u64> for DbPayload {
-    fn from(value: u64) -> Self {
-        Self::AffectedRows(value)
-    }
-}
 impl From<StoreItem> for DbPayload {
     fn from(value: StoreItem) -> Self {
         Self::Item(value)
