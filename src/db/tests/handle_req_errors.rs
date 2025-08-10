@@ -28,7 +28,7 @@ async fn test_req_errors(conn: SqlitePool) {
             "Test unhandled Receipt payload.",
         ),
         (
-            DbPayload::AffectedRows(0),
+            DbPayload::AffectedRows(AppArm::Items, 0),
             RequestType::Post,
             RequestError::unhandled("payload", "AffectedRows"),
             "Test unhandled AffectedRow payload.",

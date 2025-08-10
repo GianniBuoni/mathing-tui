@@ -18,8 +18,8 @@ mod plugin;
 #[cfg(test)]
 mod tests;
 
-pub(crate) mod prelude {
-    pub(crate) use super::Home;
+pub mod prelude {
+    pub use super::Home;
 }
 
 #[derive(Default, Debug)]

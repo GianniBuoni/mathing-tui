@@ -60,8 +60,14 @@ pub trait Request {
                 RequestType::Get => self.get(conn).await?.into(),
                 RequestType::Post => self.post(conn).await?.into(),
                 RequestType::Update => self.update(conn).await?.into(),
-                RequestType::Delete => self.delete(conn).await?.into(),
-                RequestType::Reset => self.reset(conn).await?.into(),
+                RequestType::Delete => self
+                    .delete(conn)
+                    .await
+                    .map(|f| DbPayload::AffectedRows(self.get_app_arm(), f))?,
+                RequestType::Reset => self
+                    .reset(conn)
+                    .await
+                    .map(|f| DbPayload::AffectedRows(self.get_app_arm(), f))?,
                 RequestType::Count => self
                     .count(conn)
                     .await
@@ -74,6 +80,7 @@ pub trait Request {
                     .into());
                 }
             };
+
             Ok(res)
         }
     }

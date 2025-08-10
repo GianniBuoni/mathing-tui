@@ -10,7 +10,7 @@ pub mod prelude {
     pub use crate::errors::prelude::*;
     pub(crate) use crate::fields::prelude::*;
     pub use crate::forms::prelude::*;
-    pub(crate) use crate::home::prelude::*;
+    pub use crate::home::prelude::*;
     pub(crate) use crate::plugin::prelude::*;
     pub(crate) use crate::styles::prelude::*;
     pub use crate::table::prelude::*;

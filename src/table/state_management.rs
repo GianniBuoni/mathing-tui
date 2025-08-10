@@ -27,10 +27,16 @@ impl TableData {
         self.next_page = 1;
     }
     pub(super) fn page_to_last(&mut self) {
-        if self.max_pages() == 1 {
-            return;
-        }
-        self.next_page = self.max_pages();
+        // determines if the a new page needs to be added
+        // based on item count
+        let next_page = match self.count {
+            0 => {
+                return;
+            }
+            count if count % self.limit == 0 => self.max_pages() + 1,
+            _ => self.max_pages(),
+        };
+        self.next_page = next_page;
     }
     pub(super) fn get_next_offset(&self) -> i64 {
         0.max(self.next_page - 1) * self.limit

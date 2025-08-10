@@ -64,7 +64,7 @@ async fn test_handle_delete_user(conn: SqlitePool) -> Result<()> {
                 .build(),
         ));
 
-    let DbPayload::AffectedRows(res) =
+    let DbPayload::AffectedRows(_, res) =
         handle_requests(req, &conn).await.payload
     else {
         let msg = "Delete request should output AffectedRows payload.";

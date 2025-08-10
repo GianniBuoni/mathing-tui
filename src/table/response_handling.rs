@@ -68,7 +68,7 @@ pub(super) fn match_reset(item: (&AppArm, &RequestType, &DbPayload)) -> bool {
         (
             AppArm::Receipts,
             RequestType::Reset,
-            DbPayload::AffectedRows(_)
+            DbPayload::AffectedRows(_, _)
         )
     )
 }

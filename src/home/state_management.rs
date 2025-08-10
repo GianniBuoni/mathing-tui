@@ -60,6 +60,15 @@ impl Home {
             self.map_err(err);
         }
     }
+    pub(super) fn goto_table(&mut self, key_event: KeyEvent) {
+        let KeyCode::Char(char) = key_event.code else {
+            return;
+        };
+        if let Ok(index) = char.to_string().parse::<usize>() {
+            self.component_tracker
+                .go_to(index.min(self.components.len() - 1))
+        }
+    }
     pub(super) fn context_menu<'a>() -> Line<'a> {
         let highlight = AppColors::ACTIVE.ground;
         let base = AppColors::ACTIVE.base;

@@ -81,8 +81,8 @@ impl Component for TableData {
                 try_add_store_total(item)
             }
             // Delete responses
-            (_, RequestType::Delete, DbPayload::AffectedRows(i)) => {
-                if self.is_active() && !self.items.is_empty() && *i == 1 {
+            (_, RequestType::Delete, DbPayload::AffectedRows(app_arm, i)) => {
+                if table_type == app_arm && *i == 1 {
                     self.items.remove(self.table_index);
                 }
                 Ok(())
@@ -90,6 +90,9 @@ impl Component for TableData {
             // Reset Responses
             item if match_reset(item) => {
                 self.items = vec![];
+                self.count = 0;
+                self.current_page = 1;
+                self.next_page = 1;
                 Ok(())
             }
             _ => Ok(()),

@@ -22,12 +22,6 @@ impl TableReq {
             self.reqs.push(req);
         };
     }
-    pub fn check_is_post(&mut self) {
-        if self.req_type == RequestType::Post {
-            // should swap original req (0) and get_req (1)
-            self.reqs.swap(0, 1);
-        }
-    }
     pub(super) fn check_count(&mut self, table: &TableData) {
         match (self.req_type, self.app_arm) {
             (

@@ -79,8 +79,8 @@ impl AppConfig {
 pub struct KeyMap(HashMap<KeyEvent, Action>);
 
 #[derive(Debug)]
-/// A Btree map of Action -> ActionDictionary pairs
-/// and act as a human readable record of which actions
+/// A btree map of Action -> ActionDictionary pairs
+/// acts as a human readable record of which actions
 /// are mapped to which keycodes.
 pub struct HelpMap(BTreeMap<Action, ActionDictionary>);
 
@@ -90,9 +90,9 @@ pub(super) struct ActionDictionary {
     pub(super) descrpition: Arc<str>,
 }
 
+#[derive(Debug, Default, Clone)]
 /// Stores a string representation of the configured keymap file
 /// and the db file locations.
-#[derive(Debug, Default, Clone)]
 pub struct ConfigDirs {
     pub keymap: Arc<str>,
     pub db: Arc<str>,

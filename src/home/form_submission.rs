@@ -57,7 +57,6 @@ impl Home {
         self.components
             .iter_mut()
             .for_each(|f| f.collect_reqs(&mut table_req));
-        table_req.check_is_post();
 
         self.try_get_current_table()?.try_subtract_store_total()?;
         Ok(table_req.reqs)
