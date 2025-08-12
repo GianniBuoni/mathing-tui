@@ -17,6 +17,7 @@
       buildInputs = [pkgs.openssl];
       nativeBuildInputs = [pkgs.pkg-config];
       cargoLock.lockFile = ./Cargo.lock;
+      cargoBuildFlags = "--bin mathing";
     };
   };
 }
