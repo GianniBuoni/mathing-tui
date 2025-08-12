@@ -7,6 +7,7 @@
 - [👐 Usage](#-usage)
 - [🔨 Configuration Files](#-configuration-files)
 - [💻 Keymap Configurations](#-keymap-configurations)
+
 <!--toc:end-->
 
 ---
@@ -57,16 +58,18 @@ By default, if `mathing` is run without a keymap file configured/present, the de
 For example:
 
 ```toml
+Quit = ["CTRL-c"]
 NavigateLeft = ["h", "LEFT"]
 NavigateDown = ["j", "DOWN"]
 NavigateUp = ["k", "UP"]
 NavigateRight = ["l", "RIGHT"]
-Refresh = ["r"]
+SelectForward = ["TAB"]
+SelectBackward = ["ALT-TAB"]
+Reset = ["CTRL-r"]
 ```
 
-Mathing only supports keys events consisting of a key code and a single optional modifer.
-
-Supported modifiers are:
+Valid key events follow a format `[KEY_MOD (optional)]-[KEY_CODE (required)]`.
+Supported key modifiers are:
 
 - SHIFT
 - CRTL
