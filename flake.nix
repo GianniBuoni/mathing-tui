@@ -2,22 +2,27 @@
   description = "Mathing: Expense splitting in the terminal!";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    naersk.url = "github:nix-community/naersk";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };
 
   outputs = {
     self,
+    flake-utils,
+    naersk,
     nixpkgs,
-  }: let
-    pkgs = nixpkgs.legacyPackages."x86_64-linux";
-  in {
-    packages."x86_64-linux".default = pkgs.rustPlatform.buildRustPackage {
-      name = "mathing";
-      src = ./.;
-      buildInputs = [pkgs.openssl];
-      nativeBuildInputs = [pkgs.pkg-config];
-      cargoLock.lockFile = ./Cargo.lock;
-      cargoBuildFlags = "--bin mathing";
-    };
-  };
+  }:
+    flake-utils.lib.eachDefaultSystem (system: let
+      pkgs = (import nixpkgs) {inherit system;};
+      naersk' = pkgs.callPackage naersk {};
+      pname = "mathing";
+    in {
+      defaultPackage = naersk'.buildPackage {
+        inherit pname;
+        src = ./.;
+        cargoBuildOptions = defaults: defaults ++ ["--bin" "mathing"];
+        singleStep = true;
+      };
+    });
 }

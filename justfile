@@ -1,5 +1,5 @@
 run:
-  cargo run
+  nix run .
 
 test:
   cargo check
