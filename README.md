@@ -28,7 +28,39 @@ As someone who likes living in the terminal, a TUI was a good vehicle for making
 
 ## 💾 Install
 
-Currently, `mathing` is only availabe via cloning this repo and building from source via `cargo`. There are plans to (at least) package `mathing` for Nix/NixOs in the future.
+### nix run
+
+`mathing` uses nix to run w/o install or use within flake inputs. [Determinte Systems Nix installer](https://determinate.systems/nix-installer/).
+
+With nix installed you can simply run:
+
+```sh
+nix run github:GianniBuoni/mathing-tui
+```
+
+### nix flakes
+
+To install on your system add `mathing` to your inputs:
+
+```nix
+{
+  inputs = {
+    mathing.url = "github:GianniBuoni/mathing-tui";
+  };
+}
+```
+
+And then add it to system packages:
+
+```nix
+{inputs, ...}: let
+  system = "x86_64-linux" # replace with your computer architecture
+in {
+  environment.systemPackages = [
+    inputs.mathing.defaultPackage.${system}
+  ];
+}
+```
 
 ## 👐 Usage
 
