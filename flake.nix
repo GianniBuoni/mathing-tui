@@ -22,6 +22,7 @@
         inherit pname;
         src = ./.;
         cargoBuildOptions = defaults: defaults ++ ["--bin" "mathing"];
+        singleStep = true;
       };
     });
 }
