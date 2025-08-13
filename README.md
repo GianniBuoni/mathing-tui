@@ -40,7 +40,7 @@ nix run github:GianniBuoni/mathing-tui
 
 ### nix flakes
 
-To install on your system add `mathing` to your inputs:
+To install onto your system, add `mathing` to your inputs:
 
 ```nix
 {
@@ -54,7 +54,7 @@ And then add it to system packages:
 
 ```nix
 {inputs, ...}: let
-  system = "x86_64-linux" # replace with your computer architecture
+  system = "x86_64-linux"; # replace with your computer architecture
 in {
   environment.systemPackages = [
     inputs.mathing.defaultPackage.${system}
