@@ -2,11 +2,10 @@ run:
   nix run .
 
 test:
-  cargo check
-  cargo test
+  nix build .#test
 
 lint:
-  test -z $(cargo fmt)
+  cargo fmt --check
   cargo clippy --all-targets -- -Dwarnings
 
 reset:

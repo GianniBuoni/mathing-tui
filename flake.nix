@@ -31,6 +31,12 @@
         cargoBuildOptions = defaults: defaults ++ ["--bin" "mathing"];
         singleStep = true;
       };
+      packages.test = naersk'.buildPackage {
+        inherit pname;
+        src = ./.;
+        mode = "test";
+        release = false;
+      };
       devShell = devenv.lib.mkShell {
         inherit inputs pkgs;
         modules = [./devenv.nix];
