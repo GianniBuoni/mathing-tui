@@ -53,11 +53,9 @@ To install onto your system, add `mathing` to your inputs:
 And then add it to system packages:
 
 ```nix
-{inputs, ...}: let
-  system = "x86_64-linux"; # replace with your computer architecture
-in {
+{pkgs, ...}: {
   environment.systemPackages = [
-    inputs.mathing.defaultPackage.${system}
+    inputs.mathing.defaultPackage.${pkgs.system}
   ];
 }
 ```
