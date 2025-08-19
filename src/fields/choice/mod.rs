@@ -19,7 +19,7 @@ where
         self.value = value;
         self
     }
-    pub fn get_display(&self) -> Line {
+    pub fn get_display(&self) -> Line<'_> {
         let marker = match self.is_active() {
             true => "> ",
             false => "  ",

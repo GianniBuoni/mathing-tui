@@ -45,7 +45,7 @@ impl DbTable {
         }
     }
     /// Converts a reference to a DbTable into a Ratatui Row widget.
-    pub fn into_row(&self) -> Row {
+    pub fn into_row(&self) -> Row<'_> {
         match self {
             DbTable::Item(i) => {
                 let name = format!(" {} ", i.name);
