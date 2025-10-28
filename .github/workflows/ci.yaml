@@ -8,54 +8,24 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: devenv shell bash -- -e {0}
-    env:
-      SQLX_OFFLINE: true
-
     steps:
       - name: Check out code
         uses: actions/checkout@v4
 
       - name: Install nix
-        uses: cachix/install-nix-action@v26
-
-      - uses: cachix/cachix-action@v14
-        with:
-          name: devenv
-
-      - name: Setup devenv
-        shell: bash
-        run: nix profile install nixpkgs#devenv
-
-      - name: Build shell and test enviroment
-        run: devenv test
+        uses: cachix/install-nix-action@v31
 
       - name: Run tests
-        run: just test
+        run: nix build
 
   lint:
     name: Lint
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: devenv shell bash -- -e {0}
-
     steps:
       - name: Check out code
         uses: actions/checkout@v4
 
       - name: Install nix
-        uses: cachix/install-nix-action@v26
+        uses: cachix/install-nix-action@v31
 
-      - uses: cachix/cachix-action@v14
-        with:
-          name: devenv
-
-      - name: Setup devenv
-        shell: bash
-        run: nix profile install nixpkgs#devenv
-
-      - name: Lint
-        run: just lint
+      - name: Run lint
+        run: nix flake check --impure
