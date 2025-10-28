@@ -1,4 +1,4 @@
-use mathing_tui::prelude::*;
+use mathing::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
