@@ -24,13 +24,8 @@
       };
       crates.mathing.crane = {
         args = {
-          buildInputs = with pkgs; [
-            openssl
-          ];
-          nativeBuildInputs = with pkgs; [
-            sqlx-cli
-            pkg-config
-          ];
+          buildInputs = with pkgs; [openssl];
+          nativeBuildInputs = with pkgs; [pkg-config];
         };
         extraBuildArgs.SQLX_OFFLINE = "true";
       };
