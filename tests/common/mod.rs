@@ -15,7 +15,7 @@ pub mod prelude {
         try_init_paging_test, try_process_req,
     };
     pub use futures::future::try_join_all;
-    pub use mathing_tui::prelude::*;
+    pub use mathing::prelude::*;
     pub use sqlx::{QueryBuilder, Sqlite, SqlitePool};
 }
 

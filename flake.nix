@@ -1,28 +1,25 @@
 {
   description = "Mathing: Expense splitting in the terminal!";
 
-  inputs = {
-    flake-utils.url = "github:numtide/flake-utils";
-    naersk.url = "github:nix-community/naersk";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  };
+  outputs = inputs: inputs.flake-parts.lib.mkFlake {inherit inputs;} (inputs.import-tree ./nix);
 
-  outputs = {
-    self,
-    flake-utils,
-    naersk,
-    nixpkgs,
-  }:
-    flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = (import nixpkgs) {inherit system;};
-      naersk' = pkgs.callPackage naersk {};
-      pname = "mathing";
-    in {
-      defaultPackage = naersk'.buildPackage {
-        inherit pname;
-        src = ./.;
-        cargoBuildOptions = defaults: defaults ++ ["--bin" "mathing"];
-        singleStep = true;
-      };
-    });
+  inputs = {
+    # flake inputs
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    import-tree.url = "github:vic/import-tree";
+
+    # project inputs
+    devenv.url = "github:cachix/devenv";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs = {nixpkgs.follows = "nixpkgs";};
+    };
+    nix2container = {
+      url = "github:nlewo/nix2container";
+      inputs = {nixpkgs.follows = "nixpkgs";};
+    };
+    mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
+    rust-flake.url = "github:juspay/rust-flake";
+  };
 }

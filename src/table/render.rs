@@ -15,7 +15,7 @@ impl TableData {
             .title_bottom(title)
     }
 
-    pub(super) fn render_rows(&self, style: Style) -> Vec<Row> {
+    pub(super) fn render_rows(&self, style: Style) -> Vec<Row<'_>> {
         let mut rows = self
             .items
             .iter()
@@ -36,7 +36,7 @@ impl TableData {
         rows
     }
 
-    pub(super) fn render_heading(&self, styles: &AppStyles) -> Row {
+    pub(super) fn render_heading(&self, styles: &AppStyles) -> Row<'_> {
         self.headings
             .iter()
             .map(|heading| Cell::from(heading.deref()))
@@ -45,7 +45,7 @@ impl TableData {
             .height(1)
     }
 
-    pub(super) fn render_table(&self, styles: &AppStyles) -> Table {
+    pub(super) fn render_table(&self, styles: &AppStyles) -> Table<'_> {
         Table::new(
             self.render_rows(styles.row_style),
             Constraint::from_fills(vec![1; self.headings.len()]),

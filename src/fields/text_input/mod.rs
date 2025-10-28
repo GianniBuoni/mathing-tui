@@ -38,14 +38,14 @@ where
         self
     }
 
-    pub fn render_block(&self, style: Style) -> Block {
+    pub fn render_block(&self, style: Style) -> Block<'_> {
         Block::bordered()
             .border_type(BorderType::Rounded)
             .title(self.title.deref())
             .style(style)
     }
 
-    pub fn render_input(&self, style: Style) -> Paragraph {
+    pub fn render_input(&self, style: Style) -> Paragraph<'_> {
         Paragraph::new(self.input.value())
             .style(style)
             .add_modifier(Modifier::RAPID_BLINK)

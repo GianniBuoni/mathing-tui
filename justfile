@@ -1,12 +1,14 @@
 run:
-  nix run .
+  git add .
+  MATHING_CONFIG=$PWD/.config/mathing nix run
 
 test:
-  cargo check
-  cargo test
+  git add .
+  nix build
+  nix flake check --impure
 
 lint:
-  test -z $(cargo fmt)
+  cargo fmt --check
   cargo clippy --all-targets -- -Dwarnings
 
 reset:
@@ -19,4 +21,4 @@ init:
   sqlx migrate run
 
 seed:
-  cargo run --bin seed
+  MATHING_CONFIG=$PWD/.config/mathing ./result/bin/seed
