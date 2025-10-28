@@ -1,8 +1,11 @@
 run:
-  nix run .
+  git add .
+  MATHING_CONFIG=$PWD/.config/mathing nix run
 
 test:
-  nix build .#test
+  git add .
+  nix build
+  nix flake check --impure
 
 lint:
   cargo fmt --check
@@ -18,4 +21,4 @@ init:
   sqlx migrate run
 
 seed:
-  cargo run --bin seed
+  MATHING_CONFIG=$PWD/.config/mathing ./result/bin/seed
